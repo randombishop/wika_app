@@ -13,6 +13,16 @@ class NavBar extends React.Component {
 
     static contextType = AppContext;
 
+    styleMenu = {
+        position: 'absolute',
+        top: '80px',
+        left: '400px',
+        backgroundColor: 'aliceblue',
+        padding: '10px',
+        borderRadius: '10px',
+        opacity: '90%'
+    }
+
     constructor(props) {
         super(props);
         this.state = {menuOpened: false};
@@ -25,13 +35,13 @@ class NavBar extends React.Component {
 
     navigate = (tab) => {
         this.setState({menuOpened:false}) ;
-        this.context.update({tab: tab});
+        //this.context.update({tab: tab});
     }
 
     renderMenu = () => {
         if (this.state.menuOpened) {
             return (
-                <aside>
+                <aside style={this.styleMenu}>
                     <nav>
                         <ul>
                             <li><a href="/#" onClick={() => this.navigate('account')}>Account</a></li>
