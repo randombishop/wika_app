@@ -17,11 +17,15 @@ class AccountButton extends React.Component {
 
     render() {
         return (
-            <button className="outline secondary" style={this.buttonStyle} >
+            <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account_connect')}>
                 <span style={{fontSize:'18px'}}>
                     <i className="far fa-user-circle"></i>
                     &nbsp;&nbsp;
                     Connect account
+                </span>
+                <br/>
+                <span style={{fontSize:'10px'}}>
+                    (Requires a Polkadot wallet)
                 </span>
             </button>
         );

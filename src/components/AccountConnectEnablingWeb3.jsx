@@ -5,8 +5,8 @@ class AccountConnectEnablingWeb3 extends React.Component {
 
     render = () => {
         return (
-           <div>
-               AccountConnectEnablingWeb3
+           <div className="main-content">
+               <h5>Enabling Polkadot Wallet</h5>
            </div>
         ) ;
     }
