@@ -1,29 +1,39 @@
 import React from "react";
 
 
+import AppContext from "../utils/context";
+
+
 import AccountConnectEnablingWeb3 from "./AccountConnectEnablingWeb3";
 import AccountConnectSelect from "./AccountConnectSelect";
+import Account from "./Account";
+
 
 
 class AccountConnect extends React.Component {
 
+    static contextType = AppContext;
+
     constructor(props) {
         super(props);
-        this.state = {page: 'enable'}
+        this.state = {
+            web3Enabled: false
+        }
     }
 
-    setPage = (page) => () => {
-        this.setState({page: page}) ;
+    web3Enabled = () => {
+        this.setState({web3Enabled: true}) ;
     }
 
     render = () => {
-        switch (this.state.page) {
-            case "enable":
-                return <AccountConnectEnablingWeb3 next={this.setPage('select')}/> ;
-            case "select":
-                return <AccountConnectSelect next={this.setPage('account')}/> ;
-            default:
-                return "";
+        if (this.context.account) {
+            return <Account /> ;
+        } else {
+            if (this.state.web3Enabled) {
+                return <AccountConnectSelect /> ;
+            } else {
+                return <AccountConnectEnablingWeb3 next={this.web3Enabled}/> ;
+            }
         }
     }
 

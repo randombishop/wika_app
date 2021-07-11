@@ -1,14 +1,11 @@
 import React from "react";
-
-
-import AppContext from "../utils/context";
-
-
 import {web3Accounts} from '@polkadot/extension-dapp';
 import Identicon from '@polkadot/react-identicon';
 import {decodeAddress} from '@polkadot/util-crypto';
 import {u8aToHex} from '@polkadot/util';
 
+
+import AppContext from "../utils/context";
 
 
 class AccountConnectSelect extends React.Component {
@@ -66,7 +63,7 @@ class AccountConnectSelect extends React.Component {
             address: address,
             addressRaw: addressRaw
         }
-        alert(JSON.stringify(data)) ;
+        this.context.selectAccount(data) ;
     }
 
     renderListAccounts = () => {
