@@ -20,7 +20,8 @@ class App extends React.Component {
                 type: "Test Net",
                 url: "wss://testnode3.wika.network:443",
                 status: 'connecting'
-            }
+            },
+            account: null
         };
     }
 
@@ -54,6 +55,10 @@ class App extends React.Component {
         }) ;
     }
 
+    selectAccount = (account) => {
+        this.setState({account: account}) ;
+    }
+
     navigate = (tab) => {
         this.setState({tab: tab});
     }
@@ -62,9 +67,13 @@ class App extends React.Component {
         return (
             <div style={{padding: '0px 40px'}}>
                 <AppContext.Provider value={{
+                    // Context data
                     tab: this.state.tab,
                     network: this.state.network,
-                    navigate: this.navigate
+                    account: this.state.account,
+                    // Context functions
+                    navigate: this.navigate,
+                    selectAccount: this.selectAccount
                 }}>
                     <NavBar/>
                     <MainContent />
