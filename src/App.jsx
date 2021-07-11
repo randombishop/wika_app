@@ -67,9 +67,7 @@ class App extends React.Component {
                     navigate: this.navigate
                 }}>
                     <NavBar/>
-                    <div style={{textAlign: 'center'}}>
-                        <MainContent />
-                    </div>
+                    <MainContent />
                 </AppContext.Provider>
             </div>
         );
