@@ -1,4 +1,6 @@
 const BALANCE_UNIT = 1000000000000;
+const WIKA_TO_USD = 0.02 ;
+
 
 function copyToClipboard(inputId) {
     var copyText = document.getElementById(inputId);
@@ -15,6 +17,14 @@ function formatWika(value) {
         return value.toFixed(4) + ' W';
     } else {
         return '-';
+    }
+}
+
+function wikaToUsd(value) {
+    if (value!=null) {
+        return value * WIKA_TO_USD ;
+    } else {
+        return null;
     }
 }
 
@@ -110,4 +120,4 @@ function parseError(result) {
 }
 
 
-export {copyToClipboard, convertToWika, formatWika, formatUsd, shortenText, hexToBytes, bytesToString, parseError} ;
+export {copyToClipboard, convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, hexToBytes, bytesToString, parseError} ;

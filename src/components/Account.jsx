@@ -38,14 +38,14 @@ class Account extends React.Component {
                 <div style={{display: 'flex'}}>
                     <div style={{flex: '50%', marginRight: '10px'}}>
                         <input type="text"
-                               value={formatWika(this.context.balanceWika)}
+                               value={formatWika(this.context.balance.wika)}
                                readOnly={true}
                                style={{textAlign: 'right'}}
                         />
                     </div>
                     <div style={{flex: '50%', marginLeft: '10px'}}>
                         <input type="text"
-                               value={formatUsd(this.context.balanceUsd)}
+                               value={formatUsd(this.context.balance.usd)}
                                readOnly={true}
                                style={{textAlign: 'right'}}
                         />
