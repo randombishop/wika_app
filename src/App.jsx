@@ -117,7 +117,9 @@ class App extends React.Component {
                     balance: this.state.balance,
                     // Context functions
                     navigate: this.navigate,
-                    selectAccount: this.selectAccount
+                    selectAccount: this.selectAccount,
+                    // WikaNetwork
+                    wikaNetwork: this.wikaNetwork
                 }}>
                     <NavBar/>
                     <MainContent />

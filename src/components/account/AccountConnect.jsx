@@ -1,7 +1,7 @@
 import React from "react";
 
 
-import AppContext from "../utils/context";
+import AppContext from "../../utils/context";
 
 
 import AccountConnectEnablingWeb3 from "./AccountConnectEnablingWeb3";

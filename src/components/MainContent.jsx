@@ -3,8 +3,10 @@ import React from "react";
 
 import AppContext from '../utils/context' ;
 
-import AccountConnect from "./AccountConnect";
+
 import Splash from "./Splash";
+import AccountConnect from "./account/AccountConnect";
+import Like from "./like/Like";
 
 
 class MainContent extends React.Component {
@@ -15,8 +17,10 @@ class MainContent extends React.Component {
         switch (this.context.tab) {
             case "splash":
                 return <Splash />;
-            case "account_connect":
+            case "account":
                 return <AccountConnect />;
+            case "like":
+                return <Like />;
             default:
                 return "";
         }

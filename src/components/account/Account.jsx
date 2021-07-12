@@ -2,8 +2,8 @@ import React from "react";
 import Identicon from '@polkadot/react-identicon';
 
 
-import AppContext from "../utils/context";
-import {copyToClipboard, formatWika, formatUsd} from "../utils/misc";
+import AppContext from "../../utils/context";
+import {copyToClipboard, formatWika, formatUsd} from "../../utils/misc";
 
 
 class Account extends React.Component {

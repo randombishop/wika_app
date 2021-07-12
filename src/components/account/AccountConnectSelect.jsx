@@ -5,7 +5,7 @@ import {decodeAddress} from '@polkadot/util-crypto';
 import {u8aToHex} from '@polkadot/util';
 
 
-import AppContext from "../utils/context";
+import AppContext from "../../utils/context";
 
 
 class AccountConnectSelect extends React.Component {

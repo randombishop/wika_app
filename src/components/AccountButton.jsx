@@ -1,8 +1,9 @@
 import React from 'react';
+import Identicon from "@polkadot/react-identicon";
+
 
 import AppContext from '../utils/context' ;
 import {formatWika} from "../utils/misc";
-import Identicon from "@polkadot/react-identicon";
 
 
 
@@ -19,7 +20,7 @@ class AccountButton extends React.Component {
 
     renderDisconnected() {
         return (
-            <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account_connect')}>
+            <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
                 <span style={{fontSize:'18px'}}>
                     <i className="far fa-user-circle"></i>
                     &nbsp;&nbsp;
@@ -35,7 +36,7 @@ class AccountButton extends React.Component {
 
     renderConnected() {
         return (
-            <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account_connect')}>
+            <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
                 <div style={{display:'flex'}}>
                     <div style={{marginRight:'15px'}}>
                         <Identicon size={40} value={this.context.account.address}/>

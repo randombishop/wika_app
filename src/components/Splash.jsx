@@ -41,7 +41,7 @@ class Splash extends React.Component {
                 </div>
                 <br/>
                 <h6>Together, let's make the internet a better place and spread quality content.</h6>
-                <button className="primary" onClick={() => this.context.navigate('account_connect')}>
+                <button className="primary" onClick={() => this.context.navigate('account')}>
                     Connect your Polkadot wallet and get started now!
                 </button>
             </div>

@@ -35,7 +35,7 @@ class NavBar extends React.Component {
 
     navigate = (tab) => {
         this.setState({menuOpened:false}) ;
-        //this.context.update({tab: tab});
+        this.context.navigate(tab);
     }
 
     renderMenu = () => {
