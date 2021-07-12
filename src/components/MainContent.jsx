@@ -5,9 +5,16 @@ import AppContext from '../utils/context' ;
 
 
 import Splash from "./Splash";
-import AccountConnect from "./account/AccountConnect";
 import Like from "./like/Like";
+import Recommend from "./recommend/Recommend";
+import Wallet from "./wallet/Wallet";
+import AccountConnect from "./account/AccountConnect";
+import History from "./account/History";
+import ClaimPage from "./authors/ClaimPage";
 import Keccak from "./debug/Keccak";
+import Wip from "./debug/Wip";
+
+
 
 
 class MainContent extends React.Component {
@@ -18,14 +25,26 @@ class MainContent extends React.Component {
         switch (this.context.tab) {
             case "splash":
                 return <Splash />;
-            case "account":
-                return <AccountConnect />;
             case "like":
                 return <Like />;
+            case "recommend":
+                return <Recommend />;
+            case "wallet":
+                return <Wallet />;
+            case "account":
+                return <AccountConnect />;
+            case "history":
+                return <History />;
+            case "claim_page":
+                return <ClaimPage />;
+            case "owned_pages":
+                return <Wip />;
             case "keccak":
                 return <Keccak />;
+            case "blockchains":
+                return <Wip />;
             default:
-                return "";
+                return <Wip />;
         }
     }
 

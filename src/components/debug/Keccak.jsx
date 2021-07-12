@@ -33,7 +33,7 @@ class Keccak extends React.Component {
 
     render() {
         return (
-            <main>
+            <div className="main-content">
                 <h5>Keccak</h5>
                 <label>Text</label>
                 <textarea value={this.state.text} onChange={this.updateText}/>
@@ -48,7 +48,7 @@ class Keccak extends React.Component {
                        }}
                 />
                 <button onClick={this.copy}>Copy to clipboard</button>
-            </main>
+            </div>
         );
     }
 
