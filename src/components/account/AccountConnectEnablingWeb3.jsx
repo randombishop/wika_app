@@ -60,10 +60,8 @@ class AccountConnectEnablingWeb3 extends React.Component {
     renderOk = () => {
         return (
             <React.Fragment>
-                <p>
-                    <strong>Polkadot wallets detected:</strong>
-                    {this.renderWalletsTable()}
-                </p>
+                <strong>Polkadot wallets detected:</strong>
+                {this.renderWalletsTable()}
                 <button onClick={this.props.next}>Continue</button>
             </React.Fragment>
         );
@@ -90,7 +88,7 @@ class AccountConnectEnablingWeb3 extends React.Component {
         for (let i in this.state.wallets) {
             let wallet = this.state.wallets[i] ;
             ans.push(
-                <tr>
+                <tr key={i}>
                   <td>{wallet.name}</td>
                   <td>{wallet.version}</td>
                 </tr>

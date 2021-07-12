@@ -56,13 +56,15 @@ class AccountConnectSelect extends React.Component {
     selectAccount = (account) => () => {
         let address = account.address ;
         let name = account.meta.name ;
+        let source = account.meta.source ;
         let addressU8 = decodeAddress(address) ;
         let addressRaw = u8aToHex(addressU8) ;
         let data = {
             name: name,
             address: address,
-            addressRaw: addressRaw
-        }
+            addressRaw: addressRaw,
+            source: source
+        };
         this.context.selectAccount(data) ;
     }
 
@@ -71,7 +73,7 @@ class AccountConnectSelect extends React.Component {
         for (let i in this.state.accounts) {
             let account = this.state.accounts[i] ;
             ans.push(
-                <article style={this.styleItem}>
+                <article key={i} style={this.styleItem}>
                     <div style={{display:'flex'}}>
                         <div style={this.styleBox1}>
                             <Identicon value={account.address}/>

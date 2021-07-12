@@ -2,11 +2,12 @@ import React from 'react';
 
 
 import AppContext from "../../utils/context";
-
+import {convertToWika} from "../../utils/misc";
 
 
 import Like1 from "./Like1";
 import Like2 from "./Like2";
+
 
 
 class Like extends React.Component {
@@ -28,6 +29,20 @@ class Like extends React.Component {
             likesSubmittedCount: null,
             likesSubmittedRemaining: null
         }
+    }
+
+    componentDidMount() {
+        this.getLikePrice() ;
+    }
+
+    getLikePrice = () => {
+        let self = this;
+        self.context.wikaNetwork.getLikePrice((result) => {
+            let price = convertToWika(result) ;
+            self.setState({likePrice:price}) ;
+        }).catch((err) => {
+            alert(err) ;
+        }) ;
     }
 
     handleUrlChange = (event) => {
@@ -61,7 +76,9 @@ class Like extends React.Component {
             self.setState({urlLikes:urlLikes}) ;
         }).then((s) => {
             self.unsubUrl = s ;
-        });
+        }).catch((err) => {
+            alert(err) ;
+        }) ;
     }
 
     subscribeToLike = () => {
@@ -80,7 +97,9 @@ class Like extends React.Component {
             }) ;
         }).then((s) => {
             self.unsubLike = s ;
-        });
+        }).catch((err) => {
+            alert(err) ;
+        }) ;
     }
 
     componentWillUnmount = () => {
@@ -123,7 +142,9 @@ class Like extends React.Component {
                 />
             } else {
                 return <Like1
+                    url={this.state.url}
                     urlLikes={this.state.urlLikes}
+                    likePrice={this.state.likePrice}
                 />
             }
         }

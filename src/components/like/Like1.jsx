@@ -1,8 +1,9 @@
 import React from 'react';
+import {web3FromSource} from '@polkadot/extension-dapp';
 
 
 import AppContext from "../../utils/context";
-import {parseError} from "../../utils/misc";
+import {formatWika, parseError} from "../../utils/misc";
 
 
 class Like1 extends React.Component {
@@ -12,10 +13,7 @@ class Like1 extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            numLikes: 1,
-            totalPrice:null,
-            rewardsAfter:null,
-            rewardCeiling: null
+            numLikes: 1
         };
     }
 
@@ -23,22 +21,23 @@ class Like1 extends React.Component {
         this.setState({numLikes: event.target.value}, this.update) ;
     }
 
-    componentDidMount() {
-
-    }
-
-
-
     submitLike = () => {
         let self = this;
-        let url = this.props.url ;
-        let referrer = this.state.referrer ;
-        let numLikes = this.state.numLikes ;
-        /*self.setState({txStatus:'Sending...'}, () => {
-            self.context.wikaNetwork.txLike(url, referrer, numLikes, self.monitorLike).then((s) => {
-                self.unsubTransaction = s ;
+        let url = self.props.url ;
+        let referrer = self.state.referrer ;
+        let numLikes = self.state.numLikes ;
+        let source = self.context.account.source ;
+        let address = self.context.account.address ;
+        web3FromSource(source).then((injector) => {
+            self.setState({txStatus: 'Sending...'}, () => {
+                self.context.wikaNetwork.txLike(address, injector, url, referrer, numLikes, self.monitorLike).then((s) => {
+                    self.unsubTransaction = s;
+                }).catch((err) => {
+                    self.setState({txStatus: null}) ;
+                    alert(err) ;
+                }) ;
             });
-        })*/
+        }) ;
     }
 
     monitorLike = (result) => {
@@ -48,9 +47,9 @@ class Like1 extends React.Component {
         } else if (status.isFinalized) {
             this.setState({txStatus: null}) ;
             this.unsubTransaction();
-            let error = parseError(result) ;
-            if (error) {
-                alert(error) ;
+            let err = parseError(result) ;
+            if (err) {
+                alert(err) ;
             }
         }
     }
@@ -100,7 +99,11 @@ class Like1 extends React.Component {
                 </div>
 
                 <strong>Cost of this transaction</strong>
-                <input style={{textAlign:"right"}} type="text" readOnly defaultValue={this.state.totalPrice}/>
+                <input style={{textAlign:"right"}}
+                       type="text"
+                       readOnly
+                       value={formatWika(this.props.likePrice*this.state.numLikes)}
+                />
 
                 {this.renderButton()}
 
