@@ -28,6 +28,7 @@ class ClaimPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            lookedUp:false,
             url: "",
             requestPrice: null,
             owner: null,
@@ -41,10 +42,11 @@ class ClaimPage extends React.Component {
 
     componentDidMount = () => {
         this.getOwnersRequestPrice() ;
-        this.subscribeToUrlOwner() ;
-        this.subscribeToOwnerRequest() ;
-        this.subscribeToOwnerResult() ;
         this.subscribeToBlockNumber() ;
+    }
+
+    handleUrlChange = (event) => {
+        this.setState({url: event.target.value}) ;
     }
 
     getOwnersRequestPrice = () => {
@@ -59,10 +61,14 @@ class ClaimPage extends React.Component {
 
     subscribeToUrlOwner = () => {
         let self = this;
+        if (self.unsubUrlOwner) {
+            self.unsubUrlOwner() ;
+            self.unsubUrlOwner = null ;
+        }
         let url = self.state.url;
         self.context.wikaNetwork.getUrlOwner(url, (result) => {
             self.setState({
-                owner: result
+                owner: ""+result
             }) ;
         }).then((s) => {
             self.unsubUrlOwner = s ;
@@ -73,6 +79,10 @@ class ClaimPage extends React.Component {
 
     subscribeToOwnerRequest = () => {
         let self = this;
+        if (self.unsubOwnerRequest) {
+            self.unsubOwnerRequest() ;
+            self.unsubOwnerRequest = null ;
+        }
         let url = self.state.url;
         self.context.wikaNetwork.getOwnerRequest(url, (result) => {
             self.setState({
@@ -88,6 +98,10 @@ class ClaimPage extends React.Component {
 
     subscribeToOwnerResult = () => {
         let self = this;
+        if (self.unsubOwnerResult) {
+            self.unsubOwnerResult() ;
+            self.unsubOwnerResult = null ;
+        }
         let url = self.state.url;
         self.context.wikaNetwork.getOwnerResult(url, (result) => {
             let data = {
@@ -97,7 +111,7 @@ class ClaimPage extends React.Component {
                 resultNumVotesMajority: Number(result[3]),
                 resultIntro: result[4],
                 resultMark: result[5],
-                resultOutcome: result[6]==true
+                resultOutcome: result[6]===true
             } ;
             self.setState(data) ;
         }).then((s) => {
@@ -107,6 +121,10 @@ class ClaimPage extends React.Component {
 
     subscribeToBlockNumber = () => {
         let self = this;
+        if (self.unsubBlockNumber) {
+            self.unsubBlockNumber() ;
+            self.unsubBlockNumber = null ;
+        }
         self.context.wikaNetwork.getBlockNumber((result) => {
             self.setState({
                 currentBlock:Number(result)
@@ -118,6 +136,36 @@ class ClaimPage extends React.Component {
         }) ;
     }
 
+    lookupUrl = () => {
+        this.setState({
+            lookedUp: true
+        }) ;
+        this.subscribeToUrlOwner() ;
+        this.subscribeToOwnerRequest() ;
+        this.subscribeToOwnerResult() ;
+    }
+
+    unsubscribeUrl = () => {
+        if (this.unsubUrlOwner) {
+            this.unsubUrlOwner() ;
+        }
+        if (this.unsubOwnerRequest) {
+            this.unsubOwnerRequest() ;
+        }
+        if (this.unsubOwnerResult) {
+            this.unsubOwnerResult() ;
+        }
+    }
+
+    clearUrl = () => {
+        this.unsubscribeUrl() ;
+        this.setState({
+            lookedUp:false,
+            url:"",
+            owner: null
+        }) ;
+    }
+
     submitRequest = () => {
         let self = this;
         let url = self.state.url ;
@@ -125,13 +173,13 @@ class ClaimPage extends React.Component {
         let address = self.context.account.address ;
         web3FromSource(source).then((injector) => {
             self.setState({txStatus: 'Sending...'}, () => {
-                self.context.wikaNetwork.txOwnerRequest(url, self.monitorRequest).then((s) => {
+                self.context.wikaNetwork.txOwnerRequest(address, injector, url, self.monitorRequest).then((s) => {
                     self.unsubTransaction = s;
-                });
+                }).catch((err) => {
+                    alert(err) ;
+                }) ;
             })
-        }).catch((err) => {
-            alert(err) ;
-        }) ;
+        });
     }
 
     monitorRequest = (result) => {
@@ -147,6 +195,20 @@ class ClaimPage extends React.Component {
             }
         }
     }
+
+    testUrl = () => {
+        /*let self = this;
+        let url = self.context.url ;
+        fetch(url, {
+              method: "GET",
+            })
+            .then(response => console.log(response))
+            .catch(err => console.log(err));*/
+    };
+
+    copyMark = () => {
+        copyToClipboard("wika_mark_element") ;
+    };
 
     componentWillUnmount = () => {
         if (this.unsubUrlOwner) {
@@ -166,65 +228,60 @@ class ClaimPage extends React.Component {
 
 
 
-    copyMark = () => {
-        copyToClipboard("wika_mark_element") ;
-    };
 
-    testUrl = () => {
-        /*let self = this;
-        let url = self.context.url ;
-        fetch(url, {
-              method: "GET",
-            })
-            .then(response => console.log(response))
-            .catch(err => console.log(err));*/
-    };
 
+
+
+    formatOwner = (owner) => {
+        if (owner===this.DEFAULT_ACCOUNT) {
+            return "-" ;
+        } else if (owner===this.context.account.address) {
+            return "You are the owner!" ;
+        } else {
+            return owner ;
+        }
+    }
 
     renderPreparation = () => {
-        if (this.state.owner!=this.context.address) {
-            return (
-                <React.Fragment>
-                    <label>Preparation</label>
-                    <div style={{display: 'flex'}}>
-                        <div style={{flex: '33%', paddingRight: '10px', textAlign: 'center'}}>
-                            <button style={this.styleButton}
-                                    className="outline"
-                                    onClick={this.copyMark}>
-                                1. Copy this
-                            </button>
-                            <input id="wika_mark_element"
-                                   type="text"
-                                   readOnly
-                                   defaultValue={"wika.network/author/" + this.context.addressRaw}/>
-                        </div>
-                        <div style={{flex: '33%', textAlign: 'center'}}>
-                            <button disabled={true}
-                                    style={this.styleButton}
-                                    className="outline">2. Insert it</button>
-                            <small>(Use an invisible img or link for example.)</small>
-                        </div>
-                        <div style={{flex: '33%', paddingLeft: '10px', textAlign: 'center'}}>
-                            <button disabled={true}
-                                    style={this.styleButton}
-                                    className="outline"
-                                    onClick={this.testUrl}>
-                                3. Test it
-                            </button>
-                            <small>{this.renderTestResult()}</small>
-                        </div>
+        return (
+            <React.Fragment>
+                <label>Preparation</label>
+                <div style={{display: 'flex'}}>
+                    <div style={{flex: '33%', paddingRight: '10px', textAlign: 'center'}}>
+                        <button style={this.styleButton}
+                                className="outline"
+                                onClick={this.copyMark}>
+                            1. Copy this
+                        </button>
+                        <input id="wika_mark_element"
+                               type="text"
+                               readOnly
+                               defaultValue={"wika.network/author/" + this.context.account.addressRaw}/>
                     </div>
-                </React.Fragment>
-            );
-        } else {
-            return "" ;
-        }
+                    <div style={{flex: '33%', textAlign: 'center'}}>
+                        <button disabled={true}
+                                style={this.styleButton}
+                                className="outline">2. Insert it</button>
+                        <small>(Use an invisible img or link for example.)</small>
+                    </div>
+                    <div style={{flex: '33%', paddingLeft: '10px', textAlign: 'center'}}>
+                        <button disabled={true}
+                                style={this.styleButton}
+                                className="outline"
+                                onClick={this.testUrl}>
+                            3. Test it
+                        </button>
+                        <small>{this.renderTestResult()}</small>
+                    </div>
+                </div>
+            </React.Fragment>
+        );
     }
 
     renderTestResult = () => {
         if (this.state.testResult==null) {
             return "" ;
-        } else if (this.state.testResult==true) {
+        } else if (this.state.testResult===true) {
             return "YES" ;
         } else {
             return "NO" ;
@@ -240,7 +297,7 @@ class ClaimPage extends React.Component {
     }
 
     renderSubmitRequest = () => {
-        if (this.state.owner!=this.context.address) {
+        if (this.state.owner!==this.context.address) {
             return (
                 <React.Fragment>
                     {this.renderButton()}
@@ -254,7 +311,6 @@ class ClaimPage extends React.Component {
 
     renderMyRequestProgress = () => {
         let blocks_done = this.state.currentBlock - this.state.requestBlock ;
-        let blocks_remaining = this.NUM_BLOCKS_TO_WAIT - blocks_done ;
         return (
             <React.Fragment>
                 <hr/>
@@ -294,7 +350,7 @@ class ClaimPage extends React.Component {
     }
 
     renderMyRequest = () => {
-        if (this.state.resultBlock==0) {
+        if (this.state.resultBlock===0) {
             return this.renderMyRequestProgress() ;
         } else {
             return this.renderMyRequestResult() ;
@@ -310,25 +366,57 @@ class ClaimPage extends React.Component {
         )
     }
 
+    renderPart1 = () => {
+        return (
+            <React.Fragment>
+                <label>URL</label>
+                <input type="text"
+                       value={this.state.url}
+                       onChange={this.handleUrlChange}
+                       disabled={this.state.lookedUp}
+                />
+                {this.state.lookedUp?
+                <button onClick={this.clearUrl} className="contrast">Clear</button>
+                :<button onClick={this.lookupUrl}>Lookup URL status</button>}
+            </React.Fragment>
+        ) ;
+    }
 
-    renderFooter = () => {
-        let currentRequester = this.state.requestAccount ;
-        if (currentRequester==this.DEFAULT_ACCOUNT) {
-            return this.renderSubmitRequest() ;
-        } else if (currentRequester==this.context.address) {
-            return this.renderMyRequest() ;
+    renderPart2 = () => {
+        if (this.state.lookedUp && this.state.owner!=null) {
+            return (
+                 <React.Fragment>
+                     <hr/>
+                    <label>Current Owner</label>
+                    <input type="text" readOnly defaultValue={this.formatOwner(this.state.owner)}/>
+                 </React.Fragment>
+            ) ;
         } else {
-            return this.renderOtherRequest() ;
+            return "";
         }
     }
 
-    formatOwner = (owner) => {
-        if (owner==this.DEFAULT_ACCOUNT) {
-            return "-" ;
-        } else if (owner==this.context.address) {
-            return "You are the owner!" ;
+    renderPart3 = () => {
+        if (this.state.lookedUp && this.state.owner!=null && this.state.owner!==this.context.account.address) {
+           return (
+                 <React.Fragment>
+                     <hr/>
+                     {this.renderPreparation()}
+                 </React.Fragment>
+            ) ;
         } else {
-            return owner ;
+            return "";
+        }
+    }
+
+    renderPart4 = () => {
+        let currentRequester = this.state.requestAccount ;
+        if (currentRequester===this.DEFAULT_ACCOUNT) {
+            return this.renderSubmitRequest() ;
+        } else if (currentRequester===this.context.address) {
+            return this.renderMyRequest() ;
+        } else {
+            return this.renderOtherRequest() ;
         }
     }
 
@@ -336,17 +424,10 @@ class ClaimPage extends React.Component {
         return (
             <div className="main-content">
                 <h5>Claim Page Ownership</h5>
-
-                <label>Webpage</label>
-                <input type="text" readOnly defaultValue={this.context.url}/>
-
-                <label>Current Owner</label>
-                <input type="text" readOnly defaultValue={this.formatOwner(this.state.owner)}/>
-
-                {this.renderPreparation()}
-
-                {this.renderFooter()}
-
+                {this.renderPart1()}
+                {this.renderPart2()}
+                {this.renderPart3()}
+                {this.renderPart4()}
             </div>
         );
     }
