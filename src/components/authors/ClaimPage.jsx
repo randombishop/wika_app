@@ -165,7 +165,7 @@ class ClaimPage extends React.Component {
                     resultNumVotesMajority: Number(result[3]),
                     resultIntro: result[4],
                     resultMark: result[5],
-                    resultOutcome: result[6] === true
+                    resultOutcome: result[6]
                 };
                 self.setState(data);
             }).then((s) => {
