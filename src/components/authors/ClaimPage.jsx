@@ -32,21 +32,21 @@ class ClaimPage extends React.Component {
             url: "",
             requestPrice: null,
             owner: null,
-            txStatus: null,
             requestBlock: null,
             requestAccount: null,
             currentBlock: null,
+            txStatus: null,
             testResult: null
         } ;
     }
 
+
+    // INITIALIZATION
+    // --------------------------------
+
     componentDidMount = () => {
         this.getOwnersRequestPrice() ;
         this.subscribeToBlockNumber() ;
-    }
-
-    handleUrlChange = (event) => {
-        this.setState({url: event.target.value}) ;
     }
 
     getOwnersRequestPrice = () => {
@@ -57,66 +57,6 @@ class ClaimPage extends React.Component {
         }).catch((err) => {
             alert(err) ;
         }) ;
-    }
-
-    subscribeToUrlOwner = () => {
-        let self = this;
-        if (self.unsubUrlOwner) {
-            self.unsubUrlOwner() ;
-            self.unsubUrlOwner = null ;
-        }
-        let url = self.state.url;
-        self.context.wikaNetwork.getUrlOwner(url, (result) => {
-            self.setState({
-                owner: ""+result
-            }) ;
-        }).then((s) => {
-            self.unsubUrlOwner = s ;
-        }).catch((err) => {
-            alert(err) ;
-        }) ;;
-    }
-
-    subscribeToOwnerRequest = () => {
-        let self = this;
-        if (self.unsubOwnerRequest) {
-            self.unsubOwnerRequest() ;
-            self.unsubOwnerRequest = null ;
-        }
-        let url = self.state.url;
-        self.context.wikaNetwork.getOwnerRequest(url, (result) => {
-            self.setState({
-                requestBlock:Number(result[0]),
-                requestAccount: result[1]
-            }) ;
-        }).then((s) => {
-            self.unsubOwnerRequest = s ;
-        }).catch((err) => {
-            alert(err) ;
-        }) ;;
-    }
-
-    subscribeToOwnerResult = () => {
-        let self = this;
-        if (self.unsubOwnerResult) {
-            self.unsubOwnerResult() ;
-            self.unsubOwnerResult = null ;
-        }
-        let url = self.state.url;
-        self.context.wikaNetwork.getOwnerResult(url, (result) => {
-            let data = {
-                resultBlock: Number(result[0]),
-                resultNumVotes: Number(result[1]),
-                resultNumVotesYes: Number(result[2]),
-                resultNumVotesMajority: Number(result[3]),
-                resultIntro: result[4],
-                resultMark: result[5],
-                resultOutcome: result[6]===true
-            } ;
-            self.setState(data) ;
-        }).then((s) => {
-            self.unsubOwnerResult = s ;
-        });
     }
 
     subscribeToBlockNumber = () => {
@@ -136,6 +76,16 @@ class ClaimPage extends React.Component {
         }) ;
     }
 
+
+
+
+    // Lookup URL
+    // --------------------------------
+
+    handleUrlChange = (event) => {
+        this.setState({url: event.target.value}) ;
+    }
+
     lookupUrl = () => {
         this.setState({
             lookedUp: true
@@ -143,6 +93,85 @@ class ClaimPage extends React.Component {
         this.subscribeToUrlOwner() ;
         this.subscribeToOwnerRequest() ;
         this.subscribeToOwnerResult() ;
+    }
+
+    subscribeToUrlOwner = () => {
+        let self = this;
+        if (self.unsubUrlOwner) {
+            self.unsubUrlOwner() ;
+            self.unsubUrlOwner = null ;
+        }
+        let url = self.state.url;
+        this.setState({owner:null}, () => {
+            self.context.wikaNetwork.getUrlOwner(url, (result) => {
+                self.setState({
+                    owner: "" + result
+                });
+            }).then((s) => {
+                self.unsubUrlOwner = s;
+            }).catch((err) => {
+                alert(err);
+            });
+        }) ;
+    }
+
+    subscribeToOwnerRequest = () => {
+        let self = this;
+        if (self.unsubOwnerRequest) {
+            self.unsubOwnerRequest() ;
+            self.unsubOwnerRequest = null ;
+        }
+        let url = self.state.url;
+        let clearState = {
+            requestBlock: null,
+            requestAccount: null
+        } ;
+        this.setState(clearState, () => {
+            self.context.wikaNetwork.getOwnerRequest(url, (result) => {
+                self.setState({
+                    requestBlock: Number(result[0]),
+                    requestAccount: ""+result[1]
+                });
+            }).then((s) => {
+                self.unsubOwnerRequest = s;
+            }).catch((err) => {
+                alert(err);
+            });
+        }) ;
+    }
+
+    subscribeToOwnerResult = () => {
+        let self = this;
+        if (self.unsubOwnerResult) {
+            self.unsubOwnerResult() ;
+            self.unsubOwnerResult = null ;
+        }
+        let url = self.state.url;
+        let clearState = {
+            resultBlock: null,
+            resultNumVotes: null,
+            resultNumVotesYes: null,
+            resultNumVotesMajority: null,
+            resultIntro: null,
+            resultMark: null,
+            resultOutcome: null
+        } ;
+        this.setState(clearState, () => {
+            self.context.wikaNetwork.getOwnerResult(url, (result) => {
+                let data = {
+                    resultBlock: Number(result[0]),
+                    resultNumVotes: Number(result[1]),
+                    resultNumVotesYes: Number(result[2]),
+                    resultNumVotesMajority: Number(result[3]),
+                    resultIntro: result[4],
+                    resultMark: result[5],
+                    resultOutcome: result[6] === true
+                };
+                self.setState(data);
+            }).then((s) => {
+                self.unsubOwnerResult = s;
+            });
+        }) ;
     }
 
     unsubscribeUrl = () => {
@@ -166,6 +195,11 @@ class ClaimPage extends React.Component {
         }) ;
     }
 
+
+
+    // Submit and monitor the request
+    // --------------------------------
+
     submitRequest = () => {
         let self = this;
         let url = self.state.url ;
@@ -176,6 +210,7 @@ class ClaimPage extends React.Component {
                 self.context.wikaNetwork.txOwnerRequest(address, injector, url, self.monitorRequest).then((s) => {
                     self.unsubTransaction = s;
                 }).catch((err) => {
+                    self.setState({txStatus: null}) ;
                     alert(err) ;
                 }) ;
             })
@@ -196,6 +231,10 @@ class ClaimPage extends React.Component {
         }
     }
 
+
+    // Test the webpage ownership off-chain
+    // --------------------------------------
+
     testUrl = () => {
         /*let self = this;
         let url = self.context.url ;
@@ -206,9 +245,17 @@ class ClaimPage extends React.Component {
             .catch(err => console.log(err));*/
     };
 
+
+    // Utils
+    // --------------------------------------
+
     copyMark = () => {
         copyToClipboard("wika_mark_element") ;
     };
+
+
+    // Clean-up when done
+    // --------------------------------------
 
     componentWillUnmount = () => {
         if (this.unsubUrlOwner) {
@@ -232,6 +279,47 @@ class ClaimPage extends React.Component {
 
 
 
+    // FRONT-END Part 1
+    // --------------------------------------
+
+    renderPart1 = () => {
+        return (
+            <React.Fragment>
+                <label>URL</label>
+                <input type="text"
+                       value={this.state.url}
+                       onChange={this.handleUrlChange}
+                       disabled={this.state.lookedUp}
+                />
+                {this.state.lookedUp?
+                <button onClick={this.clearUrl} className="contrast">Clear</button>
+                :<button onClick={this.lookupUrl}>Lookup URL status</button>}
+            </React.Fragment>
+        ) ;
+    }
+
+
+
+
+
+
+    // FRONT-END Part 2
+    // --------------------------------------
+
+    renderPart2 = () => {
+        if (this.state.lookedUp && this.state.owner!=null) {
+            return (
+                 <React.Fragment>
+                     <hr/>
+                    <label>Current Owner</label>
+                    <input type="text" readOnly defaultValue={this.formatOwner(this.state.owner)}/>
+                 </React.Fragment>
+            ) ;
+        } else {
+            return "";
+        }
+    }
+
     formatOwner = (owner) => {
         if (owner===this.DEFAULT_ACCOUNT) {
             return "-" ;
@@ -242,40 +330,53 @@ class ClaimPage extends React.Component {
         }
     }
 
-    renderPreparation = () => {
-        return (
-            <React.Fragment>
-                <label>Preparation</label>
-                <div style={{display: 'flex'}}>
-                    <div style={{flex: '33%', paddingRight: '10px', textAlign: 'center'}}>
-                        <button style={this.styleButton}
-                                className="outline"
-                                onClick={this.copyMark}>
-                            1. Copy this
-                        </button>
-                        <input id="wika_mark_element"
-                               type="text"
-                               readOnly
-                               defaultValue={"wika.network/author/" + this.context.account.addressRaw}/>
+
+
+
+
+
+    // FRONT-END Part 3
+    // --------------------------------------
+
+    renderPart3 = () => {
+        if (this.state.lookedUp && this.state.owner!=null && this.state.owner!==this.context.account.address) {
+           return (
+                 <React.Fragment>
+                    <hr/>
+                    <label>Preparation</label>
+                    <div style={{display: 'flex'}}>
+                        <div style={{flex: '33%', paddingRight: '10px', textAlign: 'center'}}>
+                            <button style={this.styleButton}
+                                    className="outline"
+                                    onClick={this.copyMark}>
+                                1. Copy this
+                            </button>
+                            <input id="wika_mark_element"
+                                   type="text"
+                                   readOnly
+                                   defaultValue={"wika.network/author/" + this.context.account.addressRaw}/>
+                        </div>
+                        <div style={{flex: '33%', textAlign: 'center'}}>
+                            <button disabled={true}
+                                    style={this.styleButton}
+                                    className="outline">2. Insert it</button>
+                            <small>(Use an invisible img or link for example.)</small>
+                        </div>
+                        <div style={{flex: '33%', paddingLeft: '10px', textAlign: 'center'}}>
+                            <button disabled={true}
+                                    style={this.styleButton}
+                                    className="outline"
+                                    onClick={this.testUrl}>
+                                3. Test it
+                            </button>
+                            <small>{this.renderTestResult()}</small>
+                        </div>
                     </div>
-                    <div style={{flex: '33%', textAlign: 'center'}}>
-                        <button disabled={true}
-                                style={this.styleButton}
-                                className="outline">2. Insert it</button>
-                        <small>(Use an invisible img or link for example.)</small>
-                    </div>
-                    <div style={{flex: '33%', paddingLeft: '10px', textAlign: 'center'}}>
-                        <button disabled={true}
-                                style={this.styleButton}
-                                className="outline"
-                                onClick={this.testUrl}>
-                            3. Test it
-                        </button>
-                        <small>{this.renderTestResult()}</small>
-                    </div>
-                </div>
-            </React.Fragment>
-        );
+                </React.Fragment>
+            ) ;
+        } else {
+            return "";
+        }
     }
 
     renderTestResult = () => {
@@ -288,11 +389,23 @@ class ClaimPage extends React.Component {
         }
     }
 
-    renderButton = () => {
-        if (this.state.txStatus==null) {
-            return <button onClick={this.submitRequest} style={{marginBottom:'2px'}}>Submit your request</button>
+
+
+    // FRONT-END Part 4
+    // --------------------------------------
+
+    renderPart4 = () => {
+        if (this.state.lookedUp) {
+            let currentRequester = this.state.requestAccount ;
+            if (currentRequester==null || currentRequester===this.DEFAULT_ACCOUNT) {
+                return this.renderSubmitRequest() ;
+            } else if (currentRequester===this.context.account.address) {
+                return this.renderMyRequest() ;
+            } else {
+                return this.renderOtherRequest() ;
+            }
         } else {
-            return <button disabled={true} style={{marginBottom:'2px'}}><i className="fas fa-spinner"></i>&nbsp;&nbsp;{this.state.txStatus}</button>
+            return "" ;
         }
     }
 
@@ -300,7 +413,12 @@ class ClaimPage extends React.Component {
         if (this.state.owner!==this.context.address) {
             return (
                 <React.Fragment>
-                    {this.renderButton()}
+                    {
+                        this.state.txStatus==null?
+                            <button onClick={this.submitRequest} style={{marginBottom:'2px'}}>Submit your request</button>
+                        :
+                            <button disabled={true} style={{marginBottom:'2px'}}><i className="fas fa-spinner"></i>&nbsp;&nbsp;{this.state.txStatus}</button>
+                    }
                     <small>Note that the request fee is {this.state.requestPrice} W</small>
                 </React.Fragment>
             ) ;
@@ -366,59 +484,14 @@ class ClaimPage extends React.Component {
         )
     }
 
-    renderPart1 = () => {
-        return (
-            <React.Fragment>
-                <label>URL</label>
-                <input type="text"
-                       value={this.state.url}
-                       onChange={this.handleUrlChange}
-                       disabled={this.state.lookedUp}
-                />
-                {this.state.lookedUp?
-                <button onClick={this.clearUrl} className="contrast">Clear</button>
-                :<button onClick={this.lookupUrl}>Lookup URL status</button>}
-            </React.Fragment>
-        ) ;
-    }
 
-    renderPart2 = () => {
-        if (this.state.lookedUp && this.state.owner!=null) {
-            return (
-                 <React.Fragment>
-                     <hr/>
-                    <label>Current Owner</label>
-                    <input type="text" readOnly defaultValue={this.formatOwner(this.state.owner)}/>
-                 </React.Fragment>
-            ) ;
-        } else {
-            return "";
-        }
-    }
 
-    renderPart3 = () => {
-        if (this.state.lookedUp && this.state.owner!=null && this.state.owner!==this.context.account.address) {
-           return (
-                 <React.Fragment>
-                     <hr/>
-                     {this.renderPreparation()}
-                 </React.Fragment>
-            ) ;
-        } else {
-            return "";
-        }
-    }
 
-    renderPart4 = () => {
-        let currentRequester = this.state.requestAccount ;
-        if (currentRequester===this.DEFAULT_ACCOUNT) {
-            return this.renderSubmitRequest() ;
-        } else if (currentRequester===this.context.address) {
-            return this.renderMyRequest() ;
-        } else {
-            return this.renderOtherRequest() ;
-        }
-    }
+
+
+    // And finally the render function!
+    // --------------------------------------
+
 
     render() {
         return (
