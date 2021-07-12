@@ -7,6 +7,7 @@ import AppContext from '../utils/context' ;
 import Splash from "./Splash";
 import AccountConnect from "./account/AccountConnect";
 import Like from "./like/Like";
+import Keccak from "./debug/Keccak";
 
 
 class MainContent extends React.Component {
@@ -21,6 +22,8 @@ class MainContent extends React.Component {
                 return <AccountConnect />;
             case "like":
                 return <Like />;
+            case "keccak":
+                return <Keccak />;
             default:
                 return "";
         }
