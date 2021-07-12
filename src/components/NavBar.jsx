@@ -68,6 +68,22 @@ class NavBar extends React.Component {
         }
     }
 
+    renderAccountOnly() {
+        if (this.context.account) {
+            return (
+                <React.Fragment>
+                    <li><a href="/#" className={this.buttonClass('like')} onClick={() => this.navigate('like')}>Like</a></li>
+                    <li><a href="/#" className={this.buttonClass('recommend')} onClick={() => this.navigate('recommend')}>Recommended</a></li>
+                    <li><a href="/#" className={this.buttonClass('wallet')} onClick={() => this.navigate('wallet')}>Wallet</a></li>
+                    <li><a href="/#" className={this.buttonClass('menu')} onClick={this.toggleMenu}><i className="fas fa-bars"></i></a></li>
+                    {this.renderMenu()}
+                </React.Fragment>
+            ) ;
+        } else {
+            return "" ;
+        }
+    }
+
     render() {
         return (
             <nav>
@@ -80,11 +96,7 @@ class NavBar extends React.Component {
                             &nbsp;&nbsp;&nbsp;&nbsp;
                         </a>
                     </li>
-                    <li><a href="/#" className={this.buttonClass('like')} onClick={() => this.navigate('like')}>Like</a></li>
-                    <li><a href="/#" className={this.buttonClass('recommend')} onClick={() => this.navigate('recommend')}>Recommended</a></li>
-                    <li><a href="/#" className={this.buttonClass('wallet')} onClick={() => this.navigate('wallet')}>Wallet</a></li>
-                    <li><a href="/#" className={this.buttonClass('menu')} onClick={this.toggleMenu}><i className="fas fa-bars"></i></a></li>
-                    {this.renderMenu()}
+                    {this.renderAccountOnly()}
                 </ul>
                 <ul>
                     <li><NetworkButton /></li>
