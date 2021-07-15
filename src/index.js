@@ -8,7 +8,7 @@ import './css/awesome.css';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App ref={(x) => {window.wikaReactApp = x;}}/>
   </React.StrictMode>,
   document.getElementById('root')
 );
