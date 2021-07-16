@@ -58,6 +58,19 @@ class WikaNetwork {
         return this.api.query.system.number(callback) ;
     }
 
+    getUrlInfo = (address, url, callback) => {
+        Promise.all([this.api.query.likes.urls(url),this.api.query.likes.likes(address, url)])
+            .then((result) => {
+                let ans = {
+                    urlLikes: Number(result[0][0]),
+                    likesSubmittedAt: Number(result[1][0]),
+                    likesSubmittedCount:Number(result[1][1]),
+                    likesSubmittedRemaining:Number(result[1][2])
+                } ;
+                callback(ans) ;
+            }) ;
+    }
+
 
 
 
