@@ -1,4 +1,6 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
+import {web3FromSource} from '@polkadot/extension-dapp';
+import {parseError} from "./misc";
 
 
 class WikaNetwork {
@@ -83,6 +85,37 @@ class WikaNetwork {
         let tx = this.api.tx.owners.requestUrlCheck(url) ;
         return tx.signAndSend(address, {signer: injector.signer}, callback) ;
     }
+
+    txLikeExt = (source, address, url, referrer, numLikes, callback) => {
+        console.log(source, address, url, referrer, numLikes);
+        let self = this;
+        let memory = {} ;
+        let monitor = (result) => {
+            let status = result.status ;
+            if (status.isInBlock) {
+                callback({status:'In block'}) ;
+            } else if (status.isFinalized) {
+                memory.unsubTransaction();
+                let err = parseError(result) ;
+                if (err) {
+                    callback({status:'Error', err: err}) ;
+                } else {
+                    callback({status:'Done'}) ;
+                }
+            }
+        }
+        web3FromSource(source).then((injector) => {
+            callback({status:'Sending'}) ;
+            self.txLike(address, injector, url, referrer, numLikes, monitor).then((s) => {
+                memory.unsubTransaction = s;
+            }).catch((err) => {
+                self.setState({txStatus: null}) ;
+                callback({status:'Error', err: err}) ;
+            }) ;
+        });
+    }
+
+
 
 }
 
