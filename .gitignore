@@ -26,4 +26,7 @@ yarn-error.log*
 # exclude PyCharm metadata
 .idea
 
+# Exclude lock files:
+package-lock.json
+yarn.lock
 
