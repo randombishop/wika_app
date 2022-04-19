@@ -25,6 +25,10 @@ class App extends React.Component {
                 url: "wss://testnode3.wika.network:443",
                 status: 'connecting'
             },
+            api: {
+                type: "Test API",
+                url: "https://api-test.wika.network"
+            },
             account: null,
             balance: {
                 wika:null,
@@ -118,8 +122,9 @@ class App extends React.Component {
                     // Context functions
                     navigate: this.navigate,
                     selectAccount: this.selectAccount,
-                    // WikaNetwork
-                    wikaNetwork: this.wikaNetwork
+                    // Endpoints configuration
+                    wikaNetwork: this.wikaNetwork,
+                    apiEndpoint: this.state.api
                 }}>
                     <NavBar/>
                     <MainContent />

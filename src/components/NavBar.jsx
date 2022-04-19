@@ -45,9 +45,9 @@ class NavBar extends React.Component {
                     <nav>
                         <ul>
                             <li><a href="/#" onClick={() => this.navigate('account')}>Account</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('history')}>History</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('claim_page')}>Claim page ownership</a></li>
+                            <li><a href="/#" onClick={() => this.navigate('liked_pages')}>Liked pages</a></li>
                             <li><a href="/#" onClick={() => this.navigate('owned_pages')}>Owned pages</a></li>
+                            <li><a href="/#" onClick={() => this.navigate('claim_page')}>Claim page ownership</a></li>
                             <li><a href="/#" onClick={() => this.navigate('keccak')}>Keccak 256</a></li>
                             <li><a href="/#" onClick={() => this.navigate('blockchains')}>Blockchains</a></li>
                             <li><a href="/#" onClick={() => this.navigate('about')}>About</a></li>
