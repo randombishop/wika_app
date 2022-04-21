@@ -27,7 +27,7 @@ class NetworkButton extends React.Component {
     render() {
         return (
             <button className="outline secondary" style={this.buttonStyle}>
-                <span style={{fontSize:'18px'}}>
+                <span style={{color: 'lightgray', fontSize:'18px'}}>
                     <i className="fas fa-network-wired"></i>
                     &nbsp;&nbsp;
                     {this.context.network.type}
@@ -35,7 +35,7 @@ class NetworkButton extends React.Component {
                     {this.renderStatus()}
                 </span>
                 <br/>
-                <span style={{fontSize:'10px'}}>
+                <span style={{color: 'lightgray', fontSize:'10px'}}>
                     {this.context.network.url}
                 </span>
             </button>

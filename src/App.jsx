@@ -8,6 +8,7 @@ import {convertToWika, wikaToUsd} from "./utils/misc";
 
 
 import NavBar from './components/NavBar' ;
+import ButtonBar from './components/ButtonBar' ;
 import MainContent from './components/MainContent' ;
 
 
@@ -112,7 +113,7 @@ class App extends React.Component {
 
     render() {
         return (
-            <div style={{padding: '0px 40px'}}>
+            <div className="wika-app">
                 <AppContext.Provider value={{
                     // Context data
                     tab: this.state.tab,
@@ -127,6 +128,7 @@ class App extends React.Component {
                     apiEndpoint: this.state.api
                 }}>
                     <NavBar/>
+                    <ButtonBar/>
                     <MainContent />
                 </AppContext.Provider>
             </div>

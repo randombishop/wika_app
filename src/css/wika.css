@@ -1,8 +1,29 @@
-.main-content {
-    width: 800px;
+.wika-app {
+    width: 700px;
+    height: 900px;
     margin: 10px auto;
     border-radius: 25px;
     border: 2px solid darkgray;
     box-shadow: 5px 5px lightgray;
-    padding: 20px;
+    padding: 0px;
+    overflow: scroll;
 }
+
+.main-navbar {
+    background-color: black;
+    padding: 0px 20px;
+}
+
+.main-buttonbar {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 20px 20px;
+    background-color: lightgray;
+}
+
+.main-content {
+    padding: 10px 20px;
+}
+

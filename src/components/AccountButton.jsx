@@ -21,14 +21,10 @@ class AccountButton extends React.Component {
     renderDisconnected() {
         return (
             <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
-                <span style={{fontSize:'18px'}}>
+                <span style={{color: 'lightgray', fontSize:'18px'}}>
                     <i className="far fa-user-circle"></i>
                     &nbsp;&nbsp;
                     Connect account
-                </span>
-                <br/>
-                <span style={{fontSize:'10px'}}>
-                    (Requires a Polkadot wallet)
                 </span>
             </button>
         );
@@ -41,7 +37,7 @@ class AccountButton extends React.Component {
                     <div style={{marginRight:'15px'}}>
                         <Identicon size={40} value={this.context.account.address}/>
                     </div>
-                    <div style={{fontSize:'14px'}}>
+                    <div style={{color: 'lightgray', fontSize:'14px'}}>
                         <div style={{marginBottom:'5px'}}>{this.context.account.name}</div>
                         <div>{formatWika(this.context.balance.wika)}</div>
                     </div>
