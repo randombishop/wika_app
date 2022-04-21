@@ -19,19 +19,15 @@ class NavBar extends React.Component {
 
     render() {
         return (
-            <nav className="main-navbar">
-                <ul>
-                    <li>
-                        <a href="/#" onClick={() => this.context.navigate('splash')}>
-                            <img src="images/logo_alt1.png" alt="" width="40" height="40"/>
-                        </a>
-                    </li>
-                    <li><AccountButton /></li>
-                </ul>
-                <ul>
-                    <li><NetworkButton /></li>
-                </ul>
-            </nav>
+            <div className="main-navbar">
+                <div>
+                    <a href="/#" onClick={() => this.context.navigate('splash')}>
+                        <img src="images/logo_alt1.png" alt="" width="40" height="40"/>
+                    </a>
+                </div>
+                <div><NetworkButton /></div>
+                <div><AccountButton /></div>
+            </div>
         );
     }
 

@@ -128,8 +128,10 @@ class App extends React.Component {
                     apiEndpoint: this.state.api
                 }}>
                     <NavBar/>
-                    <ButtonBar/>
+
                     <MainContent />
+
+                    <ButtonBar/>
                 </AppContext.Provider>
             </div>
         );

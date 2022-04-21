@@ -28,8 +28,8 @@ class ButtonBar extends React.Component {
 
     styleMenu = {
         position: 'absolute',
-        top: '65px',
-        right: '25px',
+        bottom: '5px',
+        right: '5px',
         backgroundColor: 'aliceblue',
         padding: '10px',
         borderRadius: '10px',

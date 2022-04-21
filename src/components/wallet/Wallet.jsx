@@ -6,7 +6,7 @@ class Wallet extends React.Component {
     render() {
         return (
             <div className="main-content">
-                <h5>Wallet</h5>
+                <h2>Wallet</h2>
             </div>
         );
     }

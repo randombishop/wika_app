@@ -6,7 +6,7 @@ class Wip extends React.Component {
     render() {
         return (
             <div className="main-content">
-                <h5>WIP</h5>
+                <h2>WIP</h2>
             </div>
         );
     }

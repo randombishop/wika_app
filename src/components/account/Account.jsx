@@ -26,7 +26,7 @@ class Account extends React.Component {
     render = () => {
         return (
             <div className="main-content">
-                <h5>Account</h5>
+                <h2>Account</h2>
 
                 <div style={{textAlign:'center', marginBottom:'35px'}}>
                     <Identicon value={this.context.account.address}/>

@@ -74,7 +74,7 @@ class AccountConnectSelect extends React.Component {
             let account = this.state.accounts[i] ;
             ans.push(
                 <article key={i} style={this.styleItem}>
-                    <div style={{display:'flex'}}>
+                    <div style={{display:'flex'}} onClick={this.selectAccount(account)}>
                         <div style={this.styleBox1}>
                             <Identicon value={account.address}/>
                         </div>

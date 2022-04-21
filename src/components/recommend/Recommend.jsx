@@ -6,7 +6,7 @@ class Recommend extends React.Component {
     render() {
         return (
             <div className="main-content">
-                <h5>Recommend</h5>
+                <h2>Recommend</h2>
             </div>
         );
     }

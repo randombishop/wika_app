@@ -12,15 +12,14 @@ class AccountButton extends React.Component {
     static contextType = AppContext;
 
     buttonStyle = {
-        height: '60px',
-        paddingTop: '4px',
-        paddingBottom: '4px',
-        lineHeight: 'normal'
+        height: '45px',
+        padding: '2px 10px',
+        backgroundColor: 'rgb(80 80 80)'
     }
 
     renderDisconnected() {
         return (
-            <button className="outline secondary" style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
+            <button style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
                 <span style={{color: 'lightgray', fontSize:'18px'}}>
                     <i className="far fa-user-circle"></i>
                     &nbsp;&nbsp;

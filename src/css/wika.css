@@ -1,29 +1,45 @@
+body {
+    width: 500px;
+    height: 600px;
+}
+
 .wika-app {
-    width: 700px;
-    height: 900px;
-    margin: 10px auto;
-    border-radius: 25px;
-    border: 2px solid darkgray;
-    box-shadow: 5px 5px lightgray;
+    position: relative;
+    width: 500px;
+    height: 600px;
+    border: 1px solid darkgray;
     padding: 0px;
-    overflow: scroll;
+    overflow: hidden;
 }
 
 .main-navbar {
-    background-color: black;
-    padding: 0px 20px;
-}
-
-.main-buttonbar {
-    position: relative;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    padding: 20px 20px;
-    background-color: lightgray;
+    justify-content: space-around;
+    background-color: black;
+    padding: 5px 20px;
+    height: 45px;
 }
 
 .main-content {
+    position:absolute;
+    top: 55px;
+    left: 0;
+    right: 0px;
+    bottom: 55px;
     padding: 10px 20px;
+    overflow: scroll;
+}
+
+.main-buttonbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 10px;
+    background-color: lightgray;
 }
 

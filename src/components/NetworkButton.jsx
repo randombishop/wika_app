@@ -9,10 +9,8 @@ class NetworkButton extends React.Component {
     static contextType = AppContext;
 
     buttonStyle = {
-        height: '60px',
-        paddingTop: '4px',
-        paddingBottom: '4px',
-        lineHeight: 'normal'
+        height: '45px',
+        backgroundColor: 'rgb(80 80 80)'
     }
 
     renderStatus() {
@@ -26,17 +24,13 @@ class NetworkButton extends React.Component {
 
     render() {
         return (
-            <button className="outline secondary" style={this.buttonStyle}>
+            <button style={this.buttonStyle}>
                 <span style={{color: 'lightgray', fontSize:'18px'}}>
                     <i className="fas fa-network-wired"></i>
                     &nbsp;&nbsp;
                     {this.context.network.type}
                     &nbsp;&nbsp;
                     {this.renderStatus()}
-                </span>
-                <br/>
-                <span style={{color: 'lightgray', fontSize:'10px'}}>
-                    {this.context.network.url}
                 </span>
             </button>
         );

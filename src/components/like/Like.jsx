@@ -153,7 +153,7 @@ class Like extends React.Component {
     render = () => {
         return (
             <div className="main-content">
-                <h5>Like</h5>
+                <h2>Like</h2>
                 {this.renderPart1()}
                 <hr/>
                 {this.renderPart2()}

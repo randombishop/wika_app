@@ -34,7 +34,7 @@ class Keccak extends React.Component {
     render() {
         return (
             <div className="main-content">
-                <h5>Keccak</h5>
+                <h2>Keccak</h2>
                 <label>Text</label>
                 <textarea value={this.state.text} onChange={this.updateText}/>
                 <button onClick={this.generateHash}>Hash</button>
