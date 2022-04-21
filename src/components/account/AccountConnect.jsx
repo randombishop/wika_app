@@ -4,7 +4,7 @@ import React from "react";
 import AppContext from "../../utils/context";
 
 
-import AccountConnectEnablingWeb3 from "./AccountConnectEnablingWeb3";
+import AccountConnectModes from "./AccountConnectModes";
 import AccountConnectSelect from "./AccountConnectSelect";
 import Account from "./Account";
 
@@ -17,7 +17,7 @@ class AccountConnect extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            web3Enabled: false
+            selectedMode: null
         }
     }
 
@@ -29,10 +29,10 @@ class AccountConnect extends React.Component {
         if (this.context.account) {
             return <Account /> ;
         } else {
-            if (this.state.web3Enabled) {
-                return <AccountConnectSelect /> ;
+            if (this.state.selectedMode==null) {
+                return <AccountConnectModes /> ;
             } else {
-                return <AccountConnectEnablingWeb3 next={this.web3Enabled}/> ;
+                return "" ;
             }
         }
     }

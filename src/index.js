@@ -2,9 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import './css/wika.css';
-//import './css/pico.min.css';
-//import './css/mvp.css';
-//import './css/bamboo.min.css';
+import './css/simple.css';
 import './css/awesome.css';
 
 

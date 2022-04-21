@@ -20,9 +20,9 @@ class NavBar extends React.Component {
     render() {
         return (
             <div className="main-navbar">
-                <div>
-                    <a href="/#" onClick={() => this.context.navigate('splash')}>
-                        <img src="images/logo_alt1.png" alt="" width="40" height="40"/>
+                <div style={{marginTop:'5px'}}>
+                    <a href="/#" onClick={() => this.context.navigate('splash')} >
+                        <img src="images/logo_alt1.png" alt="" width="45" height="45"/>
                     </a>
                 </div>
                 <div><NetworkButton /></div>
