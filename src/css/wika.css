@@ -12,26 +12,11 @@ body {
     overflow: hidden;
 }
 
-.main-navbar {
-    position:absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 55px;
-    display: flex;
-    justify-content: space-around;
-    background-color: cornflowerblue;
-    padding: 0px 0px;
-}
+
 
 .main-content {
-    position:absolute;
-    top: 55px;
-    left: 0;
-    right: 0;
-    bottom: 55px;
-    padding: 10px 20px;
-    overflow: scroll;
+    position:relative;
+    padding: 20px;
 }
 
 .main-buttonbar {

@@ -1,6 +1,6 @@
 import React from 'react';
 import Identicon from "@polkadot/react-identicon";
-
+import Button from '@mui/material/Button';
 
 import AppContext from '../utils/context' ;
 import {formatWika} from "../utils/misc";
@@ -11,17 +11,15 @@ class AccountButton extends React.Component {
 
     static contextType = AppContext;
 
-    buttonStyle = {
 
-    }
 
     renderDisconnected() {
         return (
-            <button style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
+            <Button color="inherit" onClick={() => this.context.navigate('account')}>
                 <i className="far fa-user-circle"></i>
                 &nbsp;&nbsp;
                 Connect account
-            </button>
+            </Button>
         );
     }
 

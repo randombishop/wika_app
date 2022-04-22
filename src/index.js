@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import './css/wika.css';
-import './css/simple.css';
 import './css/awesome.css';
 
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from '@mui/material/Button';
 
 import AppContext from '../utils/context' ;
 
@@ -7,10 +8,6 @@ import AppContext from '../utils/context' ;
 class NetworkButton extends React.Component {
 
     static contextType = AppContext;
-
-    buttonStyle = {
-
-    }
 
     renderStatus() {
         switch (this.context.network.status) {
@@ -23,15 +20,13 @@ class NetworkButton extends React.Component {
 
     render() {
         return (
-            <button style={this.buttonStyle}>
-                <span>
-                    <i className="fas fa-network-wired"></i>
-                    &nbsp;&nbsp;
-                    {this.context.network.type}
-                    &nbsp;&nbsp;
-                    {this.renderStatus()}
-                </span>
-            </button>
+            <Button color="inherit">
+                <i className="fas fa-network-wired"></i>
+                &nbsp;&nbsp;
+                {this.context.network.type}
+                &nbsp;&nbsp;
+                {this.renderStatus()}
+            </Button>
         );
     }
 
