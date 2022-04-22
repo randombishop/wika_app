@@ -15,7 +15,8 @@ class AccountButton extends React.Component {
 
     renderDisconnected() {
         return (
-            <Button color="inherit" onClick={() => this.context.navigate('account')}>
+            <Button color="primary" variant="contained"
+                    onClick={() => this.context.navigate('account')}>
                 <i className="far fa-user-circle"></i>
                 &nbsp;&nbsp;
                 Connect account
@@ -25,17 +26,12 @@ class AccountButton extends React.Component {
 
     renderConnected() {
         return (
-            <button style={this.buttonStyle} onClick={() => this.context.navigate('account')}>
-                <div style={{display:'flex'}}>
-                    <div style={{marginRight:'15px'}}>
-                        <Identicon size={40} value={this.context.account.address}/>
-                    </div>
-                    <div style={{color: 'lightgray', fontSize:'14px'}}>
-                        <div style={{marginBottom:'5px'}}>{this.context.account.name}</div>
-                        <div>{formatWika(this.context.balance.wika)}</div>
-                    </div>
-                </div>
-            </button>
+            <Button color="primary" variant="contained"
+                    onClick={() => this.context.navigate('account')}>
+                <Identicon size={24} value={this.context.account.address}/>
+                &nbsp;&nbsp;
+                {formatWika(this.context.balance.wika)}
+            </Button>
         );
     }
 

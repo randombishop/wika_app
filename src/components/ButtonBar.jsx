@@ -1,10 +1,13 @@
 import React from 'react';
+import Paper from '@mui/material/Paper';
+import BottomNavigation from '@mui/material/BottomNavigation';
+import BottomNavigationAction from '@mui/material/BottomNavigationAction';
+import RestoreIcon from '@mui/icons-material/Restore';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 
 import AppContext from "../utils/context";
-
-
-
 
 
 class ButtonBar extends React.Component {
@@ -102,7 +105,7 @@ class ButtonBar extends React.Component {
         );
     }
 
-    render() {
+    renderxxx() {
         if (this.context.account) {
             return (
                 <div className="main-buttonbar">
@@ -117,6 +120,20 @@ class ButtonBar extends React.Component {
         } else {
             return "" ;
         }
+    }
+
+    render() {
+        return (
+            <div className="main-actions">
+              <Paper elevation={3} >
+                  <BottomNavigation showLabels>
+                    <BottomNavigationAction label="Recents" icon={<RestoreIcon />} />
+                    <BottomNavigationAction label="Favorites" icon={<FavoriteIcon />} />
+                    <BottomNavigationAction label="Nearby" icon={<LocationOnIcon />} />
+                  </BottomNavigation>
+              </Paper>
+            </div>
+      ) ;
     }
 
 }

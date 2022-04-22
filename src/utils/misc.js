@@ -119,5 +119,13 @@ function parseError(result) {
     }
 }
 
+function shortenAddress(address) {
+    if (address == null) {
+        return "";
+    } else {
+        return address.substr(0,5) + '...' + address.substr(44) ;
+    }
+}
 
-export {copyToClipboard, convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, hexToBytes, bytesToString, parseError} ;
+
+export {copyToClipboard, convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, hexToBytes, bytesToString, parseError, shortenAddress} ;

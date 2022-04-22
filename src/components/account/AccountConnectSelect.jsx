@@ -76,7 +76,7 @@ class AccountConnectSelect extends React.Component {
                 <article key={i} style={this.styleItem}>
                     <div style={{display:'flex'}} onClick={this.selectAccount(account)}>
                         <div style={this.styleBox1}>
-                            <Identicon value={account.address}/>
+                            <Identicon value={account.address}  />
                         </div>
                         <div style={this.styleBox2}>
                             <strong>{account.meta.name}</strong>

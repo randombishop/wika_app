@@ -1,12 +1,23 @@
 import React from "react";
 import {web3Enable} from '@polkadot/extension-dapp';
+import Typography from '@mui/material/Typography';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import Container from '@mui/material/Container';
+import Button from '@mui/material/Button';
 
 
 class AccountConnectModes extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {wallets: null};
+        this.state = {
+            wallets: null,
+            mode: 'web3'
+        };
     }
 
     componentDidMount = () => {
@@ -21,89 +32,96 @@ class AccountConnectModes extends React.Component {
         });
     }
 
+    handleModeChange = (event) => {
+        this.setState({mode:event.target.value}) ;
+    };
+
+    continue = () => {
+        this.props.next(this.state.mode, this.state.wallets) ;
+    }
+
     renderSwitch = () => {
-        if (this.state.wallets === null) {
+        if (!this.state.wallets) {
             return this.renderWait();
-        } else if (this.state.wallets.length === 0) {
-            return this.renderNone();
         } else {
-            return this.renderOk();
+            return (
+                <React.Fragment>
+                    {this.renderRadioChoice()}
+                    <br/><br/>
+                    {this.renderMessage()}
+                    <br/><br/>
+                    {this.renderContinueButton()}
+                </React.Fragment>
+             );
         }
     }
 
     renderWait = () => {
         return (
-            <p>
+            <Typography variant="body1">
                 <i className="fas fa-spinner"></i>
-                Waiting for wallet's authorization...
-            </p>
+                &nbsp;&nbsp;
+                Checking availability of Web3 wallets...
+            </Typography>
         );
     }
 
-    renderNone = () => {
+    renderRadioChoice = () => {
         return (
-            <React.Fragment>
-                <p>
-                    <strong>No Polkadot wallets detected.</strong>
-                    <br/>
-                    Please install one and make sure you authorize this app to use it.
-                </p>
-                <div style={{textAlign: 'right'}}>
-                    <a href="/#" role="button" className="secondary" >Install Pokadot-JS Extension</a>
-                    &nbsp;&nbsp;
-                    <a href="/#" role="button" className="primary" onClick={this.enableWeb3}>Retry</a>
-                </div>
-            </React.Fragment>
-        );
+            <FormControl>
+              <FormLabel id="account-mode-radio-label">Wallet management mode</FormLabel>
+              <RadioGroup
+                aria-labelledby="account-mode-radio-label"
+                name="radio-buttons-group"
+                value={this.state.mode}
+                onChange={this.handleModeChange}
+              >
+                <FormControlLabel value="web3" control={<Radio />} label="Web3 wallet (for example polkadot.js)" />
+                <FormControlLabel value="local" control={<Radio />} label="Local storage of this browser" />
+              </RadioGroup>
+            </FormControl>
+          );
     }
 
-    renderOk = () => {
-        return (
-            <React.Fragment>
-                <strong>Polkadot wallets detected:</strong>
-                {this.renderWalletsTable()}
-                <button onClick={this.props.next}>Continue</button>
-            </React.Fragment>
-        );
-    }
-
-    renderWalletsTable = () => {
-        return (
-           <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Version</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.renderWalletsRows()}
-              </tbody>
-            </table>
-        ) ;
-    }
-
-    renderWalletsRows = () => {
-        let ans = [] ;
-        for (let i in this.state.wallets) {
-            let wallet = this.state.wallets[i] ;
-            ans.push(
-                <tr key={i}>
-                  <td>{wallet.name}</td>
-                  <td>{wallet.version}</td>
-                </tr>
-            ) ;
+    renderMessage = () => {
+        let message = "" ;
+        if (this.state.mode==='local') {
+            message = `This will store the private keys in the local storage of the browser, protected by a password.
+                       Your password can't be retrieved if lost. Make sure to save it to safety.`
+        } else {
+            if (this.state.wallets.length === 0) {
+                message = `No Polkadot wallets detected.
+                           Please install one and make sure you authorize this app to use it.`
+            } else {
+                message = `Polkadot wallets detected and authorized with this app.
+                           Let's go!`
+            }
         }
-        return ans ;
+        return (<Typography variant="body1">{message}</Typography>) ;
+    }
+
+    renderContinueButton = () => {
+        let disabled = false ;
+        if (this.state.mode==='web3' && this.state.wallets.length === 0) {
+            disabled = true ;
+        }
+        return (
+            <Container align="right">
+                <Button variant="contained"
+                        disabled={disabled}
+                        onClick={this.continue}>
+                    Continue
+                </Button>
+            </Container>
+        ) ;
     }
 
     render = () => {
         return (
             <div className="main-content">
-                <b>Account management</b>
+                <Typography variant="h5">Connect your account</Typography>
                 <br/>
-
-
+                {this.renderSwitch()}
             </div>
         );
     }

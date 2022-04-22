@@ -6,7 +6,10 @@ class AccountConnectEnablingWeb3 extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {wallets: null};
+        this.state = {
+            wallets: null,
+            mode: 'web3'
+        };
     }
 
     componentDidMount = () => {
@@ -39,6 +42,8 @@ class AccountConnectEnablingWeb3 extends React.Component {
             </p>
         );
     }
+
+
 
     renderNone = () => {
         return (

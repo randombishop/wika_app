@@ -20,7 +20,7 @@ class NetworkButton extends React.Component {
 
     render() {
         return (
-            <Button color="inherit">
+            <Button color="primary" variant="contained">
                 <i className="fas fa-network-wired"></i>
                 &nbsp;&nbsp;
                 {this.context.network.type}

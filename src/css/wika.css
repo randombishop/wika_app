@@ -12,23 +12,16 @@ body {
     overflow: hidden;
 }
 
-
-
 .main-content {
     position:relative;
     padding: 20px;
+    height: 435px;
+    overflow: scroll;
 }
 
-.main-buttonbar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    padding-top: 10px;
-    background-color: lightgray;
+.main-actions {
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
 }
-
