@@ -2,10 +2,9 @@ import React from "react";
 
 
 import AppContext from "../../utils/context";
-
-
 import AccountConnectModes from "./AccountConnectModes";
 import AccountConnectSelectWeb3 from "./AccountConnectSelectWeb3";
+import AccountConnectSelectLocal from "./AccountConnectSelectLocal";
 import Account from "./Account";
 
 
@@ -17,7 +16,8 @@ class AccountConnect extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedMode: null
+            selectedMode: null,
+            data: null,
         }
     }
 
@@ -25,14 +25,15 @@ class AccountConnect extends React.Component {
         this.setState({selectedMode: null}) ;
     }
 
-    selectMode = (mode, wallets) => {
+    selectMode = (mode, data) => {
         this.setState({
             selectedMode: mode,
-            wallets: wallets
+            data: data
         }) ;
     }
 
-    selectWeb3Account = (account) => {
+    selectAccount = (account) => {
+        //alert(JSON.stringify(account)) ;
         this.context.selectAccount(account) ;
     }
 
@@ -44,12 +45,15 @@ class AccountConnect extends React.Component {
                 return <AccountConnectModes next={this.selectMode} /> ;
             } else {
                 if (this.state.selectedMode==='web3') {
-                    return <AccountConnectSelectWeb3 providers={this.state.wallets}
+                    return <AccountConnectSelectWeb3 providers={this.state.data}
                                 back={this.cancelMode}
-                                next={this.selectWeb3Account}
+                                next={this.selectAccount}
                            /> ;
                 } else {
-                    return "" ;
+                    return <AccountConnectSelectLocal accounts={this.state.data}
+                                back={this.cancelMode}
+                                next={this.selectAccount}
+                           /> ;
                 }
             }
         }

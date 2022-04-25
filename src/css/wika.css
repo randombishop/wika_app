@@ -1,6 +1,8 @@
 body {
     width: 500px;
     height: 600px;
+    padding: 0;
+    margin: 0;
 }
 
 .wika-app {
@@ -15,7 +17,8 @@ body {
 .main-content {
     position:relative;
     padding: 20px;
-    height: 435px;
+    height: 450px;
+    background-color: #eee;
     overflow: scroll;
 }
 

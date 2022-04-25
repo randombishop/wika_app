@@ -10,25 +10,39 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 
 
+import AppContext from "../../utils/context";
+
+
 class AccountConnectModes extends React.Component {
+
+    static contextType = AppContext;
 
     constructor(props) {
         super(props);
         this.state = {
-            wallets: null,
-            mode: 'web3'
+            mode: 'web3',
+            web3Wallets: null,
+            localAccounts: null
         };
     }
 
     componentDidMount = () => {
         this.enableWeb3();
+        this.fetchLocalAccounts() ;
     }
 
     enableWeb3 = () => {
-        this.setState({wallets: null}, () => {
+        this.setState({web3Wallets: null}, () => {
             web3Enable("Wika Network").then((result) => {
-                this.setState({wallets: result});
+                this.setState({web3Wallets: result});
             });
+        });
+    }
+
+    fetchLocalAccounts = () => {
+        this.context.storage.get('accounts').then((result) => {
+            console.log('result', result) ;
+            this.setState({localAccounts: result});
         });
     }
 
@@ -37,11 +51,17 @@ class AccountConnectModes extends React.Component {
     };
 
     continue = () => {
-        this.props.next(this.state.mode, this.state.wallets) ;
+        if (this.state.mode==='web3') {
+            this.props.next(this.state.mode, this.state.web3Wallets) ;
+        } else {
+            this.props.next(this.state.mode, this.state.localAccounts) ;
+        }
     }
 
+
+
     renderSwitch = () => {
-        if (!this.state.wallets) {
+        if (!this.state.web3Wallets) {
             return this.renderWait();
         } else {
             return (
@@ -89,7 +109,7 @@ class AccountConnectModes extends React.Component {
             message = `This will store the private keys in the local storage of the browser, protected by a password.
                        Your password can't be retrieved if lost. Make sure to save it to safety.`
         } else {
-            if (this.state.wallets.length === 0) {
+            if (this.state.web3Wallets.length === 0) {
                 message = `No Polkadot wallets detected.
                            Please install one and make sure you authorize this app to use it.`
             } else {
@@ -102,7 +122,7 @@ class AccountConnectModes extends React.Component {
 
     renderContinueButton = () => {
         let disabled = false ;
-        if (this.state.mode==='web3' && this.state.wallets.length === 0) {
+        if (this.state.mode==='web3' && this.state.web3Wallets.length === 0) {
             disabled = true ;
         }
         return (

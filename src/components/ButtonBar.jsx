@@ -2,9 +2,10 @@ import React from 'react';
 import Paper from '@mui/material/Paper';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
-import RestoreIcon from '@mui/icons-material/Restore';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import MenuList from '@mui/material/MenuList';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 
 
 import AppContext from "../utils/context";
@@ -14,34 +15,27 @@ class ButtonBar extends React.Component {
 
     static contextType = AppContext;
 
-    styleBox = {
-        textAlign: 'center',
-        width: '80px'
-    }
-
-    styleButton = {
-        borderRadius: '50px',
-        padding: '5px 10px'
-    }
-
-    styleButtonText = {
-        fontSize: '12px',
-        color: '#1095c1'
-    }
-
     styleMenu = {
         position: 'absolute',
         bottom: '5px',
-        right: '5px',
-        backgroundColor: 'aliceblue',
-        padding: '10px',
-        borderRadius: '10px',
-        opacity: '90%'
+        right: '5px'
     }
 
     constructor(props) {
         super(props);
-        this.state = {menuOpened: false};
+        this.state = {
+            menuOpened: false,
+            activeButton: null
+        };
+    }
+
+    buttonClicked = (event, newValue) => {
+        this.setState({activeButton: newValue}) ;
+        if (newValue==='toggleMenu') {
+            this.toggleMenu() ;
+        } else {
+            this.navigate(newValue) ;
+        }
     }
 
     toggleMenu = () => {
@@ -54,84 +48,64 @@ class ButtonBar extends React.Component {
         this.context.navigate(tab);
     }
 
+
+
+
+    renderMenuItem = (icon, text, target) => {
+        return (
+            <MenuItem onClick={() => this.navigate(target)}>
+              <ListItemIcon>
+                <i className={'far '+icon}></i>
+              </ListItemIcon>
+              <ListItemText>
+                {text}
+              </ListItemText>
+            </MenuItem>
+        ) ;
+    }
+
     renderMenu = () => {
         if (this.state.menuOpened) {
             return (
-                <aside style={this.styleMenu}>
-                    <nav>
-                        <ul>
-                            <li><a href="/#" onClick={() => this.navigate('account')}>Account</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('liked_pages')}>Liked pages</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('owned_pages')}>Owned pages</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('claim_page')}>Claim page ownership</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('keccak')}>Keccak 256</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('blockchains')}>Blockchains</a></li>
-                            <li><a href="/#" onClick={() => this.navigate('about')}>About</a></li>
-                        </ul>
-                    </nav>
-                </aside>
+                <Paper style={this.styleMenu}>
+                    <MenuList>
+                        {this.renderMenuItem('fa-user', 'Account', 'account')}
+                        {this.renderMenuItem('fa-heart', 'Liked pages', 'liked_pages')}
+                        {this.renderMenuItem('fa-bookmark', 'Owned pages', 'owned_pages')}
+                        {this.renderMenuItem('fa-registered', 'Claim page ownership', 'claim_page')}
+                        {this.renderMenuItem('fa-file-code', 'Keccak 256', 'keccak')}
+                        {this.renderMenuItem('fa-handshake', 'Blockchains', 'blockchains')}
+                        {this.renderMenuItem('fa-save', 'Settings', 'settings')}
+                        {this.renderMenuItem('fa-gem', 'About', 'about')}
+                    </MenuList>
+                </Paper>
             );
         } else {
             return "" ;
         }
     }
 
-    buttonClass = (tab) => {
-        if (this.context.tab === tab) {
-            return "contrast" ;
-        } else {
-            return "primary" ;
-        }
-    }
-
-    renderButton = (text, icon, navigateTo) => {
-        let action = () => {this.context.navigate(navigateTo)} ;
-        if (navigateTo==='toggleMenu') {
-            action = this.toggleMenu ;
-        }
-        return (
-            <div style={this.styleBox}>
-                <a href="/#" role="button"
-                   style={this.styleButton}
-                   className={this.buttonClass(navigateTo)}
-                   onClick={action}>
-                        <i className={'far '+icon}></i>
-                </a>
-                <br/>
-                <span style={this.styleButtonText}>
-                    {text}
-                </span>
-            </div>
-        );
-    }
-
-    renderxxx() {
-        if (this.context.account) {
-            return (
-                <div className="main-buttonbar">
-                    {this.renderButton('Like', 'fa-thumbs-up', 'like')}
-                    {this.renderButton('Buy', 'fa-credit-card', 'buy')}
-                    {this.renderButton('Send', 'fa-paper-plane', 'wallet')}
-                    {this.renderButton('Claim', 'fa-registered', 'claim_page')}
-                    {this.renderButton('More', 'fa-caret-square-down', 'toggleMenu')}
-                    {this.renderMenu()}
-                </div>
-            ) ;
-        } else {
-            return "" ;
-        }
+    renderIcon = (icon) => {
+        return (<i style={{marginBottom:'5px'}} className={'far '+icon}></i>);
     }
 
     render() {
+        if (!this.context.account) {
+            return "" ;
+        }
         return (
             <div className="main-actions">
               <Paper elevation={3} >
-                  <BottomNavigation showLabels>
-                    <BottomNavigationAction label="Recents" icon={<RestoreIcon />} />
-                    <BottomNavigationAction label="Favorites" icon={<FavoriteIcon />} />
-                    <BottomNavigationAction label="Nearby" icon={<LocationOnIcon />} />
+                  <BottomNavigation showLabels={true}
+                                    value={this.state.activeButton}
+                                    onChange={this.buttonClicked}>
+                    <BottomNavigationAction label="Like" value="like" icon={this.renderIcon('fa-thumbs-up')} />
+                    <BottomNavigationAction label="Buy"  value="buy" icon={this.renderIcon('fa-credit-card')} />
+                    <BottomNavigationAction label="Send" value="wallet" icon={this.renderIcon('fa-paper-plane')} />
+                    <BottomNavigationAction label="More" value="toggleMenu" icon={this.renderIcon('fa-plus-square')} />
                   </BottomNavigation>
               </Paper>
+              {this.renderMenu()}
             </div>
       ) ;
     }

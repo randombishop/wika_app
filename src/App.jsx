@@ -5,11 +5,10 @@ import {cryptoWaitReady} from '@polkadot/util-crypto';
 import WikaNetwork from './utils/network' ;
 import AppContext from './utils/context' ;
 import {convertToWika, wikaToUsd} from "./utils/misc";
-
-
 import NavBar from './components/NavBar' ;
 import ButtonBar from './components/ButtonBar' ;
 import MainContent from './components/MainContent' ;
+import getStorageInterface from './storage/StorageFactory' ;
 
 
 class App extends React.Component {
@@ -34,7 +33,8 @@ class App extends React.Component {
             balance: {
                 wika:null,
                 usd:null
-            }
+            },
+            storage: null
         };
     }
 
@@ -63,9 +63,14 @@ class App extends React.Component {
             network.connect(() => {
                 self.wikaNetwork = network ;
                 networkState.status = 'connected' ;
-                self.setState({network:networkState}, this.subscribeToBalance) ;
+                self.setState({network:networkState}, this.initLocalStorage) ;
             }) ;
         }) ;
+    }
+
+    initLocalStorage = () => {
+        let storage = getStorageInterface() ;
+        this.setState({storage: storage}, this.subscribeToBalance) ;
     }
 
     subscribeToBalance = () => {
@@ -125,7 +130,9 @@ class App extends React.Component {
                     selectAccount: this.selectAccount,
                     // Endpoints configuration
                     wikaNetwork: this.wikaNetwork,
-                    apiEndpoint: this.state.api
+                    apiEndpoint: this.state.api,
+                    // Local storage
+                    storage: this.state.storage
                 }}>
                     <NavBar/>
 

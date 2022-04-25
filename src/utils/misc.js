@@ -1,12 +1,26 @@
+import AES from 'crypto-js/aes';
+import Utf8 from 'crypto-js/enc-utf8';
+import { Keyring } from '@polkadot/api';
+import { mnemonicGenerate } from '@polkadot/util-crypto';
+
+
 const BALANCE_UNIT = 1000000000000;
 const WIKA_TO_USD = 0.02 ;
 
+
+
+
+// Copy to clipboard
 
 function copyToClipboard(inputId) {
     var copyText = document.getElementById(inputId);
     copyText.select();
     document.execCommand("copy");
 }
+
+
+
+// Convert & format
 
 function convertToWika(value) {
     return value / BALANCE_UNIT;
@@ -44,6 +58,14 @@ function shortenText(text) {
         return text.substr(0, maxLength) + '...';
     } else {
         return text;
+    }
+}
+
+function shortenAddress(address) {
+    if (address == null) {
+        return "";
+    } else {
+        return address.substr(0,5) + '...' + address.substr(44) ;
     }
 }
 
@@ -103,6 +125,19 @@ function bytesToString(array) {
     return out;
 }
 
+function bytesToHex(byteArray) {
+  var s = '0x';
+  byteArray.forEach(function (byte) {
+      s += ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  });
+  return s;
+}
+
+
+
+
+// Parse error returned from polkadot API
+
 function parseError(result) {
     console.log(JSON.stringify(result));
     if (result.dispatchError) {
@@ -119,13 +154,50 @@ function parseError(result) {
     }
 }
 
-function shortenAddress(address) {
-    if (address == null) {
-        return "";
-    } else {
-        return address.substr(0,5) + '...' + address.substr(44) ;
-    }
+
+
+
+// AES encryption
+
+function encryptWithAES(text, passphrase)  {
+  return AES.encrypt(text, passphrase).toString();
+};
+
+function decryptWithAES(ciphertext, passphrase) {
+  const bytes = AES.decrypt(ciphertext, passphrase);
+  const originalText = bytes.toString(Utf8);
+  return originalText;
+};
+
+
+
+
+// New local accounts
+
+function importAccount(phrase) {
+  let keyring = new Keyring({ type: 'sr25519' });
+  let newPair = keyring.addFromUri(phrase) ;
+  let account = {
+      address: newPair.address,
+      addressRaw: bytesToHex(newPair.addressRaw),
+      phrase: phrase,
+      accountName: '<Account Name>'
+  } ;
+  return account ;
+}
+
+function generateAccount() {
+  let phrase = mnemonicGenerate(12);
+  return importAccount(phrase) ;
 }
 
 
-export {copyToClipboard, convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, hexToBytes, bytesToString, parseError, shortenAddress} ;
+
+
+export {
+    copyToClipboard,
+    convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, shortenAddress,hexToBytes, bytesToString, bytesToHex,
+    parseError,
+    encryptWithAES, decryptWithAES,
+    importAccount, generateAccount
+} ;

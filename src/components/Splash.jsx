@@ -17,13 +17,12 @@ class Splash extends React.Component {
 
     renderColumn = (title, image, text) => {
         return (
-             <Card sx={{ maxWidth: 345 }}>
+             <Card>
               <CardMedia
                 component="img"
-                width="100%"
-                height="auto"
                 image={image}
                 alt=""
+                sx={{width:'80%', marginLeft:'10%', marginTop:'10px'}}
               />
               <CardContent>
                 <Typography gutterBottom variant="h6" component="div">
