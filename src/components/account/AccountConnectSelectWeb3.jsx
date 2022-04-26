@@ -4,7 +4,6 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import {web3Accounts} from '@polkadot/extension-dapp';
@@ -118,9 +117,7 @@ class AccountConnectSelectWeb3 extends React.Component {
 
     render = () => {
         return (
-           <div className="main-content">
-                <Typography variant="h5">Select your account</Typography>
-                <br/><br/>
+           <div>
                 {this.renderSelectProvider()}
                 {this.renderAccountList()}
                 <br/><br/>

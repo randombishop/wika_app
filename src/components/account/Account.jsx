@@ -1,5 +1,4 @@
 import React from "react";
-import Typography from '@mui/material/Typography';
 import Identicon from '@polkadot/react-identicon';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -79,9 +78,7 @@ class Account extends React.Component {
 
     render = () => {
         return (
-            <div className="main-content">
-                <Typography variant="h5">Current Account</Typography>
-                <br/>
+            <div>
                 {this.renderAccountBox()}
                 <br/><br/>
                 {this.renderAddressBox("account_address_substrate_element",

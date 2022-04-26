@@ -38,9 +38,7 @@ class Splash extends React.Component {
 
     render = () => {
         return (
-            <div className="main-content">
-                <Typography variant="h5">Welcome to the Wika Network!</Typography>
-                <br/>
+            <div>
                 <Grid container spacing={2}>
                   <Grid item xs={4}>
                     {this.renderColumn(

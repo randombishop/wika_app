@@ -1,5 +1,4 @@
 import React from "react";
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 
@@ -69,9 +68,7 @@ class AccountConnectSelectLocal extends React.Component {
 
     render = () => {
         return (
-           <div className="main-content">
-                <Typography variant="h5">Select your account</Typography>
-                <br/><br/>
+           <div>
                 {this.renderAccountList()}
                 <br/><br/>
                 {this.renderActions()}

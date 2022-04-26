@@ -29,8 +29,7 @@ class LikedPages extends React.Component {
 
     render() {
         return (
-            <div className="main-content">
-                <h5>Liked pages</h5>
+            <div>
                 {JSON.stringify(this.context.apiEndpoint)}
                 <br/>
                 {JSON.stringify(this.state.urls)}

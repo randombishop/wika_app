@@ -28,10 +28,10 @@ class NavBar extends React.Component {
                             <img src="images/logo_alt1_black.png" alt="" width="24" height="24" />
                         </Fab>
                     </Grid>
-                    <Grid item xs={6} align="center">
+                    <Grid item xs={5} align="center">
                         <NetworkButton />
                     </Grid>
-                    <Grid item xs={3} align="right">
+                    <Grid item xs={4} align="right">
                         <AccountButton />
                     </Grid>
                 </Grid>

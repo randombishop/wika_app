@@ -138,9 +138,7 @@ class AccountConnectModes extends React.Component {
 
     render = () => {
         return (
-            <div className="main-content">
-                <Typography variant="h5">Connect your account</Typography>
-                <br/>
+            <div>
                 {this.renderSwitch()}
             </div>
         );

@@ -29,8 +29,7 @@ class OwnedPages extends React.Component {
 
     render() {
         return (
-            <div className="main-content">
-                <h2>Owned pages</h2>
+            <div>
                 {JSON.stringify(this.context.apiEndpoint)}
                 <br/>
                 {JSON.stringify(this.state.urls)}

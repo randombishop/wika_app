@@ -28,7 +28,7 @@ function convertToWika(value) {
 
 function formatWika(value) {
     if (value != null) {
-        return value.toFixed(4) + ' W';
+        return value.toFixed(2) + ' W';
     } else {
         return '-';
     }

@@ -495,8 +495,7 @@ class ClaimPage extends React.Component {
 
     render() {
         return (
-            <div className="main-content">
-                <h2>Claim Page Ownership</h2>
+            <div>
                 {this.renderPart1()}
                 {this.renderPart2()}
                 {this.renderPart3()}
