@@ -1,6 +1,5 @@
 import React from "react";
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 import Identicon from '@polkadot/react-identicon';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -46,25 +45,23 @@ class Account extends React.Component {
 
     renderAddressBox = (id, label, value) => {
         return (
-            <Box>
-                <TextField
-                    id={id}
-                    label={label}
-                    variant="outlined"
-                    fullWidth={true}
-                    readOnly={true}
-                    value={value}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                            <a href="/#" onClick={this.copyElement(id)}>
-                                <i className="far fa-copy"></i>
-                            </a>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-            </Box>
+            <TextField
+                id={id}
+                label={label}
+                variant="outlined"
+                fullWidth={true}
+                readOnly={true}
+                value={value}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                        <a href="/#" onClick={this.copyElement(id)}>
+                            <i className="far fa-copy"></i>
+                        </a>
+                    </InputAdornment>
+                  ),
+                }}
+              />
         ) ;
     }
 

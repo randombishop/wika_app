@@ -1,13 +1,15 @@
 import React from 'react';
+import Typography from '@mui/material/Typography';
+import InputAdornment from '@mui/material/InputAdornment';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 
 
 import AppContext from "../../utils/context";
 import {convertToWika} from "../../utils/misc";
-
-
 import Like1 from "./Like1";
 import Like2 from "./Like2";
-
 
 
 class Like extends React.Component {
@@ -115,20 +117,50 @@ class Like extends React.Component {
         }
     }
 
-    renderPart1 = () => {
+
+
+
+
+    renderInputAdornment = () => {
         return (
-            <React.Fragment>
-                <label>URL</label>
-                <input type="text"
-                       value={this.state.url}
-                       onChange={this.handleUrlChange}
-                       disabled={this.state.lookedUp}
-                />
+            <InputAdornment position="end">
                 {this.state.lookedUp?
-                <button onClick={this.clearUrl} className="contrast">Clear</button>
-                :<button onClick={this.lookupUrl}>Lookup URL status</button>}
-            </React.Fragment>
+                <Button onClick={this.clearUrl} variant="contained" color="secondary"><i className="fas fa-backspace"></i></Button>
+                :<Button onClick={this.lookupUrl} variant="contained" color="primary"><i className="fas fa-search"></i></Button>}
+            </InputAdornment>
         ) ;
+    }
+
+    renderUrlInput = () => {
+        let inputProps = {endAdornment: this.renderInputAdornment()} ;
+        return (<TextField
+                    id="lookup-url-input"
+                    label="Lookup URL status"
+                    variant="outlined"
+                    fullWidth={true}
+                    value={this.state.url}
+                    onChange={this.handleUrlChange}
+                    disabled={this.state.lookedUp}
+                    InputProps={inputProps} />) ;
+    }
+
+    renderUrlNumLikes = () => {
+        if (this.state.lookedUp && this.state.urlLikes!=null) {
+            return (
+                <Typography variant="body2" sx={{marginTop:"5px"}} >
+                    This page received <strong>{this.state.urlLikes} likes</strong>.
+                </Typography>) ;
+        } else {
+            return "" ;
+        }
+    }
+
+    renderDivider = () => {
+        if (this.state.lookedUp) {
+            return (<Divider />) ;
+        } else {
+            return "" ;
+        }
     }
 
     renderPart2 = () => {
@@ -153,9 +185,12 @@ class Like extends React.Component {
     render = () => {
         return (
             <div className="main-content">
-                <h2>Like</h2>
-                {this.renderPart1()}
-                <hr/>
+                <Typography variant="h5">Webpage</Typography>
+                <br/>
+                {this.renderUrlInput()}
+                {this.renderUrlNumLikes()}
+                <br/>
+                <br/>
                 {this.renderPart2()}
             </div>
         ) ;

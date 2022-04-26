@@ -1,9 +1,17 @@
 import React from 'react';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import Container from '@mui/material/Container';
+import Slider from '@mui/material/Slider';
+import Stack from '@mui/material/Stack';
+import CardActions from '@mui/material/CardActions';
+import Button from '@mui/material/Button';
 import {web3FromSource} from '@polkadot/extension-dapp';
 
 
 import AppContext from "../../utils/context";
-import {formatWika, parseError} from "../../utils/misc";
+import {parseError} from "../../utils/misc";
 
 
 class Like1 extends React.Component {
@@ -57,15 +65,15 @@ class Like1 extends React.Component {
     renderButton = () => {
         if (this.state.txStatus==null) {
             return (
-                <button onClick={this.submitLike}>
-                    Send {this.state.numLikes} <i className="fas fa-thumbs-up"></i>
-                </button>
+                <Button variant="contained" onClick={this.submitLike}>
+                    Send {this.state.numLikes} &nbsp;<i className="fas fa-thumbs-up"></i>
+                </Button>
             );
         } else {
             return (
-                <button disabled>
+                <Button disabled>
                     <i className="fas fa-spinner"></i> {this.state.txStatus}
-                </button>
+                </Button>
             ) ;
         }
     }
@@ -74,38 +82,21 @@ class Like1 extends React.Component {
         return (
             <React.Fragment>
 
-                <p>
-                    This page received <strong>{this.props.urlLikes} likes</strong>.
-                </p>
-
-                <hr/>
-
-                <h5>Send likes to this page:</h5>
-
-                <strong>Which URL referred you to the page?</strong>
-                <input type="text" />
-
-                <strong>How much do you like it?</strong>
-                <div style={{display:'flex'}}>
-                    <div style={{marginTop:'15px'}}>
-                        <input style={{width:'250px'}}
-                               type="range" min="1" max="100"
-                               value={this.state.numLikes}
-                               onChange={this.handleNumLikeChange} />
-                    </div>
-                    <div style={{marginTop:'10px', marginLeft:'15px'}}>
-                        <strong>{this.state.numLikes} <i className="fas fa-thumbs-up"></i></strong>
-                    </div>
-                </div>
-
-                <strong>Cost of this transaction</strong>
-                <input style={{textAlign:"right"}}
-                       type="text"
-                       readOnly
-                       value={formatWika(this.props.likePrice*this.state.numLikes)}
-                />
-
-                {this.renderButton()}
+               <Container align="center">
+                   <Card sx={{width: '75%'}}>
+                        <CardHeader title="Like transaction"
+                                    subheader={this.props.url}
+                        />
+                        <CardContent>
+                            <Stack direction="row" sx={{width:'75%'}}>
+                                <Slider aria-label="Number of likes" value={this.state.numLikes} onChange={this.handleNumLikeChange} />
+                            </Stack>
+                        </CardContent>
+                        <CardActions>
+                            <Container>{this.renderButton()}</Container>
+                        </CardActions>
+                   </Card>
+               </Container>
 
             </React.Fragment>
         );
