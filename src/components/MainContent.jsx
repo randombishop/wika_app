@@ -56,7 +56,7 @@ class MainContent extends React.Component {
         return (
             <React.Fragment>
                 <div className="main-title">
-                    <Typography variant="h5">{this.renderTitle()}</Typography>
+                    <Typography variant="h5" color="primary">{this.renderTitle()}</Typography>
                 </div>
                 <div className="main-content">
                     {this.renderPage()}

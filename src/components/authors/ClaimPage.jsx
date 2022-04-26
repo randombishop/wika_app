@@ -1,9 +1,16 @@
 import React from "react";
-import {web3FromSource} from "@polkadot/extension-dapp";
+import InputAdornment from '@mui/material/InputAdornment';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import LinearProgress from '@mui/material/LinearProgress';
 
 
 import AppContext from "../../utils/context";
-import {bytesToString, convertToWika, copyToClipboard, parseError} from "../../utils/misc";
+import {bytesToString, convertToWika, copyToClipboard} from "../../utils/misc";
 
 
 class ClaimPage extends React.Component {
@@ -203,31 +210,24 @@ class ClaimPage extends React.Component {
     submitRequest = () => {
         let self = this;
         let url = self.state.url ;
-        let source = self.context.account.source ;
-        let address = self.context.account.address ;
-        web3FromSource(source).then((injector) => {
-            self.setState({txStatus: 'Sending...'}, () => {
-                self.context.wikaNetwork.txOwnerRequest(address, injector, url, self.monitorRequest).then((s) => {
-                    self.unsubTransaction = s;
-                }).catch((err) => {
-                    self.setState({txStatus: null}) ;
-                    alert(err) ;
-                }) ;
-            })
-        });
+        let account = self.context.account ;
+        this.context.wikaNetwork.txOwnerRequest(account, url, this.monitorRequest) ;
     }
 
     monitorRequest = (result) => {
+        console.log('monitorRequest', result)
         let status = result.status ;
-        if (status.isInBlock) {
+        if (status === 'Sending') {
+            this.setState({txStatus: 'Sending transaction...'}) ;
+        } else if (status === 'In block') {
             this.setState({txStatus: 'In block...'}) ;
-        } else if (status.isFinalized) {
+        } else if (status === 'Done') {
             this.setState({txStatus: null}) ;
-            this.unsubTransaction();
-            let err = parseError(result) ;
-            if (err) {
-                alert(err) ;
-            }
+        } else if (status === 'Error') {
+            this.setState({txStatus: null}) ;
+            alert("Transaction failed: "+result.err) ;
+        } else {
+            console.log('Warning, unrecognized monitorRequest status', result) ;
         }
     }
 
@@ -282,20 +282,27 @@ class ClaimPage extends React.Component {
     // FRONT-END Part 1
     // --------------------------------------
 
-    renderPart1 = () => {
+    renderInputAdornment = () => {
         return (
-            <React.Fragment>
-                <label>URL</label>
-                <input type="text"
-                       value={this.state.url}
-                       onChange={this.handleUrlChange}
-                       disabled={this.state.lookedUp}
-                />
+            <InputAdornment position="end">
                 {this.state.lookedUp?
-                <button onClick={this.clearUrl} className="contrast">Clear</button>
-                :<button onClick={this.lookupUrl}>Lookup URL status</button>}
-            </React.Fragment>
+                <Button onClick={this.clearUrl} variant="contained" color="secondary"><i className="fas fa-backspace"></i></Button>
+                :<Button onClick={this.lookupUrl} variant="contained" color="primary"><i className="fas fa-search"></i></Button>}
+            </InputAdornment>
         ) ;
+    }
+
+    renderPart1 = () => {
+        let inputProps = {endAdornment: this.renderInputAdornment()} ;
+        return (<TextField
+                    id="lookup-url-input"
+                    label="Lookup URL status"
+                    variant="outlined"
+                    fullWidth={true}
+                    value={this.state.url}
+                    onChange={this.handleUrlChange}
+                    disabled={this.state.lookedUp}
+                    InputProps={inputProps} />) ;
     }
 
 
@@ -309,12 +316,12 @@ class ClaimPage extends React.Component {
     renderPart2 = () => {
         if (this.state.lookedUp && this.state.owner!=null) {
             return (
-                 <React.Fragment>
-                     <hr/>
-                    <label>Current Owner</label>
-                    <input type="text" readOnly defaultValue={this.formatOwner(this.state.owner)}/>
-                 </React.Fragment>
-            ) ;
+                 <TextField
+                    label="Current owner"
+                    variant="outlined"
+                    fullWidth={true}
+                    defaultValue={this.formatOwner(this.state.owner)}
+                    disabled={true} />) ;
         } else {
             return "";
         }
@@ -342,36 +349,41 @@ class ClaimPage extends React.Component {
         if (this.state.lookedUp && this.state.owner!=null && this.state.owner!==this.context.account.address) {
            return (
                  <React.Fragment>
-                    <hr/>
-                    <label>Preparation</label>
-                    <div style={{display: 'flex'}}>
-                        <div style={{flex: '33%', paddingRight: '10px', textAlign: 'center'}}>
-                            <button style={this.styleButton}
-                                    className="outline"
-                                    onClick={this.copyMark}>
-                                1. Copy this
-                            </button>
-                            <input id="wika_mark_element"
-                                   type="text"
-                                   readOnly
-                                   defaultValue={"wika.network/author/" + this.context.account.addressRaw}/>
-                        </div>
-                        <div style={{flex: '33%', textAlign: 'center'}}>
-                            <button disabled={true}
-                                    style={this.styleButton}
-                                    className="outline">2. Insert it</button>
-                            <small>(Use an invisible img or link for example.)</small>
-                        </div>
-                        <div style={{flex: '33%', paddingLeft: '10px', textAlign: 'center'}}>
-                            <button disabled={true}
-                                    style={this.styleButton}
-                                    className="outline"
-                                    onClick={this.testUrl}>
-                                3. Test it
-                            </button>
-                            <small>{this.renderTestResult()}</small>
-                        </div>
-                    </div>
+                    <Divider />
+                    <br/>
+                    <Typography variant="subtitle1" >
+                        Preparation
+                    </Typography>
+
+                    <Typography variant="subtitle2" >
+                        1. Copy this mark
+                    </Typography>
+                    <br/>
+                    <TextField
+                        label="Ownership mark"
+                        variant="outlined"
+                        fullWidth={true}
+                        defaultValue={"wika.network/author/" + this.context.account.addressRaw}
+                        disabled={true}
+                        InputProps={{endAdornment:<InputAdornment position="end">
+                                                    <Button onClick={this.copyMark}
+                                                            variant="contained"
+                                                            color="primary">Copy this</Button>
+                                                   </InputAdornment>}}/>
+                    <br/><br/>
+
+                    <Typography variant="subtitle2" >
+                        2. Insert it in your webpage as proof of ownership <br/>
+                        <small>(Use an invisible img or link for example.)</small>
+                    </Typography>
+
+                    <br/>
+
+                    <Typography variant="subtitle2" >
+                        3. Submit your request <br/>
+                        <small>Note that the request fee is {this.state.requestPrice} W</small>
+                    </Typography>
+
                 </React.Fragment>
             ) ;
         } else {
@@ -412,15 +424,13 @@ class ClaimPage extends React.Component {
     renderSubmitRequest = () => {
         if (this.state.owner!==this.context.address) {
             return (
-                <React.Fragment>
-                    {
-                        this.state.txStatus==null?
-                            <button onClick={this.submitRequest} style={{marginBottom:'2px'}}>Submit your request</button>
-                        :
-                            <button disabled={true} style={{marginBottom:'2px'}}><i className="fas fa-spinner"></i>&nbsp;&nbsp;{this.state.txStatus}</button>
+                <Container align="center">
+                    {this.state.txStatus==null?
+                     <Button color="primary" variant="contained"
+                             onClick={this.submitRequest}>Submit your request</Button>:
+                     <CircularProgress />
                     }
-                    <small>Note that the request fee is {this.state.requestPrice} W</small>
-                </React.Fragment>
+                </Container>
             ) ;
         } else {
             return "" ;
@@ -429,12 +439,15 @@ class ClaimPage extends React.Component {
 
     renderMyRequestProgress = () => {
         let blocks_done = this.state.currentBlock - this.state.requestBlock ;
+        let progress = 100 * blocks_done / this.NUM_BLOCKS_TO_WAIT ;
         return (
             <React.Fragment>
-                <hr/>
+                <Divider />
                 <br/>
-                <label>Waiting for verification results ({blocks_done}/{this.NUM_BLOCKS_TO_WAIT})...</label>
-                <progress value={blocks_done} max={this.NUM_BLOCKS_TO_WAIT}></progress>
+                <Typography variant="subtitle2" >
+                    Waiting for verification results ({blocks_done}/{this.NUM_BLOCKS_TO_WAIT})...
+                </Typography>
+                <LinearProgress variant="determinate" value={progress} />
             </React.Fragment>
         )
     }
@@ -497,8 +510,11 @@ class ClaimPage extends React.Component {
         return (
             <div>
                 {this.renderPart1()}
+                <br/><br/>
                 {this.renderPart2()}
+                <br/><br/>
                 {this.renderPart3()}
+                <br/><br/>
                 {this.renderPart4()}
             </div>
         );

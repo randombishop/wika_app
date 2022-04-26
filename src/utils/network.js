@@ -90,40 +90,37 @@ class WikaNetwork {
         }
     }
 
-
-    txLike = (account, url, referrer, numLikes, callback) => {
+    sendTransaction = (tx, account, callback) => {
         let mode = account.mode ;
         if (mode==='web3') {
-            this.txLikeWeb3(account, url, referrer, numLikes, callback) ;
+            this.sendTransactionWeb3(tx, account, callback) ;
         } else {
-            this.txLikeLocal(account, url, referrer, numLikes, callback) ;
+            this.sendTransactionLocal(tx, account, callback) ;
         }
     }
 
-    txLikeLocal = (account, url, referrer, numLikes, callback) => {
+    sendTransactionLocal = (tx, account, callback) => {
         let address = account.address ;
         let keyring = new Keyring({ type: 'sr25519' });
         let signer = keyring.addFromUri(account.phrase);
-        console.log('txLikeLocal', address, url, referrer, numLikes, signer);
+        console.log('sendTransactionLocal', address, signer);
         let self = this ;
-        let txLike = self.txLikeInstance(url, referrer, numLikes) ;
         callback({status:'Sending'}) ;
-        txLike.signAndSend(signer, self.txMonitor(callback)).then((s) => {
+        tx.signAndSend(signer, self.txMonitor(callback)).then((s) => {
             self.unsubTransaction = s;
         }).catch((err) => {
             callback({status:'Error', err: err}) ;
         }) ;
     }
 
-    txLikeWeb3 = (account, url, referrer, numLikes, callback) => {
+    sendTransactionWeb3 = (tx, account, callback) => {
         let source = account.source ;
         let address = account.address ;
-        console.log('txLikeWeb3', source, address, url, referrer, numLikes);
+        console.log('sendTransactionWeb3', source, address);
         let self = this ;
         web3FromSource(source).then((injector) => {
-            let txLike = self.txLikeInstance(url, referrer, numLikes) ;
             callback({status:'Sending'}) ;
-            txLike.signAndSend(address, {signer: injector.signer}, self.txMonitor(callback)).then((s) => {
+            tx.signAndSend(address, {signer: injector.signer}, self.txMonitor(callback)).then((s) => {
                 self.unsubTransaction = s;
             }).catch((err) => {
                 callback({status:'Error', err: err}) ;
@@ -131,10 +128,18 @@ class WikaNetwork {
         });
     }
 
-    txLikeInstance = (url, referrer, numLikes) => {
-        return this.api.tx.likes.like(url, referrer, numLikes) ;
+
+
+
+    txLike = (account, url, referrer, numLikes, callback) => {
+        let tx = this.api.tx.likes.like(url, referrer, numLikes) ;
+        this.sendTransaction(tx, account, callback) ;
     }
 
+    txOwnerRequest = (account, url, callback) => {
+        let tx = this.api.tx.owners.requestUrlCheck(url) ;
+        this.sendTransaction(tx, account, callback) ;
+    }
 
 
 }

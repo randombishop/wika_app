@@ -112,7 +112,7 @@ class ButtonBar extends React.Component {
         }
         return (
             <div className="main-actions">
-              <Paper elevation={3} sx={{padding:"5px 50px", paddingTop: '10px', backgroundColor: 'lightgray'}}>
+              <Paper elevation={3} sx={{padding:"5px 50px", paddingTop: '10px', backgroundColor: '#f5f5f5'}}>
                   <Grid container spacing={2}>
                         {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
                         {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
