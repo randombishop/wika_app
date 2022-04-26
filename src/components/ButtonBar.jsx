@@ -100,7 +100,7 @@ class ButtonBar extends React.Component {
                         <i className={'far '+icon}></i>
                     </Fab>
                     <br/>
-                    <Typography color={color} onClick={() => this.buttonClicked(target)}>
+                    <Typography variant="subtitle2" color={color} onClick={() => this.buttonClicked(target)}>
                         {label}
                     </Typography>
                 </Grid>);
@@ -112,7 +112,7 @@ class ButtonBar extends React.Component {
         }
         return (
             <div className="main-actions">
-              <Paper elevation={3} sx={{padding:"5px 50px"}}>
+              <Paper elevation={3} sx={{padding:"5px 50px", paddingTop: '10px', backgroundColor: 'lightgray'}}>
                   <Grid container spacing={2}>
                         {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
                         {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
