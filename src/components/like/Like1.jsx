@@ -7,11 +7,10 @@ import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import CardActions from '@mui/material/CardActions';
 import Fab from '@mui/material/Fab';
-import {web3FromSource} from '@polkadot/extension-dapp';
+import CircularProgress from '@mui/material/CircularProgress';
 
 
 import AppContext from "../../utils/context";
-import {parseError} from "../../utils/misc";
 
 
 class Like1 extends React.Component {
@@ -34,31 +33,24 @@ class Like1 extends React.Component {
         let url = self.props.url ;
         let referrer = self.state.referrer ;
         let numLikes = self.state.numLikes ;
-        let source = self.context.account.source ;
-        let address = self.context.account.address ;
-        web3FromSource(source).then((injector) => {
-            self.setState({txStatus: 'Sending...'}, () => {
-                self.context.wikaNetwork.txLike(address, injector, url, referrer, numLikes, self.monitorLike).then((s) => {
-                    self.unsubTransaction = s;
-                }).catch((err) => {
-                    self.setState({txStatus: null}) ;
-                    alert(err) ;
-                }) ;
-            });
-        }) ;
+        let account = self.context.account ;
+        this.context.wikaNetwork.txLike(account, url, referrer, numLikes, this.monitorLike) ;
     }
 
     monitorLike = (result) => {
+        console.log('monitorLike', result)
         let status = result.status ;
-        if (status.isInBlock) {
+        if (status === 'Sending') {
+            this.setState({txStatus: 'Sending transaction...'}) ;
+        } else if (status === 'In block') {
             this.setState({txStatus: 'In block...'}) ;
-        } else if (status.isFinalized) {
+        } else if (status === 'Done') {
             this.setState({txStatus: null}) ;
-            this.unsubTransaction();
-            let err = parseError(result) ;
-            if (err) {
-                alert(err) ;
-            }
+        } else if (status === 'Error') {
+            this.setState({txStatus: null}) ;
+            alert("Transaction failed: "+result.err) ;
+        } else {
+            console.log('Warning, unrecognized monitorLike status', result) ;
         }
     }
 
@@ -71,9 +63,7 @@ class Like1 extends React.Component {
             );
         } else {
             return (
-                <Fab disabled>
-                    <i className="fas fa-spinner"></i> {this.state.txStatus}
-                </Fab>
+                <CircularProgress />
             ) ;
         }
     }

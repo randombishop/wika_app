@@ -1,4 +1,4 @@
-import {ApiPromise, WsProvider} from '@polkadot/api';
+import {ApiPromise, WsProvider, Keyring} from '@polkadot/api';
 import {web3FromSource} from '@polkadot/extension-dapp';
 import {parseError} from "./misc";
 
@@ -75,44 +75,64 @@ class WikaNetwork {
 
 
 
-
-    txLike = (address, injector, url, referrer, numLikes, callback) => {
-        let tx = this.api.tx.likes.like(url, referrer, numLikes) ;
-        return tx.signAndSend(address, {signer: injector.signer}, callback) ;
-    }
-
-    txOwnerRequest = (address, injector, url, callback) => {
-        let tx = this.api.tx.owners.requestUrlCheck(url) ;
-        return tx.signAndSend(address, {signer: injector.signer}, callback) ;
-    }
-
-    txLikeExt = (source, address, url, referrer, numLikes, callback) => {
-        console.log(source, address, url, referrer, numLikes);
-        let self = this;
-        let memory = {} ;
-        let monitor = (result) => {
-            let status = result.status ;
-            if (status.isInBlock) {
-                callback({status:'In block'}) ;
-            } else if (status.isFinalized) {
-                memory.unsubTransaction();
-                let err = parseError(result) ;
-                if (err) {
-                    callback({status:'Error', err: err}) ;
-                } else {
-                    callback({status:'Done'}) ;
-                }
+    txMonitor = (callback) => (result) => {
+        let status = result.status ;
+        if (status.isInBlock) {
+            callback({status:'In block'}) ;
+        } else if (status.isFinalized) {
+            this.unsubTransaction();
+            let err = parseError(result) ;
+            if (err) {
+                callback({status:'Error', err: err}) ;
+            } else {
+                callback({status:'Done'}) ;
             }
         }
+    }
+
+
+    txLike = (account, url, referrer, numLikes, callback) => {
+        let mode = account.mode ;
+        if (mode==='web3') {
+            this.txLikeWeb3(account, url, referrer, numLikes, callback) ;
+        } else {
+            this.txLikeLocal(account, url, referrer, numLikes, callback) ;
+        }
+    }
+
+    txLikeLocal = (account, url, referrer, numLikes, callback) => {
+        let address = account.address ;
+        let keyring = new Keyring({ type: 'sr25519' });
+        let signer = keyring.addFromUri(account.phrase);
+        console.log('txLikeLocal', address, url, referrer, numLikes, signer);
+        let self = this ;
+        let txLike = self.txLikeInstance(url, referrer, numLikes) ;
+        callback({status:'Sending'}) ;
+        txLike.signAndSend(signer, self.txMonitor(callback)).then((s) => {
+            self.unsubTransaction = s;
+        }).catch((err) => {
+            callback({status:'Error', err: err}) ;
+        }) ;
+    }
+
+    txLikeWeb3 = (account, url, referrer, numLikes, callback) => {
+        let source = account.source ;
+        let address = account.address ;
+        console.log('txLikeWeb3', source, address, url, referrer, numLikes);
+        let self = this ;
         web3FromSource(source).then((injector) => {
+            let txLike = self.txLikeInstance(url, referrer, numLikes) ;
             callback({status:'Sending'}) ;
-            self.txLike(address, injector, url, referrer, numLikes, monitor).then((s) => {
-                memory.unsubTransaction = s;
+            txLike.signAndSend(address, {signer: injector.signer}, self.txMonitor(callback)).then((s) => {
+                self.unsubTransaction = s;
             }).catch((err) => {
-                self.setState({txStatus: null}) ;
                 callback({status:'Error', err: err}) ;
             }) ;
         });
+    }
+
+    txLikeInstance = (url, referrer, numLikes) => {
+        return this.api.tx.likes.like(url, referrer, numLikes) ;
     }
 
 

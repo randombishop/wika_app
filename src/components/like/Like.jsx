@@ -185,7 +185,7 @@ class Like extends React.Component {
     render = () => {
         return (
             <div className="main-content">
-                <Typography variant="h5">Webpage</Typography>
+                <Typography variant="h5">Like a webpage</Typography>
                 <br/>
                 {this.renderUrlInput()}
                 {this.renderUrlNumLikes()}
