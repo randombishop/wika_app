@@ -6,7 +6,7 @@ import Container from '@mui/material/Container';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import CardActions from '@mui/material/CardActions';
-import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
 import {web3FromSource} from '@polkadot/extension-dapp';
 
 
@@ -65,15 +65,15 @@ class Like1 extends React.Component {
     renderButton = () => {
         if (this.state.txStatus==null) {
             return (
-                <Button variant="contained" onClick={this.submitLike}>
+                <Fab color="primary" variant="extended" onClick={this.submitLike}>
                     Send {this.state.numLikes} &nbsp;<i className="fas fa-thumbs-up"></i>
-                </Button>
+                </Fab>
             );
         } else {
             return (
-                <Button disabled>
+                <Fab disabled>
                     <i className="fas fa-spinner"></i> {this.state.txStatus}
-                </Button>
+                </Fab>
             ) ;
         }
     }
@@ -83,7 +83,7 @@ class Like1 extends React.Component {
             <React.Fragment>
 
                <Container align="center">
-                   <Card sx={{width: '75%'}}>
+                   <Card sx={{width: '75%', paddingBottom: '10px', borderRadius: '25px'}}>
                         <CardHeader title="Like transaction"
                                     subheader={this.props.url}
                         />

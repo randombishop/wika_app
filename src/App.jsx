@@ -21,7 +21,7 @@ class App extends React.Component {
                 status: 'loading'
             },
             network: {
-                type: "Test Net",
+                type: "Wika Testnet",
                 url: "wss://testnode3.wika.network:443",
                 status: 'connecting'
             },

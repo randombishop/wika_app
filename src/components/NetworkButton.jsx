@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
 
 import AppContext from '../utils/context' ;
 
@@ -20,13 +20,13 @@ class NetworkButton extends React.Component {
 
     render() {
         return (
-            <Button color="primary" variant="contained">
+            <Fab size="small" variant="extended" color="default" sx={{marginTop:'3px'}}>
                 <i className="fas fa-network-wired"></i>
                 &nbsp;&nbsp;
                 {this.context.network.type}
                 &nbsp;&nbsp;
                 {this.renderStatus()}
-            </Button>
+            </Fab>
         );
     }
 

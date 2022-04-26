@@ -1,14 +1,11 @@
 import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import Grid from '@mui/material/Grid';
+
 
 import AppContext from "../utils/context";
 import NetworkButton from "./NetworkButton";
 import AccountButton from "./AccountButton";
-
 
 
 class NavBar extends React.Component {
@@ -21,26 +18,24 @@ class NavBar extends React.Component {
 
     render() {
         return (
-            <Box sx={{ flexGrow: 1 }}>
-              <AppBar position="static">
-                <Toolbar>
-                  <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    sx={{ mr: 2 }}
-                    onClick={() => this.context.navigate('splash')}
-                  >
-                    <img src="images/logo_alt1.png" alt="" width="32" height="32" />
-                  </IconButton>
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    <NetworkButton />
-                  </Typography>
-                  <AccountButton />
-                </Toolbar>
-              </AppBar>
-            </Box>
+            <div className="main-navbar">
+                <Grid container spacing={2}>
+                    <Grid item xs={3}>
+                        <Fab size="small"
+                             color="default"
+                             aria-label="home"
+                             onClick={() => this.context.navigate('splash')}>
+                            <img src="images/logo_alt1_black.png" alt="" width="24" height="24" />
+                        </Fab>
+                    </Grid>
+                    <Grid item xs={6} align="center">
+                        <NetworkButton />
+                    </Grid>
+                    <Grid item xs={3} align="right">
+                        <AccountButton />
+                    </Grid>
+                </Grid>
+            </div>
         );
     }
 

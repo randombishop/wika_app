@@ -48,6 +48,7 @@ class Like extends React.Component {
     }
 
     handleUrlChange = (event) => {
+        if (this.state.lookedUp) return ;
         this.setState({url: event.target.value}) ;
     }
 
@@ -140,7 +141,6 @@ class Like extends React.Component {
                     fullWidth={true}
                     value={this.state.url}
                     onChange={this.handleUrlChange}
-                    disabled={this.state.lookedUp}
                     InputProps={inputProps} />) ;
     }
 

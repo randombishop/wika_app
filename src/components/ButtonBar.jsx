@@ -1,11 +1,12 @@
 import React from 'react';
 import Paper from '@mui/material/Paper';
-import BottomNavigation from '@mui/material/BottomNavigation';
-import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Fab from '@mui/material/Fab';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 
 import AppContext from "../utils/context";
@@ -17,7 +18,7 @@ class ButtonBar extends React.Component {
 
     styleMenu = {
         position: 'absolute',
-        bottom: '5px',
+        bottom: '85px',
         right: '5px'
     }
 
@@ -29,12 +30,12 @@ class ButtonBar extends React.Component {
         };
     }
 
-    buttonClicked = (event, newValue) => {
-        this.setState({activeButton: newValue}) ;
-        if (newValue==='toggleMenu') {
+    buttonClicked = (value) => {
+        this.setState({activeButton: value}) ;
+        if (value==='toggleMenu') {
             this.toggleMenu() ;
         } else {
-            this.navigate(newValue) ;
+            this.navigate(value) ;
         }
     }
 
@@ -85,8 +86,24 @@ class ButtonBar extends React.Component {
         }
     }
 
-    renderIcon = (icon) => {
-        return (<i style={{marginBottom:'5px'}} className={'far '+icon}></i>);
+    renderIcon = (label, icon, target) => {
+        let color = "default" ;
+        if (target === this.state.activeButton) {
+            color = "primary" ;
+        }
+        return (<Grid item xs={3} align="center">
+                    <Fab size="small"
+                         color={color}
+                         aria-label="icon"
+                         onClick={() => this.buttonClicked(target)}
+                         sx={{fontSize: '18px', marginBottom:'5px'}}>
+                        <i className={'far '+icon}></i>
+                    </Fab>
+                    <br/>
+                    <Typography color={color} onClick={() => this.buttonClicked(target)}>
+                        {label}
+                    </Typography>
+                </Grid>);
     }
 
     render() {
@@ -95,15 +112,13 @@ class ButtonBar extends React.Component {
         }
         return (
             <div className="main-actions">
-              <Paper elevation={3} >
-                  <BottomNavigation showLabels={true}
-                                    value={this.state.activeButton}
-                                    onChange={this.buttonClicked}>
-                    <BottomNavigationAction label="Like" value="like" icon={this.renderIcon('fa-thumbs-up')} />
-                    <BottomNavigationAction label="Buy"  value="buy" icon={this.renderIcon('fa-credit-card')} />
-                    <BottomNavigationAction label="Send" value="wallet" icon={this.renderIcon('fa-paper-plane')} />
-                    <BottomNavigationAction label="More" value="toggleMenu" icon={this.renderIcon('fa-plus-square')} />
-                  </BottomNavigation>
+              <Paper elevation={3} sx={{padding:"5px 50px"}}>
+                  <Grid container spacing={2}>
+                        {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
+                        {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
+                        {this.renderIcon('Send', 'fa-paper-plane', 'wallet')}
+                        {this.renderIcon('More', 'fa-plus-square', 'toggleMenu')}
+                  </Grid>
               </Paper>
               {this.renderMenu()}
             </div>

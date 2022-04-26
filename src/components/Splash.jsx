@@ -2,7 +2,7 @@ import React from "react";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container';
@@ -63,10 +63,11 @@ class Splash extends React.Component {
                 </Grid>
                 <br/>
                 {this.context.account==null?
-                    <Container>
-                        <Button variant="outlined" onClick={() => this.context.navigate('account')}>
+                    <Container align="center">
+                        <Fab variant="extended" color="primary"
+                             onClick={() => this.context.navigate('account')}>
                             Connect your account and get started now!
-                        </Button>
+                        </Fab>
                     </Container>
                  :""}
             </div>

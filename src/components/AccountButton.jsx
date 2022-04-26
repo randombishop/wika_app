@@ -1,10 +1,9 @@
 import React from 'react';
 import Identicon from "@polkadot/react-identicon";
-import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+
 
 import AppContext from '../utils/context' ;
-import {formatWika} from "../utils/misc";
-
 
 
 class AccountButton extends React.Component {
@@ -15,23 +14,20 @@ class AccountButton extends React.Component {
 
     renderDisconnected() {
         return (
-            <Button color="primary" variant="contained"
-                    onClick={() => this.context.navigate('account')}>
+            <Fab size="small" color="default"
+                 onClick={() => this.context.navigate('account')}
+                 sx={{fontSize: '24px'}}>
                 <i className="far fa-user-circle"></i>
-                &nbsp;&nbsp;
-                Connect account
-            </Button>
+            </Fab>
         );
     }
 
     renderConnected() {
         return (
-            <Button color="primary" variant="contained"
-                    onClick={() => this.context.navigate('account')}>
+            <Fab size="small" color="default"
+                 onClick={() => this.context.navigate('account')}>
                 <Identicon size={24} value={this.context.account.address}/>
-                &nbsp;&nbsp;
-                {formatWika(this.context.balance.wika)}
-            </Button>
+            </Fab>
         );
     }
 
