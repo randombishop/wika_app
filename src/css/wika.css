@@ -1,6 +1,6 @@
 body {
     width: 500px;
-    height: auto;
+    height: 600px;
     padding: 0;
     margin: 0;
     overflow: hidden;
@@ -9,7 +9,7 @@ body {
 .wika-app {
     position: relative;
     width: 500px;
-    height: auto;
+    height: 600px;
     border: 1px solid darkgray;
     padding: 0px;
     overflow: hidden;
