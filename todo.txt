@@ -1,1 +1,0 @@
-- Save current state and avoid reloading network instance every time we open the extension
