@@ -1,9 +1,8 @@
 import React from "react";
-import Typography from '@mui/material/Typography' ;
+
 
 import AppContext from '../utils/context' ;
-
-
+import Header from "./Header";
 import Splash from "./Splash";
 import Like from "./like/Like";
 import Recommend from "./recommend/Recommend";
@@ -16,14 +15,19 @@ import Keccak from "./debug/Keccak";
 import Wip from "./debug/Wip";
 
 
-
-
 class MainContent extends React.Component {
 
     static contextType = AppContext;
 
+    mainStyle = {
+        padding: '30px 20px 15px 20px',
+        height: '415px',
+        background: "linear-gradient(171.17deg, #B5FFB4 -41.33%, #E1F6FF 12.71%, #FFF496 105.58%, #FED5FF 154.44%)",
+        overflow: "scroll"
+    }
+
     pages = {
-        splash: {title:"Welcome to Wika Network!", component:<Splash />} ,
+        splash: {title:"Welcome to Wika!", component:<Splash />} ,
         like: {title:"Like a web page", component:<Like />} ,
         recommend: {title:"Recommendations", component:<Recommend />} ,
         wallet: {title:"Wallet", component:<Wallet />} ,
@@ -34,7 +38,7 @@ class MainContent extends React.Component {
         keccak: {title:"Keccak", component:<Keccak />}
     }
 
-    renderTitle = () => {
+    getTitle = () => {
         let page = this.pages[this.context.tab] ;
         if (page) {
             return page.title ;
@@ -55,10 +59,8 @@ class MainContent extends React.Component {
     render = () => {
         return (
             <React.Fragment>
-                <div className="main-title">
-                    <Typography variant="h5" color="primary">{this.renderTitle()}</Typography>
-                </div>
-                <div className="main-content">
+                <Header title={this.getTitle()} />
+                <div style={this.mainStyle}>
                     {this.renderPage()}
                 </div>
             </React.Fragment>

@@ -11,7 +11,12 @@ class AccountButton extends React.Component {
 
     static contextType = AppContext;
 
-
+    buttonStyle = {
+        backgroundColor: 'white',
+        '&:hover': {
+          backgroundColor: '#e0f5fd',
+        },
+    }
 
     renderDisconnected() {
         return (
@@ -42,8 +47,7 @@ class AccountButton extends React.Component {
 
     render() {
         return (
-            <Fab size="small" variant="extended" color="default"
-                 sx={{marginTop:'3px'}}
+            <Fab size="small" variant="extended" sx={this.buttonStyle}
                  onClick={() => this.context.navigate('account')}>
                 {this.renderButtonContent()}
             </Fab>

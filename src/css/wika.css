@@ -14,29 +14,8 @@ body {
     overflow: hidden;
 }
 
-.main-navbar {
-    padding: 10px 15px;
-    background: linear-gradient(to right, #3f4c6b, #606c88);
-}
 
-.main-content {
-    position:relative;
-    padding: 20px;
-    height: 365px;
-    background: linear-gradient(171.17deg, #B5FFB4 -41.33%, #E1F6FF 12.71%, #FFF496 105.58%, #FED5FF 154.44%);
-    overflow: scroll;
-}
 
-.main-title {
-    background: #e0f5fd;
-    padding: 10px;
-    border-bottom: dashed 1px lightgray;
-    text-align: center;
-}
 
-.main-actions {
-    position:absolute;
-    bottom:0;
-    left:0;
-    right:0;
-}
+
+

@@ -12,9 +12,16 @@ import Typography from '@mui/material/Typography';
 import AppContext from "../utils/context";
 
 
-class ButtonBar extends React.Component {
+class Footer extends React.Component {
 
     static contextType = AppContext;
+
+    styleFooter = {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0
+    }
 
     styleMenu = {
         position: 'absolute',
@@ -111,7 +118,7 @@ class ButtonBar extends React.Component {
             return "" ;
         }
         return (
-            <div className="main-actions">
+            <div style={this.styleFooter}>
               <Paper elevation={3} sx={{padding:"5px 50px", paddingTop: '10px', backgroundColor: '#f5f5f5'}}>
                   <Grid container spacing={2}>
                         {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
@@ -128,7 +135,7 @@ class ButtonBar extends React.Component {
 }
 
 
-export default ButtonBar ;
+export default Footer ;
 
 
 

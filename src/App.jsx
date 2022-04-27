@@ -5,9 +5,8 @@ import {cryptoWaitReady} from '@polkadot/util-crypto';
 import WikaNetwork from './utils/network' ;
 import AppContext from './utils/context' ;
 import {convertToWika, wikaToUsd} from "./utils/misc";
-import NavBar from './components/NavBar' ;
-import ButtonBar from './components/ButtonBar' ;
 import MainContent from './components/MainContent' ;
+import Footer from './components/Footer' ;
 import getStorageInterface from './storage/StorageFactory' ;
 
 
@@ -134,11 +133,8 @@ class App extends React.Component {
                     // Local storage
                     storage: this.state.storage
                 }}>
-                    <NavBar/>
-
                     <MainContent />
-
-                    <ButtonBar/>
+                    <Footer/>
                 </AppContext.Provider>
             </div>
         );
