@@ -174,6 +174,7 @@ class ClaimPage extends React.Component {
                     resultMark: result[5],
                     resultOutcome: result[6]
                 };
+                console.log('ownerResult', data) ;
                 self.setState(data);
             }).then((s) => {
                 self.unsubOwnerResult = s;
@@ -453,29 +454,43 @@ class ClaimPage extends React.Component {
     }
 
     renderMyRequestResult = () => {
-        let icon = this.state.resultOutcome?"fas fa-vote-yea":"fas fa-times" ;
+        let icon = this.state.resultOutcome===true?"fas fa-vote-yea":"fas fa-times" ;
+        let outcome = this.state.resultOutcome===true?"approved":"rejected" ;
         return (
             <React.Fragment>
                 <hr/>
                 <br/>
-                <div style={{fontSize:'18px', marginBottom:'15px'}}>
+                <Typography variant="body1">
                     <i className={icon}></i>
                     &nbsp;&nbsp;
-                    Your request was {this.state.resultOutcome?"approved":"rejected"}.
-                </div>
+                    Your request was {outcome}.
+                </Typography>
                 <br/>
-                <label>Verifications: {this.state.resultNumVotes}</label>
+                <Typography variant="body2">
+                    Verifications: <strong>{this.state.resultNumVotes}</strong>
+                </Typography>
                 <br/>
-                <label>Approvals: {this.state.resultNumVotesYes}</label>
+                <Typography variant="body2">
+                    Approvals: <strong>{this.state.resultNumVotesYes}</strong>
+                </Typography>
                 <br/>
-                <label>Page intro</label>
-                <textarea style={this.styleTextArea}
-                          defaultValue={bytesToString(this.state.resultIntro)}
-                          readOnly={true} />
-                <label>Mark found</label>
-                <textarea style={this.styleTextArea}
-                          defaultValue={bytesToString(this.state.resultMark)}
-                          readOnly={true} />
+                <Typography variant="body2">
+                    Evidence data:
+                </Typography>
+                <br/>
+                <TextField
+                    label="Page intro"
+                    variant="outlined"
+                    fullWidth={true}
+                    defaultValue={bytesToString(this.state.resultIntro)}
+                    disabled={true} />
+                <br/>
+                <TextField
+                    label="Mark found"
+                    variant="outlined"
+                    fullWidth={true}
+                    defaultValue={bytesToString(this.state.resultMark)}
+                    disabled={true} />
             </React.Fragment>
         )
     }
@@ -490,10 +505,10 @@ class ClaimPage extends React.Component {
 
     renderOtherRequest = () => {
         return (
-            <p>
+            <Typography variant="body1" >
                 <i className="fas fa-exclamation-triangle"></i> &nbsp;
                 There is currently another user trying to claim ownership for this URL.
-            </p>
+            </Typography>
         )
     }
 
