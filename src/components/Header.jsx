@@ -17,7 +17,6 @@ class Header extends React.Component {
         alignItems: 'center',
         background: '#F9F9F9',
         padding: '5px 15px',
-        borderBottom: 'dashed 1px lightgray',
         textAlign: 'center'
     }
 

@@ -17,10 +17,13 @@ class Footer extends React.Component {
     static contextType = AppContext;
 
     styleFooter = {
-        position: 'absolute',
+        backgroundColor: '#F9F9F9',
         bottom: 0,
         left: 0,
-        right: 0
+        right: 0,
+        height: '60px',
+        padding: '10px 50px',
+        borderTop: '1px dashed lightgray'
     }
 
     styleMenu = {
@@ -113,23 +116,26 @@ class Footer extends React.Component {
                 </Grid>);
     }
 
-    render() {
+    renderSwitch() {
         if (!this.context.account) {
             return "" ;
-        }
-        return (
-            <div style={this.styleFooter}>
-              <Paper elevation={3} sx={{padding:"5px 50px", paddingTop: '10px', backgroundColor: '#f5f5f5'}}>
-                  <Grid container spacing={2}>
+        } else {
+            return (<React.Fragment>
+                      <Grid container spacing={2}>
                         {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
                         {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
                         {this.renderIcon('Send', 'fa-paper-plane', 'wallet')}
                         {this.renderIcon('More', 'fa-plus-square', 'toggleMenu')}
-                  </Grid>
-              </Paper>
-              {this.renderMenu()}
-            </div>
-      ) ;
+                      </Grid>
+                      {this.renderMenu()}
+                    </React.Fragment>) ;
+        }
+    }
+
+    render() {
+        return (<div style={this.styleFooter}>
+                    {this.renderSwitch()}
+                </div>) ;
     }
 
 }
