@@ -25,6 +25,7 @@
     "crypto-js": "4.1.1"
   },
   "scripts": {
+    "commons": "rm -rf ./src/commons && cp -R ../commons ./src/commons",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

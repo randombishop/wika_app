@@ -2,12 +2,12 @@ import React from "react";
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 
 
-import WikaNetwork from './utils/network' ;
-import AppContext from './utils/context' ;
-import {convertToWika, wikaToUsd} from "./utils/misc";
-import MainContent from './components/MainContent' ;
-import Footer from './components/Footer' ;
-import getStorageInterface from './storage/StorageFactory' ;
+import WikaNetwork from './commons/utils/network' ;
+import AppContext from './commons/utils/context' ;
+import {convertToWika, wikaToUsd} from "./commons/utils/misc";
+import MainContent from './commons/components/MainContent' ;
+import Footer from './commons/components/Footer' ;
+import getStorageInterface from './commons/storage/StorageFactory' ;
 
 
 class App extends React.Component {
