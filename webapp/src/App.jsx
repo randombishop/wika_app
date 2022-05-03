@@ -1,7 +1,6 @@
 import React from "react";
 
 
-import WikaNetwork from './commons/utils/network' ;
 import AppContext from './commons/utils/context' ;
 import {convertToWika, wikaToUsd} from "./commons/utils/misc";
 import MainContent from './commons/components/MainContent' ;
@@ -15,9 +14,6 @@ class App extends React.Component {
         super(props);
         this.state = {
             tab: "splash",
-            crypto: {
-                status: 'loading'
-            },
             network: {
                 type: "Wika Testnet",
                 url: "wss://testnode3.wika.network:443",
@@ -37,19 +33,7 @@ class App extends React.Component {
     }
 
     componentDidMount = () => {
-        this.loadCrypto() ;
-    }
-
-    loadCrypto = () => {
-        let self = this ;
-        let cryptoState = self.state.crypto ;
-        cryptoState.status = 'loading' ;
-        self.setState({crypto:cryptoState}, () => {
-            cryptoWaitReady().then(() => {
-                cryptoState.status = 'ready' ;
-                self.setState({crypto: cryptoState}, self.connectNetwork) ;
-            }) ;
-        }) ;
+        this.connectNetwork() ;
     }
 
     connectNetwork = (callback) => {
@@ -57,9 +41,8 @@ class App extends React.Component {
         let networkState = self.state.network ;
         networkState.status = 'connecting' ;
         self.setState({network:networkState}, () => {
-            let network = new WikaNetwork(self.state.network.url) ;
-            network.connect(() => {
-                self.wikaNetwork = network ;
+            let network = window.BACKGROUND.network ;
+            network.connect(networkState.url, () => {
                 networkState.status = 'connected' ;
                 self.setState({network:networkState}, this.initLocalStorage) ;
             }) ;
@@ -84,7 +67,7 @@ class App extends React.Component {
         self.setState({balance:clearBalance}, () => {
             if (self.state.account && self.state.network.status==='connected') {
             let address = self.state.account.address;
-            self.wikaNetwork.getBalance(address, (result) => {
+            window.BACKGROUND.network.getBalance(address, (result) => {
                 let balanceWika = convertToWika(result.data.free) ;
                 let balanceUsd = wikaToUsd(balanceWika) ;
                 self.setState({
@@ -126,8 +109,7 @@ class App extends React.Component {
                     // Context functions
                     navigate: this.navigate,
                     selectAccount: this.selectAccount,
-                    // Endpoints configuration
-                    wikaNetwork: this.wikaNetwork,
+                    // API Endpoint
                     apiEndpoint: this.state.api,
                     // Local storage
                     storage: this.state.storage

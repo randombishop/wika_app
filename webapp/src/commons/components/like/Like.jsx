@@ -39,7 +39,7 @@ class Like extends React.Component {
 
     getLikePrice = () => {
         let self = this;
-        self.context.wikaNetwork.getLikePrice((result) => {
+        window.BACKGROUND.network.getLikePrice((result) => {
             let price = convertToWika(result) ;
             self.setState({likePrice:price}) ;
         }).catch((err) => {
@@ -74,7 +74,7 @@ class Like extends React.Component {
             self.unsubUrl = null ;
         }
         let url = this.state.url;
-        self.context.wikaNetwork.getUrl(url, (result) => {
+        window.BACKGROUND.network.getUrl(url, (result) => {
             let urlLikes = Number(result[0]) ;
             self.setState({urlLikes:urlLikes}) ;
         }).then((s) => {
@@ -92,7 +92,7 @@ class Like extends React.Component {
         }
         let address = this.context.account.address;
         let url = this.state.url;
-        self.context.wikaNetwork.getLike(address, url, (result) => {
+        window.BACKGROUND.network.getLike(address, url, (result) => {
             self.setState({
                 likesSubmittedAt:Number(result[0]),
                 likesSubmittedCount:Number(result[1]),

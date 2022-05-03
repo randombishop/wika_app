@@ -1,5 +1,4 @@
-const {ApiPromise, WsProvider, Keyring} = require('@polkadot/api') ;
-const {web3FromSource}  = require('@polkadot/extension-dapp');
+const {ApiPromise, WsProvider} = require('@polkadot/api') ;
 
 
 class WikaNetwork {
@@ -9,7 +8,7 @@ class WikaNetwork {
         this.api = null ;
     }
 
-    connect = (endoint, callback) => {
+    connect = (endpoint, callback) => {
         let self = this ;
         self.endpoint = null ;
         self.api = null ;
@@ -73,6 +72,14 @@ class WikaNetwork {
                 } ;
                 callback(ans) ;
             }) ;
+    }
+
+    txLike = (url, referrer, numLikes) => {
+        return this.api.tx.likes.like(url, referrer, numLikes) ;
+    }
+
+    txOwnerRequest = (url) => {
+        return this.api.tx.owners.requestUrlCheck(url) ;
     }
 
 }

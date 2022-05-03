@@ -34,7 +34,8 @@ class Like1 extends React.Component {
         let referrer = self.state.referrer ;
         let numLikes = self.state.numLikes ;
         let account = self.context.account ;
-        this.context.wikaNetwork.txLike(account, url, referrer, numLikes, this.monitorLike) ;
+        let tx = window.BACKGROUND.network.txLike(url, referrer, numLikes) ;
+        window.sendTransaction(tx, account, this.monitorLike) ;
     }
 
     monitorLike = (result) => {
