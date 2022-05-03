@@ -1,11 +1,11 @@
 import React from "react";
 
 
-import AppContext from './commons/utils/context' ;
-import {convertToWika, wikaToUsd} from "./commons/utils/misc";
-import MainContent from './commons/components/MainContent' ;
-import Footer from './commons/components/Footer' ;
-import getStorageInterface from './commons/storage/StorageFactory' ;
+import AppContext from '../utils/context' ;
+import {convertToWika, wikaToUsd} from "../utils/misc";
+import MainContent from './MainContent' ;
+import Footer from './Footer' ;
+import getStorageInterface from '../storage/StorageFactory' ;
 
 
 class App extends React.Component {

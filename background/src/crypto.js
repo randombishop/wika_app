@@ -40,10 +40,11 @@ function generateAccount() {
 }
 
 
+export {
+    encryptWithAES,
+    decryptWithAES,
+    importAccount,
+    generateAccount
+} ;
 
-window.CRYPTO = {
-    encryptWithAES: encryptWithAES,
-    decryptWithAES: decryptWithAES,
-    importAccount: importAccount,
-    generateAccount: generateAccount
-}
+
