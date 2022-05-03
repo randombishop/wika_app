@@ -213,7 +213,7 @@ class ClaimPage extends React.Component {
         let url = self.state.url ;
         let account = self.context.account ;
         let tx = window.BACKGROUND.network.txOwnerRequest(url) ;
-        window.sendTransaction(tx, account, this.monitorRequest) ;
+        window.BACKGROUND.sendTransaction(tx, account, this.monitorRequest) ;
     }
 
     monitorRequest = (result) => {

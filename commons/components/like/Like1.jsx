@@ -35,7 +35,7 @@ class Like1 extends React.Component {
         let numLikes = self.state.numLikes ;
         let account = self.context.account ;
         let tx = window.BACKGROUND.network.txLike(url, referrer, numLikes) ;
-        window.sendTransaction(tx, account, this.monitorLike) ;
+        window.BACKGROUND.sendTransaction(tx, account, this.monitorLike) ;
     }
 
     monitorLike = (result) => {

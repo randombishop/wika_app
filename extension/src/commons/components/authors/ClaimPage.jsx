@@ -58,7 +58,7 @@ class ClaimPage extends React.Component {
 
     getOwnersRequestPrice = () => {
         let self = this;
-        self.context.wikaNetwork.getOwnersRequestPrice((result) => {
+        window.BACKGROUND.network.getOwnersRequestPrice((result) => {
             let price = convertToWika(result) ;
             self.setState({requestPrice:price}) ;
         }).catch((err) => {
@@ -72,7 +72,7 @@ class ClaimPage extends React.Component {
             self.unsubBlockNumber() ;
             self.unsubBlockNumber = null ;
         }
-        self.context.wikaNetwork.getBlockNumber((result) => {
+        window.BACKGROUND.network.getBlockNumber((result) => {
             self.setState({
                 currentBlock:Number(result)
             }) ;
@@ -110,7 +110,7 @@ class ClaimPage extends React.Component {
         }
         let url = self.state.url;
         this.setState({owner:null}, () => {
-            self.context.wikaNetwork.getUrlOwner(url, (result) => {
+            window.BACKGROUND.network.getUrlOwner(url, (result) => {
                 self.setState({
                     owner: "" + result
                 });
@@ -134,7 +134,7 @@ class ClaimPage extends React.Component {
             requestAccount: null
         } ;
         this.setState(clearState, () => {
-            self.context.wikaNetwork.getOwnerRequest(url, (result) => {
+            window.BACKGROUND.network.getOwnerRequest(url, (result) => {
                 self.setState({
                     requestBlock: Number(result[0]),
                     requestAccount: ""+result[1]
@@ -164,7 +164,7 @@ class ClaimPage extends React.Component {
             resultOutcome: null
         } ;
         this.setState(clearState, () => {
-            self.context.wikaNetwork.getOwnerResult(url, (result) => {
+            window.BACKGROUND.network.getOwnerResult(url, (result) => {
                 let data = {
                     resultBlock: Number(result[0]),
                     resultNumVotes: Number(result[1]),
@@ -212,7 +212,8 @@ class ClaimPage extends React.Component {
         let self = this;
         let url = self.state.url ;
         let account = self.context.account ;
-        this.context.wikaNetwork.txOwnerRequest(account, url, this.monitorRequest) ;
+        let tx = window.BACKGROUND.network.txOwnerRequest(url) ;
+        window.BACKGROUND.sendTransaction(tx, account, this.monitorRequest) ;
     }
 
     monitorRequest = (result) => {

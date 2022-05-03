@@ -1,13 +1,12 @@
-import {importAccount, generateAccount} from '../utils/misc' ;
 
 
 class StorageWeb {
 
   constructor() {
     this.memory = {} ;
-    let account1 = importAccount("script online mail crystal echo bind silver shrug panel prepare elite age") ;
+    let account1 = window.BACKGROUND.importAccount("script online mail crystal echo bind silver shrug panel prepare elite age") ;
     account1.accountName = 'PublicTest' ;
-    let account2 = generateAccount() ;
+    let account2 = window.BACKGROUND.generateAccount() ;
     account2.accountName = 'RandomTest' ;
     this.memory['accounts'] = [
         account1, account2
