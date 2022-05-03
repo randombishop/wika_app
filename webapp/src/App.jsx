@@ -1,5 +1,4 @@
 import React from "react";
-import {cryptoWaitReady} from '@polkadot/util-crypto';
 
 
 import WikaNetwork from './commons/utils/network' ;

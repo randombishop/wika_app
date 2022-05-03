@@ -1,0 +1,28 @@
+{
+  "name": "app-background",
+  "version": "1.0.0",
+  "description": "background functions",
+  "scripts": {
+    "build": "browserify -p esmify src/background.js > build/background.js"
+  },
+  "author": "wika.network",
+  "license": "MIT",
+  "dependencies": {
+    "@polkadot/api": "4.17.1",
+    "@polkadot/extension-dapp": "0.38.8",
+    "@polkadot/react-identicon": "0.83.1",
+    "@polkadot/util": "6.11.1",
+    "@polkadot/util-crypto": "6.11.1",
+    "@polkadot/wasm-crypto": "4.5.1",
+    "@polkadot/wasm-crypto-asmjs": "4.5.1",
+    "@polkadot/wasm-crypto-wasm": "4.5.1",
+    "@polkadot/x-randomvalues": "6.11.1",
+    "crypto-js": "4.1.1"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "esmify": "^2.1.1"
+  }
+}

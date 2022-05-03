@@ -5,16 +5,18 @@ import {parseError} from "./misc";
 
 class WikaNetwork {
 
-    constructor(endpoint) {
-        this.endpoint = endpoint ;
+    constructor() {
+        this.endpoint = null ;
         this.api = null ;
     }
 
-    connect = (callback) => {
+    connect = (endpoint, callback) => {
         let self = this ;
+        self.endpoint = null ;
         self.wsProvider = new WsProvider(self.endpoint) ;
         return ApiPromise.create({ provider: self.wsProvider })
             .then((api) => {
+                self.endpoint = endpoint ;
                 self.api = api ;
                 callback() ;
             }) ;
