@@ -21,8 +21,8 @@
   "scripts": {
     "background": "cp ../background/build/background.js ./public/",
     "commons": "rm -rf ./src/commons && cp -R ../commons ./src/commons",
-    "start": "react-scripts start",
-    "build": "react-scripts build"
+    "react": "react-scripts build",
+    "build": "npm run background && npm run commons && npm run react"
   },
   "eslintConfig": {
     "extends": [

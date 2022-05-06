@@ -4,10 +4,10 @@ import React from "react";
 import AppContext from '../utils/context' ;
 import Header from "./Header";
 import Splash from "./Splash";
+import Account from "./account/Account";
 import Like from "./like/Like";
 import Recommend from "./recommend/Recommend";
 import Wallet from "./wallet/Wallet";
-import AccountConnect from "./account/AccountConnect";
 import LikedPages from "./like/LikedPages";
 import OwnedPages from "./authors/OwnedPages";
 import ClaimPage from "./authors/ClaimPage";
@@ -31,7 +31,7 @@ class MainContent extends React.Component {
         like: {title:"Like a web page", component:<Like />} ,
         recommend: {title:"Recommendations", component:<Recommend />} ,
         wallet: {title:"Wallet", component:<Wallet />} ,
-        account: {title:"Account", component:<AccountConnect />} ,
+        account: {title:"Account", component:<Account />} ,
         liked_pages: {title:"Liked pages", component:<LikedPages />} ,
         owned_pages: {title:"Owned pages", component:<OwnedPages />} ,
         claim_page: {title:"Claim page ownership", component:<ClaimPage />} ,

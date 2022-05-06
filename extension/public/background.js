@@ -97282,17 +97282,19 @@ module.exports = XXH64
 },{"buffer":720,"cuint":757}],1069:[function(require,module,exports){
 "use strict";
 
+var _extensionDapp = require("@polkadot/extension-dapp");
+
+var _util = require("@polkadot/util");
+
+var _utilCrypto = require("@polkadot/util-crypto");
+
 var _network = _interopRequireDefault(require("./network.js"));
 
 var _transaction = _interopRequireDefault(require("./transaction.js"));
 
 var _crypto = require("./crypto.js");
 
-var _extensionDapp = require("@polkadot/extension-dapp");
-
-var _util = require("@polkadot/util");
-
-var _utilCrypto = require("@polkadot/util-crypto");
+var _storage = require("./storage.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -97322,7 +97324,17 @@ window.BACKGROUND.sendTransaction = (tx, account, callback) => {
   t.send();
 };
 
-},{"./crypto.js":1070,"./network.js":1071,"./transaction.js":1072,"@polkadot/extension-dapp":149,"@polkadot/util":584,"@polkadot/util-crypto":457}],1070:[function(require,module,exports){
+function getEnvironment() {
+  const url = window.location.href;
+  const env = url.split(':')[0] === 'chrome-extension' ? 'ext' : 'app';
+  return env;
+}
+
+const env = getEnvironment();
+window.BACKGROUND.env = env;
+window.BACKGROUND.storage = env === 'app' ? new _storage.StorageApp() : new _storage.StorageExt();
+
+},{"./crypto.js":1070,"./network.js":1071,"./storage.js":1072,"./transaction.js":1073,"@polkadot/extension-dapp":149,"@polkadot/util":584,"@polkadot/util-crypto":457}],1070:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -97470,6 +97482,51 @@ var _default = WikaNetwork;
 exports.default = _default;
 
 },{"@polkadot/api":133}],1072:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StorageExt = exports.StorageApp = void 0;
+
+class StorageApp {
+  get = (key, callback) => {
+    var item = window.localStorage.getItem(key);
+
+    if (item) {
+      item = JSON.parse(item);
+    }
+
+    callback(item);
+  };
+  set = (key, value, callback) => {
+    const item = JSON.stringify(value);
+    window.localStorage.setItem(key, item);
+
+    if (callback) {
+      callback();
+    }
+  };
+}
+
+exports.StorageApp = StorageApp;
+
+class StorageExt {
+  get = (key, callback) => {
+    window.chrome.storage.local.get([key], result => {
+      callback(result[key]);
+    });
+  };
+  set = (key, value, callback) => {
+    const data = {};
+    data[key] = value;
+    window.chrome.storage.local.set(data, callback);
+  };
+}
+
+exports.StorageExt = StorageExt;
+
+},{}],1073:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

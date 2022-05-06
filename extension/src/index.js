@@ -8,10 +8,13 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import App from './commons/components/App';
 
-window.BACKGROUND = window.chrome.extension.getBackgroundPage().BACKGROUND ;
 
+
+console.log('BACKGROUND') ;
+window.BACKGROUND = window.chrome.extension.getBackgroundPage().BACKGROUND ;
 console.log(window.BACKGROUND) ;
 
+console.log('STARTING REACT APP') ;
 ReactDOM.render(
   <React.StrictMode>
     <App ref={(x) => {window.wikaReactApp = x;}}/>
