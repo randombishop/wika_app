@@ -9,10 +9,10 @@ import Container from '@mui/material/Container';
 
 
 
-import AccountListSelection from './AccountListSelection' ;
+import AccountList from './AccountList' ;
 
 
-class AccountConnectSelectWeb3 extends React.Component {
+class AccountConnectWeb3 extends React.Component {
 
     constructor(props) {
         super(props);
@@ -89,7 +89,7 @@ class AccountConnectSelectWeb3 extends React.Component {
 
     renderAccountList = () => {
       return (
-        <AccountListSelection accounts={this.state.accounts}
+        <AccountList accounts={this.state.accounts}
                               account={this.state.account}
                               selectAccount={this.selectAccount} />
       );
@@ -126,6 +126,6 @@ class AccountConnectSelectWeb3 extends React.Component {
 
 }
 
-export default AccountConnectSelectWeb3;
+export default AccountConnectWeb3;
 
 

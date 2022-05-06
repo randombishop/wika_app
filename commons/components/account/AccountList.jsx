@@ -13,7 +13,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import {shortenAddress} from '../../utils/misc' ;
 
 
-class AccountListSelection extends React.Component {
+class AccountList extends React.Component {
 
     handleAccountChange = (event) => {
         this.props.selectAccount(event.target.value) ;
@@ -62,6 +62,6 @@ class AccountListSelection extends React.Component {
 
 }
 
-export default AccountListSelection;
+export default AccountList;
 
 

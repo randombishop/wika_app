@@ -3,10 +3,10 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 
 
-import AccountListSelection from './AccountListSelection' ;
+import AccountList from './AccountList' ;
 
 
-class AccountConnectSelectLocal extends React.Component {
+class AccountConnectWika extends React.Component {
 
     constructor(props) {
         super(props);
@@ -42,7 +42,7 @@ class AccountConnectSelectLocal extends React.Component {
 
     renderAccountList = () => {
       return (
-        <AccountListSelection accounts={this.props.accounts}
+        <AccountList accounts={this.props.accounts}
                               account={this.state.account}
                               selectAccount={this.selectAccount} />
       );
@@ -78,6 +78,6 @@ class AccountConnectSelectLocal extends React.Component {
 
 }
 
-export default AccountConnectSelectLocal;
+export default AccountConnectWika;
 
 
