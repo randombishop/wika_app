@@ -1,11 +1,9 @@
 import React from "react";
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-
-
-import {copyToClipboard} from "../../utils/misc";
+import TextField from '@mui/material/TextField';
+import Divider from '@mui/material/Divider';
 
 
 class AccountImport extends React.Component {
@@ -13,6 +11,7 @@ class AccountImport extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            accountName: "",
             imported: false,
             address: null,
             addressRaw: null,
@@ -20,8 +19,14 @@ class AccountImport extends React.Component {
         } ;
     }
 
-    handleInputChange = (event) => {
-        this.setState({phrase: event.target.value}) ;
+    handlePhraseInputChange = (event) => {
+        if (!this.state.imported) {
+            this.setState({phrase: event.target.value}) ;
+        }
+    }
+
+    handleAccountNameChange = (event) => {
+        this.setState({accountName: event.target.value}) ;
     }
 
     import = () => {
@@ -34,7 +39,7 @@ class AccountImport extends React.Component {
         }
     }
 
-    back = () => {
+    clear = () => {
         this.setState({
             imported: false,
             address: null,
@@ -44,49 +49,105 @@ class AccountImport extends React.Component {
     }
 
     next = () => {
-        this.props.next(this.state.address, this.state.addressRaw, this.state.phrase) ;
+        const account = {
+            name: this.state.accountName,
+            address: this.state.address,
+            addressRaw: this.state.addressRaw,
+            phrase: this.state.phrase
+        }
+        this.props.next(account) ;
     }
 
     render2() {
         if (this.state.imported) {
             return (
                 <React.Fragment>
-                    <br/>
-                    <label>Public Address</label>
-                    <input type="text"
-                           value={this.state.address}
-                           readOnly={true}
-
+                    <TextField
+                        label="Account name"
+                        variant="outlined"
+                        fullWidth={true}
+                        value={this.state.accountName}
+                        onChange={this.handleAccountNameChange}
                     />
-                    <div style={{display:'flex'}}>
-                        <div style={{flex: '50%', paddingRight:'10px'}}>
-                            <button className="secondary" onClick={this.back}>Clear</button>
-                        </div>
-                        <div style={{flex: '50%', paddingLeft:'10px'}}>
-                            <button className="primary" onClick={this.next}>Continue</button>
-                        </div>
-                    </div>
+
+                    <br/><br/>
+
+                    <TextField
+                        label="Public Address"
+                        variant="outlined"
+                        fullWidth={true}
+                        value={this.state.address}
+                        readOnly={true}
+                    />
+
+                    <br/><br/>
+
+                    <Container align="right">
+                        <Button color="secondary"
+                            variant="contained"
+                            onClick={this.props.back}>
+                            Back
+                        </Button>
+                        &nbsp;&nbsp;
+                        <Button color="secondary"
+                            variant="contained"
+                            onClick={this.clear}>
+                            Clear
+                        </Button>
+                        &nbsp;&nbsp;
+                        <Button color="primary"
+                                variant="contained"
+                                onClick={this.next}>
+                            Continue
+                        </Button>
+                    </Container>
+
                 </React.Fragment>
             ) ;
         } else {
             return (
-                <button onClick={this.import} className="secondary">Import</button>
+                <Container align="right">
+                    <Button color="secondary"
+                            variant="contained"
+                            onClick={this.props.back}>
+                            Back
+                    </Button>
+                    &nbsp;&nbsp;
+                    <Button color="primary"
+                            variant="contained"
+                            onClick={this.import}>
+                       Import
+                    </Button>
+                </Container>
             );
         }
     }
 
     render() {
         return (
-            <main>
-                <h4>Import your address</h4>
-                <label>Your 12-words phrase</label>
-                <textarea id="account_secret_element"
-                          value={this.state.phrase}
-                          onChange={this.handleInputChange}
-                          readOnly={this.state.imported}
+            <div>
+
+                <Typography variant='h6'>
+                    Import your existing address
+                </Typography>
+
+                <Divider/><br/><br/>
+
+                <TextField
+                    id="account_secret_element"
+                    label="Your 12-words phras"
+                    variant="outlined"
+                    fullWidth={true}
+                    value={this.state.phrase}
+                    onChange={this.handlePhraseInputChange}
+                    readOnly={this.state.imported}
                 />
+
+                <br/><br/>
+
                 {this.render2()}
-            </main>
+
+            </div>
         );
     }
 
