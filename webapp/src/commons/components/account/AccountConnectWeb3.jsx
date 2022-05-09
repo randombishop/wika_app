@@ -6,15 +6,13 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import {web3Accounts} from '@polkadot/extension-dapp';
-import {decodeAddress} from '@polkadot/util-crypto';
-import {u8aToHex} from '@polkadot/util';
 
 
-import AccountListSelection from './AccountListSelection' ;
+
+import AccountList from './AccountList' ;
 
 
-class AccountConnectSelectWeb3 extends React.Component {
+class AccountConnectWeb3 extends React.Component {
 
     constructor(props) {
         super(props);
@@ -31,7 +29,7 @@ class AccountConnectSelectWeb3 extends React.Component {
 
     getAccounts = () => {
         this.setState({accounts: []}, () => {
-            web3Accounts().then((result) => {
+            window.BACKGROUND.web3Accounts().then((result) => {
                 this.setState({accounts: result});
             });
         });
@@ -54,8 +52,8 @@ class AccountConnectSelectWeb3 extends React.Component {
         let address = account.address ;
         let name = account.meta.name ;
         let source = account.meta.source ;
-        let addressU8 = decodeAddress(address) ;
-        let addressRaw = u8aToHex(addressU8) ;
+        let addressU8 = window.BACKGROUND.decodeAddress(address) ;
+        let addressRaw = window.BACKGROUND.u8aToHex(addressU8) ;
         let data = {
             mode: 'web3',
             name: name,
@@ -91,7 +89,7 @@ class AccountConnectSelectWeb3 extends React.Component {
 
     renderAccountList = () => {
       return (
-        <AccountListSelection accounts={this.state.accounts}
+        <AccountList accounts={this.state.accounts}
                               account={this.state.account}
                               selectAccount={this.selectAccount} />
       );
@@ -128,6 +126,6 @@ class AccountConnectSelectWeb3 extends React.Component {
 
 }
 
-export default AccountConnectSelectWeb3;
+export default AccountConnectWeb3;
 
 

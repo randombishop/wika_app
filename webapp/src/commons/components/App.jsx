@@ -5,7 +5,6 @@ import AppContext from '../utils/context' ;
 import {convertToWika, wikaToUsd} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
-import getStorageInterface from '../storage/StorageFactory' ;
 
 
 class App extends React.Component {
@@ -27,8 +26,7 @@ class App extends React.Component {
             balance: {
                 wika:null,
                 usd:null
-            },
-            storage: null
+            }
         };
     }
 
@@ -44,14 +42,9 @@ class App extends React.Component {
             let network = window.BACKGROUND.network ;
             network.connect(networkState.url, () => {
                 networkState.status = 'connected' ;
-                self.setState({network:networkState}, this.initLocalStorage) ;
+                self.setState({network:networkState}, this.subscribeToBalance) ;
             }) ;
         }) ;
-    }
-
-    initLocalStorage = () => {
-        let storage = getStorageInterface() ;
-        this.setState({storage: storage}, this.subscribeToBalance) ;
     }
 
     subscribeToBalance = () => {
@@ -84,6 +77,7 @@ class App extends React.Component {
     }
 
     selectAccount = (account) => {
+        console.log('App.selectAccount', account) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
@@ -110,9 +104,7 @@ class App extends React.Component {
                     navigate: this.navigate,
                     selectAccount: this.selectAccount,
                     // API Endpoint
-                    apiEndpoint: this.state.api,
-                    // Local storage
-                    storage: this.state.storage
+                    apiEndpoint: this.state.api
                 }}>
                     <MainContent />
                     <Footer/>

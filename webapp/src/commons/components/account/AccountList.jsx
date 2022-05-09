@@ -13,7 +13,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import {shortenAddress} from '../../utils/misc' ;
 
 
-class AccountListSelection extends React.Component {
+class AccountList extends React.Component {
 
     handleAccountChange = (event) => {
         this.props.selectAccount(event.target.value) ;
@@ -25,7 +25,10 @@ class AccountListSelection extends React.Component {
             name = item.meta.name;
         } else if (item.accountName) {
             name = item.accountName ;
+        } else if (item.name) {
+            name = item.name ;
         }
+
         return (
             <React.Fragment key={index}>
                 <ListItem alignItems="flex-start">
@@ -45,7 +48,17 @@ class AccountListSelection extends React.Component {
         ) ;
     }
 
-    render = () => {
+    renderDebug = () => {
+      return (
+        <div>
+            <p>{JSON.stringify(this.props.accounts)}</p>
+            <br/><br/>
+            <p>{JSON.stringify(this.props.account)}</p>
+        </div>
+      );
+    }
+
+    renderRadioGroup = () => {
       return (
         <RadioGroup
            name="radio-buttons-group"
@@ -60,8 +73,12 @@ class AccountListSelection extends React.Component {
       );
     }
 
+    render = () => {
+      return this.renderRadioGroup() ;
+    }
+
 }
 
-export default AccountListSelection;
+export default AccountList;
 
 

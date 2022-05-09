@@ -1,5 +1,4 @@
 import React from "react";
-import {web3Enable} from '@polkadot/extension-dapp';
 import Typography from '@mui/material/Typography';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -33,7 +32,7 @@ class AccountConnectModes extends React.Component {
 
     enableWeb3 = () => {
         this.setState({web3Wallets: null}, () => {
-            web3Enable("Wika Network").then((result) => {
+            window.BACKGROUND.web3Enable("Wika Network").then((result) => {
                 this.setState({web3Wallets: result});
             });
         });

@@ -3,8 +3,8 @@ import React from "react";
 
 import AppContext from "../../utils/context";
 import AccountConnectModes from "./AccountConnectModes";
-import AccountConnectSelectWeb3 from "./AccountConnectSelectWeb3";
-import AccountConnectSelectLocal from "./AccountConnectSelectLocal";
+import AccountConnectWeb3 from "./AccountConnectWeb3";
+import AccountConnectWika from "./AccountConnectWika";
 import Account from "./Account";
 
 
@@ -45,12 +45,12 @@ class AccountConnect extends React.Component {
                 return <AccountConnectModes next={this.selectMode} /> ;
             } else {
                 if (this.state.selectedMode==='web3') {
-                    return <AccountConnectSelectWeb3 providers={this.state.data}
+                    return <AccountConnectWeb3 providers={this.state.data}
                                 back={this.cancelMode}
                                 next={this.selectAccount}
                            /> ;
                 } else {
-                    return <AccountConnectSelectLocal accounts={this.state.data}
+                    return <AccountConnectWika accounts={this.state.data}
                                 back={this.cancelMode}
                                 next={this.selectAccount}
                            /> ;

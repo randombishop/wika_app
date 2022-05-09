@@ -72,11 +72,16 @@ class AccountInfo extends React.Component {
                     &nbsp;&nbsp;&nbsp;
                     <i className="fas fa-sign-out-alt"></i>
                 </Button>
-            </Container>
-        ) ;
+            </Container>) ;
     }
 
-    render = () => {
+    renderDebug = () => {
+        return (<div>
+                    {JSON.stringify(this.context.account)}
+                </div>) ;
+    }
+
+    renderInfo = () => {
         return (
             <div>
                 {this.renderAccountBox()}
@@ -90,8 +95,11 @@ class AccountInfo extends React.Component {
                                        this.context.account.addressRaw)}
                 <br/><br/>
                 {this.renderDisconnectButton()}
-            </div>
-        );
+            </div>);
+    }
+
+    render = () => {
+        return this.renderInfo() ;
     }
 
 }

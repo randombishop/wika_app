@@ -6,6 +6,9 @@ const WIKA_TO_USD = 0.02 ;
 
 
 
+
+
+
 // Copy to clipboard
 
 function copyToClipboard(inputId) {

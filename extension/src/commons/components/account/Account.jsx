@@ -2,7 +2,7 @@ import React from "react";
 
 
 import AppContext from "../../utils/context";
-import AccountInfo from "./Account";
+import AccountInfo from "./AccountInfo";
 import AccountConnect from "./AccountConnect";
 import AccountSelect from "./AccountSelect";
 
@@ -10,10 +10,6 @@ import AccountSelect from "./AccountSelect";
 class Account extends React.Component {
 
     static contextType = AppContext;
-
-    constructor(props) {
-        super(props);
-    }
 
     render = () => {
         if (this.context.account) {

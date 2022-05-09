@@ -1,8 +1,5 @@
 import React from "react";
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 
 
 import AppContext from "../../utils/context";
@@ -52,7 +49,10 @@ class AccountSelect extends React.Component {
             accounts = [] ;
         }
         accounts.push(account) ;
-        this.setState({view:'list', accounts:accounts});
+        let self = this ;
+        window.BACKGROUND.storage.set('accounts', accounts, () => {
+            self.setState({view:'list', accounts:accounts});
+        }) ;
     }
 
     selectAccount = (account) => {

@@ -3,7 +3,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import {keccakAsHex} from "@polkadot/util-crypto";
+
 
 
 import {copyToClipboard} from "../../utils/misc";
@@ -25,7 +25,7 @@ class Keccak extends React.Component {
 
     generateHash = () => {
         let text = this.state.text ;
-        let hash = keccakAsHex(text) ;
+        let hash = window.BACKGROUND.keccakAsHex(text) ;
         console.log('generateHash: ' + text + ' -> ' + hash) ;
         this.setState({
             hash:hash
