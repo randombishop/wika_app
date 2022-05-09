@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 
 
 import AccountList from './AccountList' ;
@@ -16,6 +17,7 @@ class AccountSelectMain extends React.Component {
                 <Typography variant='h6'>
                     Set-up your Wika address
                 </Typography>
+                <Divider sx={{marginBottom:'15px'}} />
                 <Typography variant='body1'>
                     Wika Network is built in the Polkadot eco-system.
                     You can <a onClick={this.props.import} href="/#">IMPORT</a> an existing Polkadot address if you already have one,
@@ -52,7 +54,7 @@ class AccountSelectMain extends React.Component {
                 <Button color="primary"
                         variant="contained"
                         disabled={!enableContinue}
-                        onClick={this.continue}>
+                        onClick={this.props.next}>
                     Continue
                 </Button>
             </Container>

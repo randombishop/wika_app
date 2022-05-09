@@ -25,7 +25,10 @@ class AccountList extends React.Component {
             name = item.meta.name;
         } else if (item.accountName) {
             name = item.accountName ;
+        } else if (item.name) {
+            name = item.name ;
         }
+
         return (
             <React.Fragment key={index}>
                 <ListItem alignItems="flex-start">
@@ -45,7 +48,17 @@ class AccountList extends React.Component {
         ) ;
     }
 
-    render = () => {
+    renderDebug = () => {
+      return (
+        <div>
+            <p>{JSON.stringify(this.props.accounts)}</p>
+            <br/><br/>
+            <p>{JSON.stringify(this.props.account)}</p>
+        </div>
+      );
+    }
+
+    renderRadioGroup = () => {
       return (
         <RadioGroup
            name="radio-buttons-group"
@@ -58,6 +71,10 @@ class AccountList extends React.Component {
             </List>
         </RadioGroup>
       );
+    }
+
+    render = () => {
+      return this.renderRadioGroup() ;
     }
 
 }

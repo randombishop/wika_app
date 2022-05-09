@@ -84,7 +84,9 @@ class App extends React.Component {
     }
 
     selectAccount = (account) => {
-        this.setState({account: account}, this.subscribeToBalance) ;
+        console.log('App.selectAccount', account) ;
+        //this.setState({account: account}, this.subscribeToBalance) ;
+        //this.setState({account: account}) ;
     }
 
     navigate = (tab) => {

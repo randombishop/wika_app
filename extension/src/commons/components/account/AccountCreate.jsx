@@ -3,6 +3,12 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Divider from '@mui/material/Divider';
+import InputAdornment from '@mui/material/InputAdornment';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 
 import {copyToClipboard} from "../../utils/misc";
@@ -13,6 +19,7 @@ class AccountCreate extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            accountName: "",
             address: null,
             addressRaw: null,
             phrase: "",
@@ -22,20 +29,12 @@ class AccountCreate extends React.Component {
 
     componentDidMount = () => {
         let account = window.BACKGROUND.generateAccount() ;
+        console.log('newAccount', account) ;
         this.setState(account) ;
     }
 
-    next = () => {
-        this.props.next(this.state.address, this.state.addressRaw, this.state.phrase) ;
-    }
-
-    renderNext = () => {
-        let enabled = this.state.address && this.state.addressRaw && this.state.phrase && this.state.checkSecretSaved ;
-        return (
-            <button onClick={this.next} disabled={!enabled}>
-                Continue
-            </button>
-        );
+    handleAccountNameChange = (event) => {
+        this.setState({accountName: event.target.value}) ;
     }
 
     handleCheckboxChange = () => {
@@ -46,32 +45,99 @@ class AccountCreate extends React.Component {
         copyToClipboard("account_secret_element") ;
     }
 
-    render() {
+    next = () => {
+        const account = {
+            name: this.state.accountName,
+            address: this.state.address,
+            addressRaw: this.state.addressRaw,
+            phrase: this.state.phrase
+        }
+        this.props.next(account) ;
+    }
+
+
+
+
+
+    renderNext = () => {
+        let enabled = this.state.address && this.state.addressRaw && this.state.phrase && this.state.checkSecretSaved ;
+        return (<Container align="right">
+                    <Button color="secondary"
+                        variant="contained"
+                        onClick={this.props.back}>
+                        Back
+                    </Button>
+                    &nbsp;&nbsp;
+                    <Button color="primary"
+                            variant="contained"
+                            onClick={this.next}
+                            disabled={!enabled}>
+                        Continue
+                    </Button>
+                </Container>);
+    }
+
+    renderCopyButtonAdornment = () => {
         return (
-            <main>
-                <h4>New Wika Network address</h4>
-                <label>Your 12-words phrase</label>
-                <textarea id="account_secret_element"
-                          readOnly={true}
-                          value={this.state.phrase} />
-                <button onClick={this.copySecret} className="secondary">Copy to clipboard</button>
-                <p>
-                    Please write down your wallet's mnemonic seed and keep it in a safe place.<br/>
-                    The mnemonic can be used to restore your wallet. <br/>
-                    Keep it carefully to not lose your assets. <br/>
-                    <strong>Never share this phrase with anyone!</strong>
-                </p>
-                <fieldset>
-                    <label>
-                        <input type="checkbox"
-                               value={this.state.checkSecretSaved}
-                               onChange={this.handleCheckboxChange}
-                        />
-                        I have safely saved my secret phrase.
-                    </label>
-                </fieldset>
+            <InputAdornment position="end">
+                <Button onClick={this.copySecret} variant="contained" color="secondary"><i className="fas fa-copy"></i></Button>
+            </InputAdornment>
+        ) ;
+    }
+
+    render() {
+        let copyButtonAdorn = {endAdornment: this.renderCopyButtonAdornment()} ;
+        return (
+            <div>
+
+                <Typography variant='h6'>
+                    Create a new Wika address
+                </Typography>
+
+                <Divider/><br/><br/>
+
+                <TextField
+                    label="Account name"
+                    variant="outlined"
+                    fullWidth={true}
+                    value={this.state.accountName}
+                    onChange={this.handleAccountNameChange}
+                />
+
+                <br/><br/>
+
+                <TextField
+                    id="account_secret_element"
+                    label="Your 12-words phrase"
+                    variant="outlined"
+                    readOnly={true}
+                    fullWidth={true}
+                    value={this.state.phrase}
+                    InputProps={copyButtonAdorn} />
+
+                <br/><br/>
+
+                <Typography variant='body2'>
+                    <strong><i className="fas fa-exclamation-circle"></i> Never share this phrase with anyone!</strong>
+                    <br/>
+                    The 12-words phrase can be used to restore your wallet. Write it down and keep it in a safe place.
+                    <br/>
+                    <strong>Loose your secret = loose your wallet!</strong>
+                </Typography>
+
+                <br/><br/>
+
+                <FormGroup>
+                  <FormControlLabel control={<Checkbox  value={this.state.checkSecretSaved}
+                                                        onChange={this.handleCheckboxChange}/>}
+                                    label="I have safely saved my secret phrase." />
+                </FormGroup>
+
+                <br/><br/>
+
                 {this.renderNext()}
-            </main>
+
+            </div>
         );
     }
 
