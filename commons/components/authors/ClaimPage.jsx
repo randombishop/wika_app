@@ -209,28 +209,14 @@ class ClaimPage extends React.Component {
     // --------------------------------
 
     submitRequest = () => {
-        let self = this;
-        let url = self.state.url ;
-        let account = self.context.account ;
-        let tx = window.BACKGROUND.network.txOwnerRequest(url) ;
-        window.BACKGROUND.sendTransaction(tx, account, this.monitorRequest) ;
+        let url = this.state.url ;
+        let account = this.context.account ;
+        window.BACKGROUND.sendTransaction('owner_request', {url:url}, account, this.monitorRequest) ;
     }
 
     monitorRequest = (result) => {
-        console.log('monitorRequest', result)
-        let status = result.status ;
-        if (status === 'Sending') {
-            this.setState({txStatus: 'Sending transaction...'}) ;
-        } else if (status === 'In block') {
-            this.setState({txStatus: 'In block...'}) ;
-        } else if (status === 'Done') {
-            this.setState({txStatus: null}) ;
-        } else if (status === 'Error') {
-            this.setState({txStatus: null}) ;
-            alert("Transaction failed: "+result.err) ;
-        } else {
-            console.log('Warning, unrecognized monitorRequest status', result) ;
-        }
+        console.log('monitorRequest', result);
+        this.setState({txStatus: result.status}) ;
     }
 
 

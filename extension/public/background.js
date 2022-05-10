@@ -97288,6 +97288,8 @@ var _util = require("@polkadot/util");
 
 var _utilCrypto = require("@polkadot/util-crypto");
 
+var _utils = require("./utils.js");
+
 var _network = _interopRequireDefault(require("./network.js"));
 
 var _transaction = _interopRequireDefault(require("./transaction.js"));
@@ -97297,6 +97299,8 @@ var _crypto = require("./crypto.js");
 var _storage = require("./storage.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+console.log('EXECUTING BACKGROUND SCRIPT'); // Pointers to background functions
 
 window.BACKGROUND = {
   cryptoReady: false,
@@ -97309,32 +97313,33 @@ window.BACKGROUND = {
   web3Accounts: _extensionDapp.web3Accounts,
   u8aToHex: _util.u8aToHex,
   decodeAddress: _utilCrypto.decodeAddress,
-  keccakAsHex: _utilCrypto.keccakAsHex
-};
+  keccakAsHex: _utilCrypto.keccakAsHex,
+  sendTransaction: _transaction.default
+}; // Environment 'app' vs 'ext'
 
-window.BACKGROUND.initCrypto = callback => {
+const env = (0, _utils.getEnvironment)();
+window.BACKGROUND.env = env;
+console.log('Detected env = ' + env); // Storage implementation
+
+window.BACKGROUND.storage = env === 'app' ? new _storage.StorageApp() : new _storage.StorageExt(); // Crypto and network initialization, must be called before starting the app
+
+window.BACKGROUND.initialize = (networkType, networkUrl, callback) => {
   (0, _utilCrypto.cryptoWaitReady)().then(() => {
     window.BACKGROUND.cryptoReady = true;
-    callback();
+    window.BACKGROUND.network.connect(networkType, networkUrl, callback);
   });
-};
+}; // One time initialization if we are in extension
 
-window.BACKGROUND.sendTransaction = (tx, account, callback) => {
-  let t = new _transaction.default(tx, account, callback);
-  t.send();
-};
 
-function getEnvironment() {
-  const url = window.location.href;
-  const env = url.split(':')[0] === 'chrome-extension' ? 'ext' : 'app';
-  return env;
+if (env === 'ext') {
+  const defaultNetworkType = "Wika Testnet";
+  const defaultNetworkUrl = "wss://testnode3.wika.network:443";
+  window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
+    console.log('BACKGROUND init done.');
+  });
 }
 
-const env = getEnvironment();
-window.BACKGROUND.env = env;
-window.BACKGROUND.storage = env === 'app' ? new _storage.StorageApp() : new _storage.StorageExt();
-
-},{"./crypto.js":1070,"./network.js":1071,"./storage.js":1072,"./transaction.js":1073,"@polkadot/extension-dapp":149,"@polkadot/util":584,"@polkadot/util-crypto":457}],1070:[function(require,module,exports){
+},{"./crypto.js":1070,"./network.js":1071,"./storage.js":1072,"./transaction.js":1073,"./utils.js":1074,"@polkadot/extension-dapp":149,"@polkadot/util":584,"@polkadot/util-crypto":457}],1070:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -97412,22 +97417,28 @@ const {
 
 class WikaNetwork {
   constructor() {
+    this.type = null;
     this.endpoint = null;
     this.api = null;
   }
 
-  connect = (endpoint, callback) => {
+  connect = (type, endpoint, callback) => {
     let self = this;
+    self.type = null;
     self.endpoint = null;
     self.api = null;
     self.wsProvider = new WsProvider(endpoint);
     return ApiPromise.create({
       provider: self.wsProvider
     }).then(api => {
+      self.type = type;
       self.endpoint = endpoint;
       self.api = api;
       callback();
     });
+  };
+  getReady = () => {
+    return this.api != null;
   };
   disconnect = callback => {
     return this.api.disconnect().then(callback);
@@ -97554,6 +97565,43 @@ function parseError(result) {
   } else {
     return null;
   }
+}
+
+function createTransaction(txType, params) {
+  switch (txType) {
+    case 'like':
+      return window.BACKGROUND.network.txLike(params.url, params.referrer, params.numLikes);
+
+    case 'owner_request':
+      return window.BACKGROUND.network.txOwnerRequest(params.url);
+
+    default:
+      return null;
+  }
+}
+
+function sendTransaction(txType, params, account, callback) {
+  if (window.BACKGROUND.env === 'ext') {
+    sendTransactionInExtension(txType, params, account, callback);
+  } else {
+    alert('account.mode: ' + account.mode);
+  }
+}
+
+function sendTransactionInExtension(txType, params, account, callback) {
+  let tx = createTransaction(txType, params);
+  let t = new Transaction(tx, account, callback);
+  t.sendInExtension();
+}
+
+function sendUsingWeb3(txType, params, account, callback) {
+  let tx = createTransaction(txType, params);
+  let t = new Transaction(tx, account, callback);
+  t.sendUsingWeb3();
+}
+
+function sendUsingWika(txType, params, account, callback) {
+  alert('sendUsingWika');
 } // Transaction
 
 
@@ -97573,30 +97621,17 @@ class Transaction {
       });
     } else if (status.isFinalized) {
       this.unsubTransaction();
+      this.callback({
+        status: null
+      });
       let err = parseError(result);
 
       if (err) {
-        this.callback({
-          status: 'Error',
-          err: err
-        });
-      } else {
-        this.callback({
-          status: 'Done'
-        });
+        alert('Transaction Error: ' + err);
       }
     }
   };
-  send = () => {
-    let mode = this.account.mode;
-
-    if (mode === 'web3') {
-      this.sendTransactionWeb3();
-    } else {
-      this.sendTransactionLocal();
-    }
-  };
-  sendTransactionLocal = () => {
+  sendInExtension = () => {
     let address = this.account.address;
     let keyring = new _api.Keyring({
       type: 'sr25519'
@@ -97611,12 +97646,12 @@ class Transaction {
       self.unsubTransaction = s;
     }).catch(err => {
       self.callback({
-        status: 'Error',
-        err: err
+        status: null
       });
+      alert('Transaction Error: ' + err);
     });
   };
-  sendTransactionWeb3 = () => {
+  sendUsingWeb3 = () => {
     let source = this.account.source;
     let address = this.account.address;
     console.log('sendTransactionWeb3', source, address);
@@ -97631,15 +97666,29 @@ class Transaction {
         self.unsubTransaction = s;
       }).catch(err => {
         self.callback({
-          status: 'Error',
-          err: err
+          status: null
         });
+        alert('Transaction Error: ' + err);
       });
     });
   };
 }
 
-var _default = Transaction;
+var _default = sendTransaction;
 exports.default = _default;
 
-},{"@polkadot/api":133,"@polkadot/extension-dapp":149}]},{},[1069]);
+},{"@polkadot/api":133,"@polkadot/extension-dapp":149}],1074:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getEnvironment = getEnvironment;
+
+function getEnvironment() {
+  const url = window.location.href;
+  const env = url.split(':')[0] === 'chrome-extension' ? 'ext' : 'app';
+  return env;
+}
+
+},{}]},{},[1069]);

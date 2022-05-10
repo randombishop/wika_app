@@ -29,13 +29,11 @@ class Like1 extends React.Component {
     }
 
     submitLike = () => {
-        let self = this;
-        let url = self.props.url ;
-        let referrer = self.state.referrer ;
-        let numLikes = self.state.numLikes ;
-        let account = self.context.account ;
-        let tx = window.BACKGROUND.network.txLike(url, referrer, numLikes) ;
-        window.BACKGROUND.sendTransaction(tx, account, this.monitorLike) ;
+        let params = {url: this.props.url,
+                      referrer: this.state.referrer,
+                      numLikes: this.state.numLikes} ;
+        let account = this.context.account ;
+        window.BACKGROUND.sendTransaction('like', params, account, this.monitorLike) ;
     }
 
     monitorLike = (result) => {

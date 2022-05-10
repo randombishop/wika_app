@@ -20,11 +20,10 @@ class NetworkButton extends React.Component {
     }
 
     renderStatus() {
-        switch (this.context.network.status) {
-            case 'connected': return <i style={{color:'green'}} className="fas fa-check"></i> ;
-            case 'disconnected': return <i style={{color:'red'}} className="fas fa-times"></i> ;
-            case 'connecting': return <i style={{color:'orange'}} className="fas fa-spinner"></i> ;
-            default: return "" ;
+        if (this.context.network.ready) {
+            return <i style={{color:'green'}} className="fas fa-check"></i> ;
+        } else {
+            return <i style={{color:'orange'}} className="fas fa-spinner"></i> ;
         }
     }
 

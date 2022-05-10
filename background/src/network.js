@@ -4,21 +4,28 @@ const {ApiPromise, WsProvider} = require('@polkadot/api') ;
 class WikaNetwork {
 
     constructor() {
+        this.type = null ;
         this.endpoint = null ;
         this.api = null ;
     }
 
-    connect = (endpoint, callback) => {
+    connect = (type, endpoint, callback) => {
         let self = this ;
+        self.type = null ;
         self.endpoint = null ;
         self.api = null ;
         self.wsProvider = new WsProvider(endpoint) ;
         return ApiPromise.create({ provider: self.wsProvider })
             .then((api) => {
+                self.type = type ;
                 self.endpoint = endpoint ;
                 self.api = api ;
                 callback() ;
             }) ;
+    }
+
+    getReady = () => {
+        return (this.api != null) ;
     }
 
     disconnect = (callback) => {
