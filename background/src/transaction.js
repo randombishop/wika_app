@@ -69,11 +69,12 @@ class Transaction {
             this.callback({status:'In block'}) ;
         } else if (status.isFinalized) {
             this.unsubTransaction();
-            this.callback({status:null}) ;
+            let result = {status:null} ;
             let err = parseError(result) ;
             if (err) {
-                alert('Transaction Error: '+err) ;
+                result.error = err ;
             }
+            this.callback(result) ;
         }
     }
 
@@ -87,8 +88,7 @@ class Transaction {
         self.tx.signAndSend(signer, self.txMonitor).then((s) => {
             self.unsubTransaction = s;
         }).catch((err) => {
-            self.callback({status:null}) ;
-            alert('Transaction Error: '+err) ;
+            self.callback({status:null, error:err}) ;
         }) ;
     }
 
@@ -102,8 +102,7 @@ class Transaction {
             self.tx.signAndSend(address, {signer: injector.signer}, self.txMonitor).then((s) => {
                 self.unsubTransaction = s;
             }).catch((err) => {
-                self.callback({status:null}) ;
-                alert('Transaction Error: '+err) ;
+                self.callback({status:null, error:err}) ;
             }) ;
         });
     }

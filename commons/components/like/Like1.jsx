@@ -39,6 +39,9 @@ class Like1 extends React.Component {
     monitorLike = (result) => {
         console.log('monitorLike', result);
         this.setState({txStatus: result.status}) ;
+        if (result.error) {
+            alert(result.error) ;
+        }
     }
 
     renderButton = () => {

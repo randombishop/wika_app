@@ -97621,14 +97621,16 @@ class Transaction {
       });
     } else if (status.isFinalized) {
       this.unsubTransaction();
-      this.callback({
+      let result = {
         status: null
-      });
+      };
       let err = parseError(result);
 
       if (err) {
-        alert('Transaction Error: ' + err);
+        result.error = err;
       }
+
+      this.callback(result);
     }
   };
   sendInExtension = () => {
@@ -97646,9 +97648,9 @@ class Transaction {
       self.unsubTransaction = s;
     }).catch(err => {
       self.callback({
-        status: null
+        status: null,
+        error: err
       });
-      alert('Transaction Error: ' + err);
     });
   };
   sendUsingWeb3 = () => {
@@ -97666,9 +97668,9 @@ class Transaction {
         self.unsubTransaction = s;
       }).catch(err => {
         self.callback({
-          status: null
+          status: null,
+          error: err
         });
-        alert('Transaction Error: ' + err);
       });
     });
   };

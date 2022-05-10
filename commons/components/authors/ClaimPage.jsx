@@ -217,6 +217,9 @@ class ClaimPage extends React.Component {
     monitorRequest = (result) => {
         console.log('monitorRequest', result);
         this.setState({txStatus: result.status}) ;
+        if (result.error) {
+            alert(result.error) ;
+        }
     }
 
 
