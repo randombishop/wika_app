@@ -36,12 +36,10 @@ class Footer extends React.Component {
         super(props);
         this.state = {
             menuOpened: false,
-            activeButton: null
         };
     }
 
     buttonClicked = (value) => {
-        this.setState({activeButton: value}) ;
         if (value==='toggleMenu') {
             this.toggleMenu() ;
         } else {
@@ -98,7 +96,7 @@ class Footer extends React.Component {
 
     renderIcon = (label, icon, target) => {
         let color = "default" ;
-        if (target === this.state.activeButton) {
+        if (target === this.context.tab) {
             color = "primary" ;
         }
         return (<Grid item xs={3} align="center">

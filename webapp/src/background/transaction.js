@@ -20,6 +20,43 @@ function parseError(result) {
 }
 
 
+function createTransaction(txType, params) {
+    switch (txType) {
+        case 'like': return window.BACKGROUND.network.txLike(params.url, params.referrer, params.numLikes) ;
+        case 'owner_request': return window.BACKGROUND.network.txOwnerRequest(params.url) ;
+        default: return null ;
+    }
+}
+
+function sendTransaction(txType, params, account, callback) {
+    if (window.BACKGROUND.env === 'ext') {
+        sendTransactionInExtension(txType, params, account, callback) ;
+    } else {
+        if (account.mode === 'web3') {
+            sendTransactionUsingWeb3(txType, params, account, callback) ;
+        } else if (account.mode === 'wika') {
+            sendTransactionUsingWika(txType, params, account, callback) ;
+        }
+    }
+}
+
+function sendTransactionInExtension(txType, params, account, callback) {
+    let tx = createTransaction(txType, params) ;
+    let t = new Transaction(tx, account, callback) ;
+    t.sendInExtension() ;
+}
+
+function sendTransactionUsingWeb3(txType, params, account, callback) {
+    let tx = createTransaction(txType, params) ;
+    let t = new Transaction(tx, account, callback) ;
+    t.sendUsingWeb3() ;
+}
+
+function sendTransactionUsingWika(txType, params, account, callback) {
+    alert('sendUsingWika') ;
+}
+
+
 
 // Transaction
 class Transaction {
@@ -36,25 +73,16 @@ class Transaction {
             this.callback({status:'In block'}) ;
         } else if (status.isFinalized) {
             this.unsubTransaction();
+            let result = {status:null} ;
             let err = parseError(result) ;
             if (err) {
-                this.callback({status:'Error', err: err}) ;
-            } else {
-                this.callback({status:'Done'}) ;
+                result.error = err ;
             }
+            this.callback(result) ;
         }
     }
 
-    send = () => {
-        let mode = this.account.mode ;
-        if (mode==='web3') {
-            this.sendTransactionWeb3() ;
-        } else {
-            this.sendTransactionLocal() ;
-        }
-    }
-
-    sendTransactionLocal = () => {
+    sendInExtension = () => {
         let address = this.account.address ;
         let keyring = new Keyring({ type: 'sr25519' });
         let signer = keyring.addFromUri(this.account.phrase);
@@ -64,11 +92,11 @@ class Transaction {
         self.tx.signAndSend(signer, self.txMonitor).then((s) => {
             self.unsubTransaction = s;
         }).catch((err) => {
-            self.callback({status:'Error', err: err}) ;
+            self.callback({status:null, error:err}) ;
         }) ;
     }
 
-    sendTransactionWeb3 = () => {
+    sendUsingWeb3 = () => {
         let source = this.account.source ;
         let address = this.account.address ;
         console.log('sendTransactionWeb3', source, address);
@@ -78,11 +106,11 @@ class Transaction {
             self.tx.signAndSend(address, {signer: injector.signer}, self.txMonitor).then((s) => {
                 self.unsubTransaction = s;
             }).catch((err) => {
-                self.callback({status:'Error', err: err}) ;
+                self.callback({status:null, error:err}) ;
             }) ;
         });
     }
 
 }
 
-export default Transaction ;
+export default sendTransaction ;

@@ -12,11 +12,11 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            tab: "splash",
+            tab: null,
             network: {
-                type: "Wika Testnet",
-                url: "wss://testnode3.wika.network:443",
-                status: 'connecting'
+                type: window.BACKGROUND.network.type,
+                url: window.BACKGROUND.network.endpoint,
+                ready: window.BACKGROUND.network.getReady()
             },
             api: {
                 type: "Test API",
@@ -31,18 +31,36 @@ class App extends React.Component {
     }
 
     componentDidMount = () => {
-        this.connectNetwork() ;
+        this.getAccountFromStorage() ;
+        this.getTabFromStorage() ;
+    }
+
+    getAccountFromStorage = () => {
+        let self = this ;
+        window.BACKGROUND.storage.get('account', (result) => {
+            self.setState({account:result}, self.subscribeToBalance);
+        })
+    }
+
+    getTabFromStorage = () => {
+        let self = this ;
+        window.BACKGROUND.storage.get('tab', (result) => {
+            if (!result) {
+                result = 'splash';
+            }
+            self.setState({tab:result});
+        })
     }
 
     connectNetwork = (callback) => {
         let self = this ;
         let networkState = self.state.network ;
-        networkState.status = 'connecting' ;
+        networkState.ready = false ;
         self.setState({network:networkState}, () => {
             let network = window.BACKGROUND.network ;
-            network.connect(networkState.url, () => {
-                networkState.status = 'connected' ;
-                self.setState({network:networkState}, this.subscribeToBalance) ;
+            network.connect(networkState.type, networkState.url, () => {
+                networkState.ready = true ;
+                self.setState({network:networkState}, ) ;
             }) ;
         }) ;
     }
@@ -58,7 +76,7 @@ class App extends React.Component {
             usd:null
         } ;
         self.setState({balance:clearBalance}, () => {
-            if (self.state.account && self.state.network.status==='connected') {
+            if (self.state.account && self.state.network.ready) {
             let address = self.state.account.address;
             window.BACKGROUND.network.getBalance(address, (result) => {
                 let balanceWika = convertToWika(result.data.free) ;
@@ -78,10 +96,12 @@ class App extends React.Component {
 
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
+        window.BACKGROUND.storage.set('account', account) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
     navigate = (tab) => {
+        window.BACKGROUND.storage.set('tab', tab) ;
         this.setState({tab: tab});
     }
 
@@ -107,7 +127,7 @@ class App extends React.Component {
                     apiEndpoint: this.state.api
                 }}>
                     <MainContent />
-                    <Footer/>
+                    <Footer />
                 </AppContext.Provider>
             </div>
         );

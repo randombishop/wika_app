@@ -24,36 +24,38 @@ class Like1 extends React.Component {
         };
     }
 
+    componentDidMount() {
+        this._mounted = true;
+    }
+
+    componentWillUnmount() {
+       this._mounted = false;
+    }
+
     handleNumLikeChange = (event) => {
         this.setState({numLikes: event.target.value}, this.update) ;
     }
 
     submitLike = () => {
-        let self = this;
-        let url = self.props.url ;
-        let referrer = self.state.referrer ;
-        let numLikes = self.state.numLikes ;
-        let account = self.context.account ;
-        let tx = window.BACKGROUND.network.txLike(url, referrer, numLikes) ;
-        window.BACKGROUND.sendTransaction(tx, account, this.monitorLike) ;
+        let params = {url: this.props.url,
+                      referrer: this.state.referrer,
+                      numLikes: this.state.numLikes} ;
+        let account = this.context.account ;
+        window.BACKGROUND.sendTransaction('like', params, account, this.monitorLike) ;
     }
 
     monitorLike = (result) => {
-        console.log('monitorLike', result)
-        let status = result.status ;
-        if (status === 'Sending') {
-            this.setState({txStatus: 'Sending transaction...'}) ;
-        } else if (status === 'In block') {
-            this.setState({txStatus: 'In block...'}) ;
-        } else if (status === 'Done') {
-            this.setState({txStatus: null}) ;
-        } else if (status === 'Error') {
-            this.setState({txStatus: null}) ;
-            alert("Transaction failed: "+result.err) ;
-        } else {
-            console.log('Warning, unrecognized monitorLike status', result) ;
+        console.log('monitorLike', result);
+        if (this._mounted) {
+            this.setState({txStatus: result.status}) ;
+        }
+        if (result.error) {
+            alert(result.error) ;
         }
     }
+
+
+
 
     renderButton = () => {
         if (this.state.txStatus==null) {

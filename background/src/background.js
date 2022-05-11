@@ -14,6 +14,7 @@ console.log('EXECUTING BACKGROUND SCRIPT') ;
 // Pointers to background functions
 window.BACKGROUND = {
     cryptoReady: false,
+    web3Wallets: null,
     network: new WikaNetwork(),
     encryptWithAES: encryptWithAES,
     decryptWithAES: decryptWithAES,
@@ -39,7 +40,12 @@ window.BACKGROUND.storage = (env==='app')?new StorageApp():new StorageExt() ;
 window.BACKGROUND.initialize = (networkType, networkUrl, callback) => {
     cryptoWaitReady().then(() => {
         window.BACKGROUND.cryptoReady = true;
-        window.BACKGROUND.network.connect(networkType, networkUrl, callback) ;
+        window.BACKGROUND.network.connect(networkType, networkUrl, () => {
+            window.BACKGROUND.web3Enable("Wika Network").then((result) => {
+                window.BACKGROUND.web3Wallets = result ;
+                callback() ;
+            });
+        }) ;
     }) ;
 }
 

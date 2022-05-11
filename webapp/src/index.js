@@ -10,7 +10,9 @@ import '@fontsource/roboto/700.css';
 import './background/background.js';
 
 
-window.BACKGROUND.initCrypto(() => {
+const defaultNetworkType = "Wika Testnet" ;
+const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
+window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
     ReactDOM.render(
       <React.StrictMode>
         <App ref={(x) => {window.wikaReactApp = x;}}/>

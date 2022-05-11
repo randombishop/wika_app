@@ -32,7 +32,11 @@ function sendTransaction(txType, params, account, callback) {
     if (window.BACKGROUND.env === 'ext') {
         sendTransactionInExtension(txType, params, account, callback) ;
     } else {
-        alert('account.mode: '+account.mode) ;
+        if (account.mode === 'web3') {
+            sendTransactionUsingWeb3(txType, params, account, callback) ;
+        } else if (account.mode === 'wika') {
+            sendTransactionUsingWika(txType, params, account, callback) ;
+        }
     }
 }
 
@@ -42,13 +46,13 @@ function sendTransactionInExtension(txType, params, account, callback) {
     t.sendInExtension() ;
 }
 
-function sendUsingWeb3(txType, params, account, callback) {
+function sendTransactionUsingWeb3(txType, params, account, callback) {
     let tx = createTransaction(txType, params) ;
     let t = new Transaction(tx, account, callback) ;
     t.sendUsingWeb3() ;
 }
 
-function sendUsingWika(txType, params, account, callback) {
+function sendTransactionUsingWika(txType, params, account, callback) {
     alert('sendUsingWika') ;
 }
 
