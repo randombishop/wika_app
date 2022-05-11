@@ -12,7 +12,7 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            tab: "splash",
+            tab: null,
             network: {
                 type: window.BACKGROUND.network.type,
                 url: window.BACKGROUND.network.endpoint,
@@ -31,7 +31,25 @@ class App extends React.Component {
     }
 
     componentDidMount = () => {
-        this.subscribeToBalance() ;
+        this.getAccountFromStorage() ;
+        this.getTabFromStorage() ;
+    }
+
+    getAccountFromStorage = () => {
+        let self = this ;
+        window.BACKGROUND.storage.get('account', (result) => {
+            self.setState({account:result}, self.subscribeToBalance);
+        })
+    }
+
+    getTabFromStorage = () => {
+        let self = this ;
+        window.BACKGROUND.storage.get('tab', (result) => {
+            if (!result) {
+                result = 'splash';
+            }
+            self.setState({tab:result});
+        })
     }
 
     connectNetwork = (callback) => {
@@ -78,10 +96,12 @@ class App extends React.Component {
 
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
+        window.BACKGROUND.storage.set('account', account) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
     navigate = (tab) => {
+        window.BACKGROUND.storage.set('tab', tab) ;
         this.setState({tab: tab});
     }
 
@@ -107,7 +127,7 @@ class App extends React.Component {
                     apiEndpoint: this.state.api
                 }}>
                     <MainContent />
-                    <Footer/>
+                    <Footer />
                 </AppContext.Provider>
             </div>
         );
