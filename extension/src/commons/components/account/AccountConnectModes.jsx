@@ -20,28 +20,29 @@ class AccountConnectModes extends React.Component {
         super(props);
         this.state = {
             mode: 'web3',
-            web3Wallets: null,
-            localAccounts: null
+            web3Data: null,
+            wikaData: null
         };
     }
 
     componentDidMount = () => {
-        this.enableWeb3();
-        this.fetchLocalAccounts() ;
+        this.getWeb3Data();
+        this.getWikaData() ;
     }
 
-    enableWeb3 = () => {
+    getWeb3Data = () => {
         this.setState({web3Wallets: null}, () => {
             window.BACKGROUND.web3Enable("Wika Network").then((result) => {
-                this.setState({web3Wallets: result});
+                this.setState({web3Data: result});
             });
         });
     }
 
-    fetchLocalAccounts = () => {
-        this.context.storage.get('accounts').then((result) => {
-            console.log('result', result) ;
-            this.setState({localAccounts: result});
+    getWikaData = () => {
+        this.setState({wikaData: null}, () => {
+            window.WIKA_BRIDGE.accounts((result) => {
+                this.setState({wikaData: result});
+            }) ;
         });
     }
 
@@ -50,19 +51,15 @@ class AccountConnectModes extends React.Component {
     };
 
     continue = () => {
-        if (this.state.mode==='web3') {
-            this.props.next(this.state.mode, this.state.web3Wallets) ;
-        } else {
-            this.props.next(this.state.mode, this.state.localAccounts) ;
-        }
+        const mode = this.state.mode ;
+        const data = mode ==='web3' ? this.state.web3Data :  this.state.wikaData ;
+        this.props.next(mode, data) ;
     }
 
 
 
     renderSwitch = () => {
-        if (!this.state.web3Wallets) {
-            return this.renderWait();
-        } else {
+        if (this.state.web3Data) {
             return (
                 <React.Fragment>
                     {this.renderRadioChoice()}
@@ -72,6 +69,8 @@ class AccountConnectModes extends React.Component {
                     {this.renderContinueButton()}
                 </React.Fragment>
              );
+        } else {
+            return this.renderWait();
         }
     }
 
@@ -96,7 +95,7 @@ class AccountConnectModes extends React.Component {
                 onChange={this.handleModeChange}
               >
                 <FormControlLabel value="web3" control={<Radio />} label="Web3 wallet (for example polkadot.js)" />
-                <FormControlLabel value="local" control={<Radio />} label="Local storage of this browser" />
+                <FormControlLabel value="wika" control={<Radio />} label="Wika Browser Extension" />
               </RadioGroup>
             </FormControl>
           );
@@ -104,11 +103,10 @@ class AccountConnectModes extends React.Component {
 
     renderMessage = () => {
         let message = "" ;
-        if (this.state.mode==='local') {
-            message = `This will store the private keys in the local storage of the browser, protected by a password.
-                       Your password can't be retrieved if lost. Make sure to save it to safety.`
-        } else {
-            if (this.state.web3Wallets.length === 0) {
+        if (this.state.mode==='wika') {
+            message = `Wika Extension...`
+        } else if (this.state.mode==='web3') {
+            if (this.state.web3Data.length === 0) {
                 message = `No Polkadot wallets detected.
                            Please install one and make sure you authorize this app to use it.`
             } else {
@@ -121,7 +119,7 @@ class AccountConnectModes extends React.Component {
 
     renderContinueButton = () => {
         let disabled = false ;
-        if (this.state.mode==='web3' && this.state.web3Wallets.length === 0) {
+        if (this.state.mode==='web3' && this.state.web3Data.length === 0) {
             disabled = true ;
         }
         return (

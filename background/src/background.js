@@ -8,8 +8,11 @@ import WikaNetwork from './network.js' ;
 import sendTransaction from './transaction.js' ;
 import {encryptWithAES, decryptWithAES, importAccount, generateAccount} from './crypto.js' ;
 import {StorageApp, StorageExt} from './storage.js' ;
+import ExtensionPort from './extension_port.js' ;
+
 
 console.log('EXECUTING BACKGROUND SCRIPT') ;
+
 
 // Pointers to background functions
 window.BACKGROUND = {
@@ -56,5 +59,10 @@ if (env === 'ext') {
     window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
         console.log('BACKGROUND init done.')
     }) ;
+}
+
+// Instantiate Extension bridge
+if (env === 'ext') {
+    window.BACKGROUND.port = new ExtensionPort() ;
 }
 

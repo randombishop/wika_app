@@ -25,5 +25,8 @@
     "128": "/images/logo128.png"
   },
   "permissions": ["storage","activeTab"],
+  "externally_connectable": {
+    "matches": ["http://localhost:3000/"]
+  },
   "content_security_policy":  "script-src 'self' blob: 'unsafe-eval' 'wasm-eval'; object-src 'self'"
 }

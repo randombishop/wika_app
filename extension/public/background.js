@@ -97298,12 +97298,15 @@ var _crypto = require("./crypto.js");
 
 var _storage = require("./storage.js");
 
+var _extension_port = _interopRequireDefault(require("./extension_port.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 console.log('EXECUTING BACKGROUND SCRIPT'); // Pointers to background functions
 
 window.BACKGROUND = {
   cryptoReady: false,
+  web3Wallets: null,
   network: new _network.default(),
   encryptWithAES: _crypto.encryptWithAES,
   decryptWithAES: _crypto.decryptWithAES,
@@ -97326,7 +97329,12 @@ window.BACKGROUND.storage = env === 'app' ? new _storage.StorageApp() : new _sto
 window.BACKGROUND.initialize = (networkType, networkUrl, callback) => {
   (0, _utilCrypto.cryptoWaitReady)().then(() => {
     window.BACKGROUND.cryptoReady = true;
-    window.BACKGROUND.network.connect(networkType, networkUrl, callback);
+    window.BACKGROUND.network.connect(networkType, networkUrl, () => {
+      window.BACKGROUND.web3Enable("Wika Network").then(result => {
+        window.BACKGROUND.web3Wallets = result;
+        callback();
+      });
+    });
   });
 }; // One time initialization if we are in extension
 
@@ -97337,9 +97345,14 @@ if (env === 'ext') {
   window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
     console.log('BACKGROUND init done.');
   });
+} // Instantiate Extension bridge
+
+
+if (env === 'ext') {
+  window.BACKGROUND.port = new _extension_port.default();
 }
 
-},{"./crypto.js":1070,"./network.js":1071,"./storage.js":1072,"./transaction.js":1073,"./utils.js":1074,"@polkadot/extension-dapp":149,"@polkadot/util":584,"@polkadot/util-crypto":457}],1070:[function(require,module,exports){
+},{"./crypto.js":1070,"./extension_port.js":1071,"./network.js":1072,"./storage.js":1073,"./transaction.js":1074,"./utils.js":1075,"@polkadot/extension-dapp":149,"@polkadot/util":584,"@polkadot/util-crypto":457}],1070:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -97403,6 +97416,70 @@ function generateAccount() {
 }
 
 },{"@polkadot/api":133,"@polkadot/util-crypto":457,"crypto-js/aes":748,"crypto-js/enc-utf8":752}],1071:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+class ExtensionPort {
+  constructor() {
+    this.registerListener();
+  }
+
+  registerListener = () => {
+    let self = this;
+    window.chrome.runtime.onMessageExternal.addListener(function (request, sender, sendResponse) {
+      const source = sender.documentId;
+      const message = request.message;
+
+      switch (message) {
+        case 'ping':
+          return self.ping(source, request, sendResponse);
+
+        case 'accounts':
+          return self.accounts(source, request, sendResponse);
+
+        default:
+          return self.debug(source, request, sendResponse);
+      }
+    });
+  };
+  ping = (source, request, sendResponse) => {
+    sendResponse('pong');
+  };
+  accounts = (source, request, sendResponse) => {
+    window.BACKGROUND.storage.get('accounts', list => {
+      var ans = [];
+
+      if (list) {
+        ans = list.map(a => {
+          return {
+            address: a.address,
+            addressRaw: a.addressRaw,
+            name: a.name
+          };
+        });
+      }
+
+      sendResponse(ans);
+    });
+  };
+  debug = (source, request, sendResponse) => {
+    const data = {
+      message: 'debug',
+      source: source,
+      request: request
+    };
+    sendResponse(data);
+  };
+}
+
+var _default = ExtensionPort;
+exports.default = _default;
+
+},{}],1072:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -97492,7 +97569,7 @@ class WikaNetwork {
 var _default = WikaNetwork;
 exports.default = _default;
 
-},{"@polkadot/api":133}],1072:[function(require,module,exports){
+},{"@polkadot/api":133}],1073:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -97537,7 +97614,7 @@ class StorageExt {
 
 exports.StorageExt = StorageExt;
 
-},{}],1073:[function(require,module,exports){
+},{}],1074:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -97584,7 +97661,11 @@ function sendTransaction(txType, params, account, callback) {
   if (window.BACKGROUND.env === 'ext') {
     sendTransactionInExtension(txType, params, account, callback);
   } else {
-    alert('account.mode: ' + account.mode);
+    if (account.mode === 'web3') {
+      sendTransactionUsingWeb3(txType, params, account, callback);
+    } else if (account.mode === 'wika') {
+      sendTransactionUsingWika(txType, params, account, callback);
+    }
   }
 }
 
@@ -97594,13 +97675,13 @@ function sendTransactionInExtension(txType, params, account, callback) {
   t.sendInExtension();
 }
 
-function sendUsingWeb3(txType, params, account, callback) {
+function sendTransactionUsingWeb3(txType, params, account, callback) {
   let tx = createTransaction(txType, params);
   let t = new Transaction(tx, account, callback);
   t.sendUsingWeb3();
 }
 
-function sendUsingWika(txType, params, account, callback) {
+function sendTransactionUsingWika(txType, params, account, callback) {
   alert('sendUsingWika');
 } // Transaction
 
@@ -97679,7 +97760,7 @@ class Transaction {
 var _default = sendTransaction;
 exports.default = _default;
 
-},{"@polkadot/api":133,"@polkadot/extension-dapp":149}],1074:[function(require,module,exports){
+},{"@polkadot/api":133,"@polkadot/extension-dapp":149}],1075:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

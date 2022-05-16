@@ -5,8 +5,6 @@ import AppContext from "../../utils/context";
 import AccountConnectModes from "./AccountConnectModes";
 import AccountConnectWeb3 from "./AccountConnectWeb3";
 import AccountConnectWika from "./AccountConnectWika";
-import Account from "./Account";
-
 
 
 class AccountConnect extends React.Component {
@@ -33,29 +31,23 @@ class AccountConnect extends React.Component {
     }
 
     selectAccount = (account) => {
-        //alert(JSON.stringify(account)) ;
         this.context.selectAccount(account) ;
     }
 
     render = () => {
-        if (this.context.account) {
-            return <Account /> ;
+        if (!this.state.selectedMode) {
+            return <AccountConnectModes next={this.selectMode} /> ;
         } else {
-            if (!this.state.selectedMode) {
-                return <AccountConnectModes next={this.selectMode} /> ;
+            if (this.state.selectedMode==='web3') {
+                return (<AccountConnectWeb3
+                            providers={this.state.data}
+                            back={this.cancelMode}
+                            next={this.selectAccount} />) ;
             } else {
-                if (this.state.selectedMode==='web3') {
-                    return <AccountConnectWeb3 providers={this.state.data}
-                                back={this.cancelMode}
-                                next={this.selectAccount}
-                           /> ;
-                } else {
-                    return <AccountConnectWika accounts={this.state.data}
-                                back={this.cancelMode}
-                                next={this.selectAccount}
-                           /> ;
-                }
-            }
+                return (<AccountConnectWika
+                            back={this.cancelMode}
+                            next={this.selectAccount} />) ;
+           }
         }
     }
 

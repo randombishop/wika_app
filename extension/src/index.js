@@ -9,7 +9,6 @@ import '@fontsource/roboto/700.css';
 import App from './commons/components/App';
 
 
-
 console.log('BACKGROUND') ;
 window.BACKGROUND = window.chrome.extension.getBackgroundPage().BACKGROUND ;
 console.log(window.BACKGROUND) ;

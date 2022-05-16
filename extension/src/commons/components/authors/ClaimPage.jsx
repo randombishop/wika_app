@@ -54,6 +54,7 @@ class ClaimPage extends React.Component {
     componentDidMount = () => {
         this.getOwnersRequestPrice() ;
         this.subscribeToBlockNumber() ;
+        this._mounted = true;
     }
 
     getOwnersRequestPrice = () => {
@@ -216,7 +217,9 @@ class ClaimPage extends React.Component {
 
     monitorRequest = (result) => {
         console.log('monitorRequest', result);
-        this.setState({txStatus: result.status}) ;
+        if (this._mounted) {
+            this.setState({txStatus: result.status}) ;
+        }
         if (result.error) {
             alert(result.error) ;
         }
@@ -249,6 +252,7 @@ class ClaimPage extends React.Component {
     // --------------------------------------
 
     componentWillUnmount = () => {
+        this._mounted = false;
         if (this.unsubUrlOwner) {
             this.unsubUrlOwner() ;
         }

@@ -40,7 +40,9 @@ class AccountConnectModes extends React.Component {
 
     getWikaData = () => {
         this.setState({wikaData: null}, () => {
-            console.log('Checking wika extension...')
+            window.WIKA_BRIDGE.accounts((result) => {
+                this.setState({wikaData: result});
+            }) ;
         });
     }
 
@@ -56,31 +58,7 @@ class AccountConnectModes extends React.Component {
 
 
 
-    renderSwitch = () => {
-        if (this.state.web3Data) {
-            return (
-                <React.Fragment>
-                    {this.renderRadioChoice()}
-                    <br/><br/>
-                    {this.renderMessage()}
-                    <br/><br/>
-                    {this.renderContinueButton()}
-                </React.Fragment>
-             );
-        } else {
-            return this.renderWait();
-        }
-    }
 
-    renderWait = () => {
-        return (
-            <Typography variant="body1">
-                <i className="fas fa-spinner"></i>
-                &nbsp;&nbsp;
-                Checking availability of Web3 wallets...
-            </Typography>
-        );
-    }
 
     renderRadioChoice = () => {
         return (
@@ -102,23 +80,32 @@ class AccountConnectModes extends React.Component {
     renderMessage = () => {
         let message = "" ;
         if (this.state.mode==='wika') {
-            message = `Wika Extension...`
-        } else if (this.state.mode==='web3') {
-            if (this.state.web3Data.length === 0) {
-                message = `No Polkadot wallets detected.
-                           Please install one and make sure you authorize this app to use it.`
+            if (this.state.wikaData && this.state.wikaData.length>0) {
+                message = `Wika browser extension detected and accounts are configured.
+                           Let's go!`
             } else {
+                message = `No Wika Extension accounts detected.
+                           Please install it and make sure you have an account already set up.`
+            }
+        } else if (this.state.mode==='web3') {
+            if (this.state.web3Data && this.state.web3Data.length>0) {
                 message = `Polkadot wallets detected and authorized with this app.
                            Let's go!`
+            } else {
+                message = `No Polkadot wallets detected.
+                           Please install one and make sure you authorize this app to use it.`
             }
         }
         return (<Typography variant="body1">{message}</Typography>) ;
     }
 
     renderContinueButton = () => {
-        let disabled = false ;
-        if (this.state.mode==='web3' && this.state.web3Data.length === 0) {
-            disabled = true ;
+        let disabled = true ;
+        if (this.state.mode==='web3' && this.state.web3Data && this.state.web3Data.length>0) {
+            disabled = false ;
+        }
+        if (this.state.mode==='wika' && this.state.wikaData && this.state.wikaData.length>0) {
+            disabled = false ;
         }
         return (
             <Container align="right">
@@ -134,9 +121,13 @@ class AccountConnectModes extends React.Component {
     render = () => {
         return (
             <div>
-                {this.renderSwitch()}
+                {this.renderRadioChoice()}
+                <br/><br/>
+                {this.renderMessage()}
+                <br/><br/>
+                {this.renderContinueButton()}
             </div>
-        );
+         );
     }
 
 }

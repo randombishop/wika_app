@@ -24,6 +24,14 @@ class Like1 extends React.Component {
         };
     }
 
+    componentDidMount() {
+        this._mounted = true;
+    }
+
+    componentWillUnmount() {
+       this._mounted = false;
+    }
+
     handleNumLikeChange = (event) => {
         this.setState({numLikes: event.target.value}, this.update) ;
     }
@@ -38,11 +46,16 @@ class Like1 extends React.Component {
 
     monitorLike = (result) => {
         console.log('monitorLike', result);
-        this.setState({txStatus: result.status}) ;
+        if (this._mounted) {
+            this.setState({txStatus: result.status}) ;
+        }
         if (result.error) {
             alert(result.error) ;
         }
     }
+
+
+
 
     renderButton = () => {
         if (this.state.txStatus==null) {
