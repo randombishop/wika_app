@@ -97422,6 +97422,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=600,left=400,top=100";
 
 class ExtensionPort {
   constructor() {
@@ -97440,6 +97441,9 @@ class ExtensionPort {
 
         case 'accounts':
           return self.accounts(source, request, sendResponse);
+
+        case 'transaction':
+          return self.transaction(source, request, sendResponse);
 
         default:
           return self.debug(source, request, sendResponse);
@@ -97465,6 +97469,15 @@ class ExtensionPort {
 
       sendResponse(ans);
     });
+  };
+  transaction = (source, request, sendResponse) => {
+    window.open("index.html", "extension_popup", POPUP_PARAMS);
+    const data = {
+      message: 'debug',
+      source: source,
+      request: request
+    };
+    sendResponse(data);
   };
   debug = (source, request, sendResponse) => {
     const data = {

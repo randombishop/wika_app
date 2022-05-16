@@ -45,6 +45,7 @@ class AccountConnect extends React.Component {
                             next={this.selectAccount} />) ;
             } else {
                 return (<AccountConnectWika
+                            accounts={this.state.data}
                             back={this.cancelMode}
                             next={this.selectAccount} />) ;
            }

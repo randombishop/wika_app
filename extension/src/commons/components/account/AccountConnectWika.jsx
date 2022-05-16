@@ -25,26 +25,23 @@ class AccountConnectWika extends React.Component {
 
     continue = () => {
         let account = this.props.accounts[this.state.account] ;
-        let address = account.address ;
-        let name = account.accountName ;
-        let addressRaw = account.addressRaw ;
-        let phrase = account.phrase ;
         let data = {
-            mode: 'local',
-            name: name,
-            address: address,
-            addressRaw: addressRaw,
-            phrase: phrase
+            mode: 'wika',
+            name: account.name ,
+            address: account.address,
+            addressRaw: account.addressRaw
         };
         this.props.next(data) ;
     }
 
 
+
+
     renderAccountList = () => {
       return (
         <AccountList accounts={this.props.accounts}
-                              account={this.state.account}
-                              selectAccount={this.selectAccount} />
+                     account={this.state.account}
+                     selectAccount={this.selectAccount} />
       );
     }
 

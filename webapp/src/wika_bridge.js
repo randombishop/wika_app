@@ -29,6 +29,16 @@ class WikaBridge {
         this.sendMessage({message:'accounts'}, callback) ;
     }
 
+    transaction = (txType, params, account, callback) => {
+        const message = {
+            message:'transaction',
+            txType: txType,
+            params: params,
+            account: account['address']
+        } ;
+        this.sendMessage(message, callback) ;
+    }
+
 }
 
 export default WikaBridge ;
