@@ -97422,7 +97422,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=600,left=400,top=100";
+const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=630,left=400,top=100";
 
 class ExtensionPort {
   constructor() {
@@ -97471,7 +97471,24 @@ class ExtensionPort {
     });
   };
   transaction = (source, request, sendResponse) => {
-    window.open("index.html", "extension_popup", POPUP_PARAMS);
+    function done() {
+      alert('done');
+    }
+
+    const win = window.open("index.html", "extension_popup", POPUP_PARAMS);
+    var counter = 0;
+
+    function check() {
+      counter++;
+
+      if (win.wikaReactApp && win.wikaReactApp._mounted) {
+        win.wikaReactApp.signTransaction(request.txType, request.params, request.address, done);
+      } else if (counter < 100) {
+        setTimeout(check, 10);
+      }
+    }
+
+    check();
     const data = {
       message: 'debug',
       source: source,

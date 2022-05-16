@@ -2,10 +2,8 @@ import React from "react";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Fab from '@mui/material/Fab';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import Container from '@mui/material/Container';
 
 
 import AppContext from "../utils/context";
@@ -59,15 +57,6 @@ class Splash extends React.Component {
                         "Protect your privacy and promote quality content.")}
                   </Grid>
                 </Grid>
-                <br/>
-                {this.context.account==null?
-                    <Container align="center">
-                        <Fab variant="extended" color="primary"
-                             onClick={() => this.context.navigate('account')}>
-                            Connect your account and get started now!
-                        </Fab>
-                    </Container>
-                 :""}
             </div>
         );
     }

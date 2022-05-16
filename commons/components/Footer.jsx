@@ -7,6 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Fab from '@mui/material/Fab';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 
 import AppContext from "../utils/context";
@@ -114,19 +115,40 @@ class Footer extends React.Component {
                 </Grid>);
     }
 
+    renderAccountButton() {
+        return (
+            <Container align="center">
+                <Fab variant="extended" color="primary"
+                     onClick={() => this.context.navigate('account')}>
+                    Connect your account
+                </Fab>
+            </Container>
+        ) ;
+    }
+
+    renderMainActions() {
+        return (
+            <React.Fragment>
+              <Grid container spacing={2}>
+                {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
+                {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
+                {this.renderIcon('Send', 'fa-paper-plane', 'wallet')}
+                {this.renderIcon('More', 'fa-plus-square', 'toggleMenu')}
+              </Grid>
+              {this.renderMenu()}
+            </React.Fragment>
+        ) ;
+    }
+
     renderSwitch() {
-        if (!this.context.account) {
-            return "" ;
+        if (!this.context.account && this.context.tab !== 'account') {
+            return this.renderAccountButton() ;
+        } else if (this.context.account && this.context.tab !== 'sign_transaction') {
+            return this.renderMainActions() ;
+        } else if (this.context.account && this.context.tab === 'sign_transaction') {
+            return "confirm or reject transaction" ;
         } else {
-            return (<React.Fragment>
-                      <Grid container spacing={2}>
-                        {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
-                        {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
-                        {this.renderIcon('Send', 'fa-paper-plane', 'wallet')}
-                        {this.renderIcon('More', 'fa-plus-square', 'toggleMenu')}
-                      </Grid>
-                      {this.renderMenu()}
-                    </React.Fragment>) ;
+            return "" ;
         }
     }
 

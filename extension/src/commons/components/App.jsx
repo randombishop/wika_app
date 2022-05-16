@@ -13,6 +13,9 @@ class App extends React.Component {
         super(props);
         this.state = {
             tab: null,
+            transactionType: null,
+            transactionParams: null,
+            transactionAddress: null,
             network: {
                 type: window.BACKGROUND.network.type,
                 url: window.BACKGROUND.network.endpoint,
@@ -38,7 +41,11 @@ class App extends React.Component {
     getAccountFromStorage = () => {
         let self = this ;
         window.BACKGROUND.storage.get('account', (result) => {
-            self.setState({account:result}, self.subscribeToBalance);
+            self.setState({account:result}, () => {
+                self.subscribeToBalance() ;
+                self._mountedAccount = true ;
+                self._mounted = self._mountedTab && self._mountedAccount ;
+            });
         })
     }
 
@@ -48,9 +55,27 @@ class App extends React.Component {
             if (!result) {
                 result = 'splash';
             }
-            self.setState({tab:result});
+            self.setState({tab:result}, () => {
+                self._mountedTab = true ;
+                self._mounted = self._mountedTab && self._mountedAccount ;
+            });
         })
     }
+
+    ping = () => {
+        console.log('pong') ;
+    }
+
+    signTransaction = (txType, params, address, callback) => {
+        console.log('signTransaction', txType, this._mounted) ;
+        this.setState({
+            tab: 'sign_transaction'
+        }) ;
+    }
+
+
+
+
 
     connectNetwork = (callback) => {
         let self = this ;
@@ -106,6 +131,7 @@ class App extends React.Component {
     }
 
     componentWillUnmount = () => {
+        this._mounted = false;
         if (this.unsubGetBalance) {
             this.unsubGetBalance() ;
         }

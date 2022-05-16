@@ -34,7 +34,7 @@ class WikaBridge {
             message:'transaction',
             txType: txType,
             params: params,
-            account: account['address']
+            address: account['address']
         } ;
         this.sendMessage(message, callback) ;
     }
