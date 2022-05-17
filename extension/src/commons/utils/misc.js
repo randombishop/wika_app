@@ -141,6 +141,15 @@ function bytesToHex(byteArray) {
 
 
 
+// Find an account by address
+function findAccount(accounts, address) {
+    if (accounts) {
+        return accounts.find(x => (x.address===address)) ;
+    } else {
+        return null ;
+    }
+}
+
 
 
 
@@ -148,5 +157,6 @@ function bytesToHex(byteArray) {
 export {
     copyToClipboard,
     convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, shortenAddress,
-    hexToBytes, bytesToString, bytesToHex
+    hexToBytes, bytesToString, bytesToHex,
+    findAccount
 } ;

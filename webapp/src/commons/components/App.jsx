@@ -2,7 +2,7 @@ import React from "react";
 
 
 import AppContext from '../utils/context' ;
-import {convertToWika, wikaToUsd} from "../utils/misc";
+import {convertToWika, wikaToUsd, findAccount} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
 
@@ -15,7 +15,6 @@ class App extends React.Component {
             tab: null,
             transactionType: null,
             transactionParams: null,
-            transactionAddress: null,
             network: {
                 type: window.BACKGROUND.network.type,
                 url: window.BACKGROUND.network.endpoint,
@@ -67,15 +66,22 @@ class App extends React.Component {
     }
 
     signTransaction = (txType, params, address, callback) => {
-        console.log('signTransaction', txType, this._mounted) ;
-        this.setState({
-            tab: 'sign_transaction'
+        const self = this ;
+        console.log('signTransaction -> data', txType, params, address, this._mounted) ;
+        window.BACKGROUND.storage.get('accounts', (accounts) => {
+            const account = findAccount(accounts, address) ;
+            console.log('signTransaction -> account', account) ;
+            if (account) {
+                self.signTransactionCallback = callback ;
+                self.selectAccount(account) ;
+                self.setState({
+                    tab: 'sign_transaction',
+                    transactionType: txType,
+                    transactionParams: params
+                }) ;
+            }
         }) ;
     }
-
-
-
-
 
     connectNetwork = (callback) => {
         let self = this ;
@@ -130,12 +136,33 @@ class App extends React.Component {
         this.setState({tab: tab});
     }
 
+    rejectTransaction = () => {
+        this.signTransactionCallback('rejected') ;
+        window.close() ;
+    }
+
+    confirmTransaction = () => {
+        const txType = this.state.transactionType ;
+        const txParams = this.state.transactionParams ;
+        const account = this.state.account ;
+        window.BACKGROUND.sendTransaction(txType, txParams, account, (result) => {
+            if (result.status==='In block') {
+                this.signTransactionCallback('confirmed') ;
+                window.close() ;
+            }
+        }) ;
+    }
+
     componentWillUnmount = () => {
         this._mounted = false;
         if (this.unsubGetBalance) {
             this.unsubGetBalance() ;
         }
     }
+
+
+
+
 
     render() {
         return (
@@ -150,7 +177,12 @@ class App extends React.Component {
                     navigate: this.navigate,
                     selectAccount: this.selectAccount,
                     // API Endpoint
-                    apiEndpoint: this.state.api
+                    apiEndpoint: this.state.api,
+                    // Transaction signing
+                    transactionType: this.state.transactionType,
+                    transactionParams: this.state.transactionParams,
+                    rejectTransaction: this.rejectTransaction,
+                    confirmTransaction: this.confirmTransaction
                 }}>
                     <MainContent />
                     <Footer />

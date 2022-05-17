@@ -36,6 +36,7 @@ class WikaBridge {
             params: params,
             address: account['address']
         } ;
+        callback({status:'Confirming'}) ;
         this.sendMessage(message, callback) ;
     }
 

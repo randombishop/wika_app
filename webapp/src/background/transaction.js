@@ -53,7 +53,7 @@ function sendTransactionUsingWeb3(txType, params, account, callback) {
 }
 
 function sendTransactionUsingWika(txType, params, account, callback) {
-    alert('sendUsingWika') ;
+    window.WIKA_BRIDGE.transaction(txType, params, account, callback);
 }
 
 

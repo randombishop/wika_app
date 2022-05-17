@@ -44,8 +44,12 @@ class ExtensionPort {
     }
 
     transaction = (source, request, sendResponse) => {
-        function done() {
-            alert('done');
+        function done(outcome) {
+            if (outcome === 'confirmed') {
+                sendResponse({status:null}) ;
+            } else {
+                sendResponse({status:null, err:'Transaction was not confirmed'}) ;
+            }
         }
         const win = window.open("index.html", "extension_popup", POPUP_PARAMS) ;
         var counter = 0 ;
@@ -56,17 +60,13 @@ class ExtensionPort {
                                                  request.params,
                                                  request.address,
                                                  done);
-            } else if (counter<100) {
+            } else if (counter<250) {
                 setTimeout(check, 10);
+            } else {
+                sendResponse({status:null, err:'Could not open the Wika extension'}) ;
             }
         }
         check() ;
-        const data = {
-            message: 'debug',
-            source: source,
-            request: request
-        }
-        sendResponse(data) ;
     }
 
     debug = (source, request, sendResponse) => {

@@ -13,6 +13,7 @@ import OwnedPages from "./authors/OwnedPages";
 import ClaimPage from "./authors/ClaimPage";
 import Keccak from "./debug/Keccak";
 import Wip from "./debug/Wip";
+import SignTransaction from "./transaction/SignTransaction";
 
 
 class MainContent extends React.Component {
@@ -35,7 +36,8 @@ class MainContent extends React.Component {
         liked_pages: {title:"Liked pages", component:<LikedPages />} ,
         owned_pages: {title:"Owned pages", component:<OwnedPages />} ,
         claim_page: {title:"Claim page ownership", component:<ClaimPage />} ,
-        keccak: {title:"Keccak", component:<Keccak />}
+        keccak: {title:"Keccak", component:<Keccak />},
+        sign_transaction: {title:"Sign a Transaction", component:<SignTransaction />}
     }
 
     getTitle = () => {
