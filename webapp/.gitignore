@@ -24,7 +24,5 @@ yarn-error.log*
 
 
 
-# Exclude lock files:
-package-lock.json
-yarn.lock
+
 
