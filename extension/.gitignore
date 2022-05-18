@@ -23,8 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 
 
+# Exclude folders copied from webapp
+/src/background
+/src/ux
 
-# Exclude lock files:
-package-lock.json
-yarn.lock
 
