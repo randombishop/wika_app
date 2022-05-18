@@ -15,6 +15,7 @@ class App extends React.Component {
             tab: null,
             transactionType: null,
             transactionParams: null,
+            transactionSent: false,
             network: {
                 type: window.BACKGROUND.network.type,
                 url: window.BACKGROUND.network.endpoint,
@@ -77,7 +78,8 @@ class App extends React.Component {
                 self.setState({
                     tab: 'sign_transaction',
                     transactionType: txType,
-                    transactionParams: params
+                    transactionParams: params,
+                    transactionSent: false
                 }) ;
             }
         }) ;
@@ -145,6 +147,7 @@ class App extends React.Component {
         const txType = this.state.transactionType ;
         const txParams = this.state.transactionParams ;
         const account = this.state.account ;
+        this.setState({transactionSent: true}) ;
         window.BACKGROUND.sendTransaction(txType, txParams, account, (result) => {
             if (result.status==='In block') {
                 this.signTransactionCallback('confirmed') ;
@@ -179,6 +182,7 @@ class App extends React.Component {
                     // API Endpoint
                     apiEndpoint: this.state.api,
                     // Transaction signing
+                    transactionSent: this.state.transactionSent,
                     transactionType: this.state.transactionType,
                     transactionParams: this.state.transactionParams,
                     rejectTransaction: this.rejectTransaction,

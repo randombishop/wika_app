@@ -8,7 +8,7 @@ import Fab from '@mui/material/Fab';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-
+import CircularProgress from '@mui/material/CircularProgress';
 
 import AppContext from "../utils/context";
 
@@ -141,19 +141,27 @@ class Footer extends React.Component {
     }
 
     renderTransactionButtons() {
-        return (
-            <Container align="center" sx={{paddingTop:'7px'}}>
-                <Fab variant="extended" color="secondary"
-                     onClick={this.context.rejectTransaction}>
-                    Reject
-                </Fab>
-                &nbsp;&nbsp;
-                <Fab variant="extended" color="primary"
-                     onClick={this.context.confirmTransaction}>
-                    Confirm
-                </Fab>
-            </Container>
-        ) ;
+        if (this.context.transactionSent) {
+            return (
+                <Container sx={{paddingTop:'7px'}} align="center">
+                    <CircularProgress />
+                </Container>
+            ) ;
+        } else {
+            return (
+                <Container align="center" sx={{paddingTop:'7px'}}>
+                    <Fab variant="extended" color="secondary"
+                         onClick={this.context.rejectTransaction}>
+                        Reject
+                    </Fab>
+                    &nbsp;&nbsp;
+                    <Fab variant="extended" color="primary"
+                         onClick={this.context.confirmTransaction}>
+                        Confirm
+                    </Fab>
+                </Container>
+            ) ;
+        }
     }
 
     renderSwitch() {
