@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './commons/css/wika.css';
-import './commons/css/awesome.css';
+import './ux/css/wika.css';
+import './ux/css/awesome.css';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import App from './commons/components/App';
+import App from './ux/components/App';
 
 
 console.log('BACKGROUND') ;
