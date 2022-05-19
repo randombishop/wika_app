@@ -7,10 +7,11 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import './background/background.js';
-import WikaBridge from './wika_bridge';
+import WikaBackground from './background/background.js';
+import WikaBridge from './background/wika_bridge';
 
 
+window.BACKGROUND = new WikaBackground() ;
 window.WIKA_BRIDGE = new WikaBridge() ;
 
 const defaultNetworkType = "Wika Testnet" ;

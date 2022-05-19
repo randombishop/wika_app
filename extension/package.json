@@ -25,7 +25,7 @@
     "crypto-js": "4.1.1"
   },
   "scripts": {
-    "background": "rm -rf ./src/background && cp -R ../webapp/src/background ./src/background && browserify -p esmify ./src/background/background.js > public/background.js",
+    "background": "rm -rf ./src/background && cp -R ../webapp/src/background ./src/background && browserify -p esmify ./src/background/service.js > public/service.js",
     "ux": "rm -rf ./src/ux && cp -R ../webapp/src/ux ./src/ux",
     "react": "react-scripts build",
     "build": "npm run background && npm run ux && npm run react"
