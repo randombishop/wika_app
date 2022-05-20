@@ -1,6 +1,9 @@
 import WikaBackground from './background.js' ;
-import WebappPort from './webapp_port';
 
 
-window.BACKGROUND = new WikaBackground() ;
-window.WIKA_BRIDGE = new WebappPort() ;
+const BACKGROUND = new WikaBackground() ;
+
+
+window.getBackground = (callback) => {
+    callback(BACKGROUND) ;
+}

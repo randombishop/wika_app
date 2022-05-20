@@ -8,6 +8,8 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './background/background_web.js';
+import {web3Enable} from '@polkadot/extension-dapp' ;
+
 
 
 
@@ -23,5 +25,7 @@ window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
 }) ;
 
 
-
+web3Enable("Wika Network").then((result) => {
+    console.log('web3Enable', result) ;
+})
 

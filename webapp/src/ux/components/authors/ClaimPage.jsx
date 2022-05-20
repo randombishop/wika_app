@@ -11,6 +11,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 import AppContext from "../../utils/context";
 import {bytesToString, convertToWika, copyToClipboard} from "../../utils/misc";
+import sendTransaction from '../../utils/transaction' ;
 
 
 class ClaimPage extends React.Component {
@@ -212,7 +213,7 @@ class ClaimPage extends React.Component {
     submitRequest = () => {
         let url = this.state.url ;
         let account = this.context.account ;
-        window.BACKGROUND.sendTransaction('owner_request', {url:url}, account, this.monitorRequest) ;
+        sendTransaction('owner_request', {url:url}, account, this.monitorRequest) ;
     }
 
     monitorRequest = (result) => {

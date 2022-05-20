@@ -1,9 +1,7 @@
 import {Keyring} from '@polkadot/api';
-//import {web3FromSource} from '@polkadot/extension-dapp';
+import {web3FromSource} from '@polkadot/extension-dapp';
 
-function web3FromSource() {
 
-}
 
 // Parse error returned from polkadot API
 function parseError(result) {

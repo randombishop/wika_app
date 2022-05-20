@@ -6,7 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-
+import {web3Accounts} from '@polkadot/extension-dapp' ;
 
 
 import AccountList from './AccountList' ;
@@ -29,7 +29,7 @@ class AccountConnectWeb3 extends React.Component {
 
     getAccounts = () => {
         this.setState({accounts: []}, () => {
-            window.BACKGROUND.web3Accounts().then((result) => {
+            web3Accounts().then((result) => {
                 this.setState({accounts: result});
             });
         });

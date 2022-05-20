@@ -7,6 +7,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
+import {web3Enable} from '@polkadot/extension-dapp' ;
 
 
 import AppContext from "../../utils/context";
@@ -32,7 +33,7 @@ class AccountConnectModes extends React.Component {
 
     getWeb3Data = () => {
         this.setState({web3Wallets: null}, () => {
-            window.BACKGROUND.web3Enable("Wika Network").then((result) => {
+            web3Enable("Wika Network").then((result) => {
                 this.setState({web3Data: result});
             });
         });

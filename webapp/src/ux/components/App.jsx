@@ -5,6 +5,7 @@ import AppContext from '../utils/context' ;
 import {convertToWika, wikaToUsd, findAccount} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
+import sendTransaction from '../utils/transaction' ;
 
 
 class App extends React.Component {
@@ -17,9 +18,9 @@ class App extends React.Component {
             transactionParams: null,
             transactionSent: false,
             network: {
-                type: window.BACKGROUND.network.type,
-                url: window.BACKGROUND.network.endpoint,
-                ready: window.BACKGROUND.network.getReady()
+                type: null,
+                url: null,
+                ready: false
             },
             api: {
                 type: "Test API",
@@ -38,28 +39,46 @@ class App extends React.Component {
         this.getTabFromStorage() ;
     }
 
+    getNetworkState = () => {
+        let self = this ;
+        window.getBackground((BACKGROUND) => {
+            const state = {
+                network: {
+                    type: BACKGROUND.network.type,
+                    url: BACKGROUND.network.endpoint,
+                    ready: BACKGROUND.network.getReady()
+                }
+            }
+            self.setState(state) ;
+        }) ;
+    }
+
     getAccountFromStorage = () => {
         let self = this ;
-        window.BACKGROUND.storage.get('account', (result) => {
-            self.setState({account:result}, () => {
-                self.subscribeToBalance() ;
-                self._mountedAccount = true ;
-                self._mounted = self._mountedTab && self._mountedAccount ;
-            });
-        })
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.storage.get('account', (result) => {
+                self.setState({account:result}, () => {
+                    self.subscribeToBalance() ;
+                    self._mountedAccount = true ;
+                    self._mounted = self._mountedTab && self._mountedAccount ;
+                });
+            })
+        }) ;
     }
 
     getTabFromStorage = () => {
         let self = this ;
-        window.BACKGROUND.storage.get('tab', (result) => {
-            if (!result) {
-                result = 'splash';
-            }
-            self.setState({tab:result}, () => {
-                self._mountedTab = true ;
-                self._mounted = self._mountedTab && self._mountedAccount ;
-            });
-        })
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.storage.get('tab', (result) => {
+                if (!result) {
+                    result = 'splash';
+                }
+                self.setState({tab:result}, () => {
+                    self._mountedTab = true ;
+                    self._mounted = self._mountedTab && self._mountedAccount ;
+                });
+            })
+        }) ;
     }
 
     ping = () => {
@@ -69,19 +88,21 @@ class App extends React.Component {
     signTransaction = (txType, params, address, callback) => {
         const self = this ;
         console.log('signTransaction -> data', txType, params, address, this._mounted) ;
-        window.BACKGROUND.storage.get('accounts', (accounts) => {
-            const account = findAccount(accounts, address) ;
-            console.log('signTransaction -> account', account) ;
-            if (account) {
-                self.signTransactionCallback = callback ;
-                self.selectAccount(account) ;
-                self.setState({
-                    tab: 'sign_transaction',
-                    transactionType: txType,
-                    transactionParams: params,
-                    transactionSent: false
-                }) ;
-            }
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.storage.get('accounts', (accounts) => {
+                const account = findAccount(accounts, address) ;
+                console.log('signTransaction -> account', account) ;
+                if (account) {
+                    self.signTransactionCallback = callback ;
+                    self.selectAccount(account) ;
+                    self.setState({
+                        tab: 'sign_transaction',
+                        transactionType: txType,
+                        transactionParams: params,
+                        transactionSent: false
+                    }) ;
+                }
+            }) ;
         }) ;
     }
 
@@ -90,10 +111,12 @@ class App extends React.Component {
         let networkState = self.state.network ;
         networkState.ready = false ;
         self.setState({network:networkState}, () => {
-            let network = window.BACKGROUND.network ;
-            network.connect(networkState.type, networkState.url, () => {
-                networkState.ready = true ;
-                self.setState({network:networkState}, ) ;
+            window.getBackground((BACKGROUND) => {
+                let network = BACKGROUND.network ;
+                network.connect(networkState.type, networkState.url, () => {
+                    networkState.ready = true ;
+                    self.setState({network:networkState}, ) ;
+                }) ;
             }) ;
         }) ;
     }
@@ -110,31 +133,37 @@ class App extends React.Component {
         } ;
         self.setState({balance:clearBalance}, () => {
             if (self.state.account && self.state.network.ready) {
-            let address = self.state.account.address;
-            window.BACKGROUND.network.getBalance(address, (result) => {
-                let balanceWika = convertToWika(result.data.free) ;
-                let balanceUsd = wikaToUsd(balanceWika) ;
-                self.setState({
-                    balance:{
-                        wika:balanceWika,
-                        usd:balanceUsd
-                    }
-                });
-            }).then((s) => {
-                self.unsubGetBalance = s ;
-            });
-        }
+                let address = self.state.account.address;
+                window.getBackground((BACKGROUND) => {
+                    BACKGROUND.network.getBalance(address, (result) => {
+                        let balanceWika = convertToWika(result.data.free) ;
+                        let balanceUsd = wikaToUsd(balanceWika) ;
+                        self.setState({
+                            balance:{
+                                wika:balanceWika,
+                                usd:balanceUsd
+                            }
+                        });
+                    }).then((s) => {
+                        self.unsubGetBalance = s ;
+                    });
+                }) ;
+            }
         }) ;
     }
 
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
-        window.BACKGROUND.storage.set('account', account) ;
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.storage.set('account', account) ;
+        }) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
     navigate = (tab) => {
-        window.BACKGROUND.storage.set('tab', tab) ;
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.storage.set('tab', tab) ;
+        }) ;
         this.setState({tab: tab});
     }
 
@@ -148,7 +177,7 @@ class App extends React.Component {
         const txParams = this.state.transactionParams ;
         const account = this.state.account ;
         this.setState({transactionSent: true}) ;
-        window.BACKGROUND.sendTransaction(txType, txParams, account, (result) => {
+        sendTransaction(txType, txParams, account, (result) => {
             if (result.status==='In block') {
                 this.signTransactionCallback('confirmed') ;
                 window.close() ;
