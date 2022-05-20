@@ -7,10 +7,8 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import WikaBackground from './background/background.js';
+import './background/background_web.js';
 
-
-window.BACKGROUND = new WikaBackground() ;
 
 
 const defaultNetworkType = "Wika Testnet" ;
@@ -23,7 +21,6 @@ window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
       document.getElementById('root')
     );
 }) ;
-
 
 
 

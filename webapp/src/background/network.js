@@ -1,4 +1,4 @@
-const {ApiPromise, WsProvider} = require('@polkadot/api') ;
+import {ApiPromise, WsProvider} from '@polkadot/api' ;
 
 
 class WikaNetwork {

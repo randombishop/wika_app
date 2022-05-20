@@ -1,6 +1,6 @@
 const wikaExtensionId = "ggmlfkkonbpgadcefifckbldnkfjajae";
 
-class WikaBridge {
+class WebappPort {
 
     sendMessage = (message, callback) => {
         try {
@@ -42,4 +42,4 @@ class WikaBridge {
 
 }
 
-export default WikaBridge ;
+export default WebappPort ;

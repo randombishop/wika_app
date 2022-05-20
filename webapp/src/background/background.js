@@ -1,6 +1,8 @@
-import {web3Enable, web3Accounts} from '@polkadot/extension-dapp';
-import {u8aToHex} from '@polkadot/util';
-import {cryptoWaitReady, keccakAsHex, decodeAddress} from '@polkadot/util-crypto';
+import {web3Enable, web3Accounts} from '@polkadot/extension-dapp' ;
+import {u8aToHex} from '@polkadot/util' ;
+import {cryptoWaitReady, keccakAsHex, decodeAddress} from '@polkadot/util-crypto' ;
+import '@polkadot/wasm-crypto/initOnlyAsm';
+
 
 
 import {getEnvironment} from './utils.js' ;
