@@ -1,4 +1,4 @@
-import {web3Enable, web3Accounts} from '@polkadot/extension-dapp' ;
+//import {web3Enable, web3Accounts} from '@polkadot/extension-dapp' ;
 import {u8aToHex} from '@polkadot/util' ;
 import {cryptoWaitReady, keccakAsHex, decodeAddress} from '@polkadot/util-crypto' ;
 import '@polkadot/wasm-crypto/initOnlyAsm';
@@ -25,8 +25,8 @@ class WikaBackground {
         this.decryptWithAES = decryptWithAES ;
         this.importAccount = importAccount ;
         this.generateAccount = generateAccount ;
-        this.web3Enable = web3Enable ;
-        this.web3Accounts = web3Accounts ;
+        //this.web3Enable = web3Enable ;
+        //this.web3Accounts = web3Accounts ;
         this.u8aToHex = u8aToHex ;
         this.decodeAddress = decodeAddress ;
         this.keccakAsHex = keccakAsHex ;
