@@ -52,16 +52,19 @@ class AccountConnectWeb3 extends React.Component {
         let address = account.address ;
         let name = account.meta.name ;
         let source = account.meta.source ;
-        let addressU8 = window.BACKGROUND.decodeAddress(address) ;
-        let addressRaw = window.BACKGROUND.u8aToHex(addressU8) ;
-        let data = {
-            mode: 'web3',
-            name: name,
-            address: address,
-            addressRaw: addressRaw,
-            source: source
-        };
-        this.props.next(data) ;
+        let self = this ;
+        window.getBackground((BACKGROUND) => {
+            let addressU8 = BACKGROUND.decodeAddress(address) ;
+            let addressRaw = BACKGROUND.u8aToHex(addressU8) ;
+            let data = {
+                mode: 'web3',
+                name: name,
+                address: address,
+                addressRaw: addressRaw,
+                source: source
+            };
+            self.props.next(data) ;
+        }) ;
     }
 
 

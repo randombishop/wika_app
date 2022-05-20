@@ -39,11 +39,13 @@ class Like extends React.Component {
 
     getLikePrice = () => {
         let self = this;
-        window.BACKGROUND.network.getLikePrice((result) => {
-            let price = convertToWika(result) ;
-            self.setState({likePrice:price}) ;
-        }).catch((err) => {
-            alert(err) ;
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.network.getLikePrice((result) => {
+                let price = convertToWika(result) ;
+                self.setState({likePrice:price}) ;
+            }).catch((err) => {
+                alert(err) ;
+            }) ;
         }) ;
     }
 
@@ -74,13 +76,15 @@ class Like extends React.Component {
             self.unsubUrl = null ;
         }
         let url = this.state.url;
-        window.BACKGROUND.network.getUrl(url, (result) => {
-            let urlLikes = Number(result[0]) ;
-            self.setState({urlLikes:urlLikes}) ;
-        }).then((s) => {
-            self.unsubUrl = s ;
-        }).catch((err) => {
-            alert(err) ;
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.network.getUrl(url, (result) => {
+                let urlLikes = Number(result[0]) ;
+                self.setState({urlLikes:urlLikes}) ;
+            }).then((s) => {
+                self.unsubUrl = s ;
+            }).catch((err) => {
+                alert(err) ;
+            }) ;
         }) ;
     }
 
@@ -92,16 +96,18 @@ class Like extends React.Component {
         }
         let address = this.context.account.address;
         let url = this.state.url;
-        window.BACKGROUND.network.getLike(address, url, (result) => {
-            self.setState({
-                likesSubmittedAt:Number(result[0]),
-                likesSubmittedCount:Number(result[1]),
-                likesSubmittedRemaining:Number(result[2])
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.network.getLike(address, url, (result) => {
+                self.setState({
+                    likesSubmittedAt:Number(result[0]),
+                    likesSubmittedCount:Number(result[1]),
+                    likesSubmittedRemaining:Number(result[2])
+                }) ;
+            }).then((s) => {
+                self.unsubLike = s ;
+            }).catch((err) => {
+                alert(err) ;
             }) ;
-        }).then((s) => {
-            self.unsubLike = s ;
-        }).catch((err) => {
-            alert(err) ;
         }) ;
     }
 

@@ -60,11 +60,13 @@ class ClaimPage extends React.Component {
 
     getOwnersRequestPrice = () => {
         let self = this;
-        window.BACKGROUND.network.getOwnersRequestPrice((result) => {
-            let price = convertToWika(result) ;
-            self.setState({requestPrice:price}) ;
-        }).catch((err) => {
-            alert(err) ;
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.network.getOwnersRequestPrice((result) => {
+                let price = convertToWika(result) ;
+                self.setState({requestPrice:price}) ;
+            }).catch((err) => {
+                alert(err) ;
+            }) ;
         }) ;
     }
 
@@ -74,15 +76,17 @@ class ClaimPage extends React.Component {
             self.unsubBlockNumber() ;
             self.unsubBlockNumber = null ;
         }
-        window.BACKGROUND.network.getBlockNumber((result) => {
-            self.setState({
-                currentBlock:Number(result)
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.network.getBlockNumber((result) => {
+                self.setState({
+                    currentBlock:Number(result)
+                }) ;
+            }).then((s) => {
+                self.unsubBlockNumber = s ;
+            }).catch((err) => {
+                alert(err) ;
             }) ;
-        }).then((s) => {
-            self.unsubBlockNumber = s ;
-        }).catch((err) => {
-            alert(err) ;
-        }) ;
+       }) ;
     }
 
 
@@ -112,15 +116,17 @@ class ClaimPage extends React.Component {
         }
         let url = self.state.url;
         this.setState({owner:null}, () => {
-            window.BACKGROUND.network.getUrlOwner(url, (result) => {
-                self.setState({
-                    owner: "" + result
+            window.getBackground((BACKGROUND) => {
+                BACKGROUND.network.getUrlOwner(url, (result) => {
+                    self.setState({
+                        owner: "" + result
+                    });
+                }).then((s) => {
+                    self.unsubUrlOwner = s;
+                }).catch((err) => {
+                    alert(err);
                 });
-            }).then((s) => {
-                self.unsubUrlOwner = s;
-            }).catch((err) => {
-                alert(err);
-            });
+            }) ;
         }) ;
     }
 
@@ -136,16 +142,18 @@ class ClaimPage extends React.Component {
             requestAccount: null
         } ;
         this.setState(clearState, () => {
-            window.BACKGROUND.network.getOwnerRequest(url, (result) => {
-                self.setState({
-                    requestBlock: Number(result[0]),
-                    requestAccount: ""+result[1]
+            window.getBackground((BACKGROUND) => {
+                BACKGROUND.network.getOwnerRequest(url, (result) => {
+                    self.setState({
+                        requestBlock: Number(result[0]),
+                        requestAccount: ""+result[1]
+                    });
+                }).then((s) => {
+                    self.unsubOwnerRequest = s;
+                }).catch((err) => {
+                    alert(err);
                 });
-            }).then((s) => {
-                self.unsubOwnerRequest = s;
-            }).catch((err) => {
-                alert(err);
-            });
+            }) ;
         }) ;
     }
 
@@ -166,21 +174,23 @@ class ClaimPage extends React.Component {
             resultOutcome: null
         } ;
         this.setState(clearState, () => {
-            window.BACKGROUND.network.getOwnerResult(url, (result) => {
-                let data = {
-                    resultBlock: Number(result[0]),
-                    resultNumVotes: Number(result[1]),
-                    resultNumVotesYes: Number(result[2]),
-                    resultNumVotesMajority: Number(result[3]),
-                    resultIntro: result[4],
-                    resultMark: result[5],
-                    resultOutcome: result[6]
-                };
-                console.log('ownerResult', data) ;
-                self.setState(data);
-            }).then((s) => {
-                self.unsubOwnerResult = s;
-            });
+            window.getBackground((BACKGROUND) => {
+                BACKGROUND.network.getOwnerResult(url, (result) => {
+                    let data = {
+                        resultBlock: Number(result[0]),
+                        resultNumVotes: Number(result[1]),
+                        resultNumVotesYes: Number(result[2]),
+                        resultNumVotesMajority: Number(result[3]),
+                        resultIntro: result[4],
+                        resultMark: result[5],
+                        resultOutcome: result[6]
+                    };
+                    console.log('ownerResult', data) ;
+                    self.setState(data);
+                }).then((s) => {
+                    self.unsubOwnerResult = s;
+                });
+            }) ;
         }) ;
     }
 

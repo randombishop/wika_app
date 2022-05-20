@@ -1,6 +1,6 @@
 import {Keyring} from '@polkadot/api';
 import {web3FromSource} from '@polkadot/extension-dapp';
-
+import { getEnvironment } from './misc';
 
 
 // Parse error returned from polkadot API
@@ -30,7 +30,8 @@ function createTransaction(txType, params) {
 }
 
 function sendTransaction(txType, params, account, callback) {
-    if (window.BACKGROUND.env === 'ext') {
+    const env = getEnvironment() ;
+    if (env === 'ext') {
         sendTransactionInExtension(txType, params, account, callback) ;
     } else {
         if (account.mode === 'web3') {

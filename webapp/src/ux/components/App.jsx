@@ -35,6 +35,7 @@ class App extends React.Component {
     }
 
     componentDidMount = () => {
+        this.getNetworkState() ;
         this.getAccountFromStorage() ;
         this.getTabFromStorage() ;
     }
