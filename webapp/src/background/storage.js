@@ -24,7 +24,7 @@ class StorageApp {
 class StorageExt {
 
   get = (key, callback) => {
-    window.chrome.storage.local.get([key], (result) => {
+    chrome.storage.local.get([key], (result) => {
         callback(result[key]) ;
     }) ;
   }
@@ -32,7 +32,7 @@ class StorageExt {
   set = (key, value, callback) => {
     const data = {} ;
     data[key] = value ;
-    window.chrome.storage.local.set(data, callback) ;
+    chrome.storage.local.set(data, callback) ;
   }
 
 }

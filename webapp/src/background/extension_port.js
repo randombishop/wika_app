@@ -30,16 +30,18 @@ class ExtensionPort {
     }
 
     accounts = (source, request, sendResponse) => {
-        window.BACKGROUND.storage.get('accounts', (list) => {
-            var ans = [] ;
-            if (list) {
-                ans = list.map((a) => {
-                    return {address: a.address,
-                            addressRaw: a.addressRaw,
-                            name: a.name} ;
-                })
-            }
-            sendResponse(ans) ;
+        window.getBackground((BACKGROUND) => {
+            BACKGROUND.storage.get('accounts', (list) => {
+                var ans = [] ;
+                if (list) {
+                    ans = list.map((a) => {
+                        return {address: a.address,
+                                addressRaw: a.addressRaw,
+                                name: a.name} ;
+                    })
+                }
+                sendResponse(ans) ;
+            }) ;
         }) ;
     }
 

@@ -21,12 +21,17 @@ function parseError(result) {
 }
 
 
-function createTransaction(txType, params) {
-    switch (txType) {
-        case 'like': return window.BACKGROUND.network.txLike(params.url, params.referrer, params.numLikes) ;
-        case 'owner_request': return window.BACKGROUND.network.txOwnerRequest(params.url) ;
+function createTransaction(txType, params, callback) {
+    function _tx(BACKGROUND) {
+        switch (txType) {
+        case 'like': return BACKGROUND.network.txLike(params.url, params.referrer, params.numLikes) ;
+        case 'owner_request': return BACKGROUND.network.txOwnerRequest(params.url) ;
         default: return null ;
     }
+    window.getBackground((BACKGROUND) => {
+        const tx = _tx(BACKGROUND) ;
+        callback(tx) ;
+    }) ;
 }
 
 function sendTransaction(txType, params, account, callback) {
@@ -43,15 +48,17 @@ function sendTransaction(txType, params, account, callback) {
 }
 
 function sendTransactionInExtension(txType, params, account, callback) {
-    let tx = createTransaction(txType, params) ;
-    let t = new Transaction(tx, account, callback) ;
-    t.sendInExtension() ;
+    createTransaction(txType, params, (tx) => {
+        let t = new Transaction(tx, account, callback) ;
+        t.sendInExtension() ;
+    }) ;
 }
 
 function sendTransactionUsingWeb3(txType, params, account, callback) {
-    let tx = createTransaction(txType, params) ;
-    let t = new Transaction(tx, account, callback) ;
-    t.sendUsingWeb3() ;
+    createTransaction(txType, params, (tx) => {
+        let t = new Transaction(tx, account, callback) ;
+        t.sendUsingWeb3() ;
+    }) ;
 }
 
 function sendTransactionUsingWika(txType, params, account, callback) {
