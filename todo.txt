@@ -1,1 +1,2 @@
-- Improve packaging process?
+- Refactor to manifest V3
+
