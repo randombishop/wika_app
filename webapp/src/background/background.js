@@ -18,13 +18,13 @@ class WikaBackground {
         // pointers to background functions
         this.cryptoReady = false ;
         this.network = new WikaNetwork() ;
-        this.encryptWithAES = encryptWithAES ;
-        this.decryptWithAES = decryptWithAES ;
-        this.importAccount = importAccount ;
-        this.generateAccount = generateAccount ;
-        this.u8aToHex = u8aToHex ;
-        this.decodeAddress = decodeAddress ;
-        this.keccakAsHex = keccakAsHex ;
+        //this.encryptWithAES = encryptWithAES ;
+        //this.decryptWithAES = decryptWithAES ;
+        //this.importAccount = importAccount ;
+        //this.generateAccount = generateAccount ;
+        //this.u8aToHex = u8aToHex ;
+        //this.decodeAddress = decodeAddress ;
+        //this.keccakAsHex = keccakAsHex ;
         // Environment 'app' vs 'ext'
         this.env = getEnvironment() ;
         console.log('Detected env = '+this.env) ;
@@ -36,9 +36,49 @@ class WikaBackground {
         const self = this ;
         cryptoWaitReady().then(() => {
             self.cryptoReady = true;
-            self.network.connect(networkType, networkUrl, callback);
+            self.connect(networkType, networkUrl, callback);
         }) ;
     }
+
+    connect = (networkType, networkUrl, callback) => {
+        this.network.connect(networkType, networkUrl, callback) ;
+    }
+
+    getNetworkInfo = (callback) => {
+        callback({
+            type: this.network.type,
+            url: this.network.endpoint,
+            ready: this.network.getReady()
+        }) ;
+    }
+
+    getAccount = (callback) => {
+        this.storage.get('account', callback) ;
+    }
+
+    getTab = (callback) => {
+        this.storage.get('tab', callback) ;
+    }
+
+    setAccount = (account, callback) => {
+        this.storage.set('account', account, callback) ;
+    }
+
+    setTab = (tab, callback) => {
+        this.storage.set('tab', tab, callback) ;
+    }
+
+    getAccounts = (callback) => {
+        this.storage.get('accounts', callback) ;
+    }
+
+    getBalance = (address, callback) => {
+        this.network.getBalance(address, callback) ;
+    }
+
+
+
+
 
 }
 

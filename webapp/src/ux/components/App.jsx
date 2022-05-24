@@ -42,43 +42,33 @@ class App extends React.Component {
 
     getNetworkState = () => {
         let self = this ;
-        window.getBackground((BACKGROUND) => {
-            const state = {
-                network: {
-                    type: BACKGROUND.network.type,
-                    url: BACKGROUND.network.endpoint,
-                    ready: BACKGROUND.network.getReady()
-                }
-            }
+        window.BACKGROUND_INTERFACE.getNetworkInfo((info) => {
+            const state = {network: info} ;
             self.setState(state) ;
         }) ;
     }
 
     getAccountFromStorage = () => {
         let self = this ;
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.get('account', (result) => {
-                self.setState({account:result}, () => {
-                    self.subscribeToBalance() ;
-                    self._mountedAccount = true ;
-                    self._mounted = self._mountedTab && self._mountedAccount ;
-                });
-            })
+        window.BACKGROUND_INTERFACE.getAccount((result) => {
+            self.setState({account:result}, () => {
+                self.subscribeToBalance() ;
+                self._mountedAccount = true ;
+                self._mounted = self._mountedTab && self._mountedAccount ;
+            });
         }) ;
     }
 
     getTabFromStorage = () => {
         let self = this ;
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.get('tab', (result) => {
-                if (!result) {
-                    result = 'splash';
-                }
-                self.setState({tab:result}, () => {
-                    self._mountedTab = true ;
-                    self._mounted = self._mountedTab && self._mountedAccount ;
-                });
-            })
+        window.BACKGROUND_INTERFACE.getTab((result) => {
+            if (!result) {
+                result = 'splash';
+            }
+            self.setState({tab:result}, () => {
+                self._mountedTab = true ;
+                self._mounted = self._mountedTab && self._mountedAccount ;
+            });
         }) ;
     }
 
@@ -89,21 +79,19 @@ class App extends React.Component {
     signTransaction = (txType, params, address, callback) => {
         const self = this ;
         console.log('signTransaction -> data', txType, params, address, this._mounted) ;
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.get('accounts', (accounts) => {
-                const account = findAccount(accounts, address) ;
-                console.log('signTransaction -> account', account) ;
-                if (account) {
-                    self.signTransactionCallback = callback ;
-                    self.selectAccount(account) ;
-                    self.setState({
-                        tab: 'sign_transaction',
-                        transactionType: txType,
-                        transactionParams: params,
-                        transactionSent: false
-                    }) ;
-                }
-            }) ;
+        window.BACKGROUND_INTERFACE.getAccounts((accounts) => {
+            const account = findAccount(accounts, address) ;
+            console.log('signTransaction -> account', account) ;
+            if (account) {
+                self.signTransactionCallback = callback ;
+                self.selectAccount(account) ;
+                self.setState({
+                    tab: 'sign_transaction',
+                    transactionType: txType,
+                    transactionParams: params,
+                    transactionSent: false
+                }) ;
+            }
         }) ;
     }
 
@@ -112,12 +100,9 @@ class App extends React.Component {
         let networkState = self.state.network ;
         networkState.ready = false ;
         self.setState({network:networkState}, () => {
-            window.getBackground((BACKGROUND) => {
-                let network = BACKGROUND.network ;
-                network.connect(networkState.type, networkState.url, () => {
-                    networkState.ready = true ;
-                    self.setState({network:networkState}, ) ;
-                }) ;
+            window.BACKGROUND_INTERFACE.connect(networkState.type, networkState.url, () => {
+                networkState.ready = true ;
+                self.setState({network:networkState}, ) ;
             }) ;
         }) ;
     }
@@ -135,36 +120,34 @@ class App extends React.Component {
         self.setState({balance:clearBalance}, () => {
             if (self.state.account && self.state.network.ready) {
                 let address = self.state.account.address;
-                window.getBackground((BACKGROUND) => {
-                    BACKGROUND.network.getBalance(address, (result) => {
-                        let balanceWika = convertToWika(result.data.free) ;
-                        let balanceUsd = wikaToUsd(balanceWika) ;
-                        self.setState({
-                            balance:{
-                                wika:balanceWika,
-                                usd:balanceUsd
-                            }
-                        });
-                    }).then((s) => {
-                        self.unsubGetBalance = s ;
+                window.BACKGROUND_INTERFACE.getBalance(address, (result) => {
+                    let balanceWika = convertToWika(result.data.free) ;
+                    let balanceUsd = wikaToUsd(balanceWika) ;
+                    self.setState({
+                        balance:{
+                            wika:balanceWika,
+                            usd:balanceUsd
+                        }
                     });
-                }) ;
+                });
+                // We have a problem here, one message one response between popup and service worker is not enough
+                // we need some port connection here...
+                //).then((s) => {
+                //    self.unsubGetBalance = s ;
+                //});
             }
         }) ;
     }
 
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.set('account', account) ;
-        }) ;
+        window.BACKGROUND_INTERFACE.setAccount(account, ()=>{}) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
     navigate = (tab) => {
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.set('tab', tab) ;
-        }) ;
+        console.log('App.navigate', tab) ;
+        window.BACKGROUND_INTERFACE.setTab(tab, ()=>{}) ;
         this.setState({tab: tab});
     }
 
