@@ -22,15 +22,7 @@ function parseError(result) {
 
 
 function createTransaction(txType, params, callback) {
-    function _tx(BACKGROUND) {
-        switch (txType) {
-            case 'like': return BACKGROUND.network.txLike(params.url, params.referrer, params.numLikes) ;
-            case 'owner_request': return BACKGROUND.network.txOwnerRequest(params.url) ;
-            default: return null ;
-       }
-    }
-    window.getBackground((BACKGROUND) => {
-        const tx = _tx(BACKGROUND) ;
+    window.BACKGROUND_INTERFACE.createTransaction(txType, params, (tx) => {
         callback(tx) ;
     }) ;
 }

@@ -23,15 +23,13 @@ class AccountSelect extends React.Component {
 
     componentDidMount = () => {
         let self = this ;
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.get('accounts', (accounts) => {
-                if (accounts && accounts.length>0) {
-                    self.setState({accounts:accounts});
-                } else {
-                    self.setState({accounts:[]});
-                }
-            });
-        }) ;
+        window.BACKGROUND_INTERFACE.getAccounts((accounts) => {
+            if (accounts && accounts.length>0) {
+                self.setState({accounts:accounts});
+            } else {
+                self.setState({accounts:[]});
+            }
+        });
     }
 
     list = () => {
@@ -53,10 +51,8 @@ class AccountSelect extends React.Component {
         }
         accounts.push(account) ;
         let self = this ;
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.set('accounts', accounts, () => {
-                self.setState({view:'list', accounts:accounts});
-            }) ;
+        window.BACKGROUND_INTERFACE.setAccounts(accounts, () => {
+            self.setState({view:'list', accounts:accounts});
         }) ;
     }
 

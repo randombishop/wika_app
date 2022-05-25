@@ -130,7 +130,7 @@ class App extends React.Component {
                         }
                     });
                 });
-                // We have a problem here, one message one response between popup and service worker is not enough
+                // TODO: We have a problem here, one message one response between popup and service worker is not enough
                 // we need some port connection here...
                 //).then((s) => {
                 //    self.unsubGetBalance = s ;

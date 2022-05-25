@@ -31,14 +31,8 @@ class AccountImport extends React.Component {
 
     import = () => {
         let self = this ;
-        window.getBackground((BACKGROUND) => {
-            try {
-                let account = BACKGROUND.importAccount(this.state.phrase) ;
-                account.imported = true ;
-                self.setState(account) ;
-            } catch (e) {
-                alert(e)
-            }
+        window.BACKGROUND_INTERFACE.importAccount(this.state.phrase, (account) => {
+            self.setState(account) ;
         }) ;
     }
 
