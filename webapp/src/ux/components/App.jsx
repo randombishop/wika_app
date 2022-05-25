@@ -42,7 +42,7 @@ class App extends React.Component {
 
     getNetworkState = () => {
         let self = this ;
-        window.BACKGROUND_INTERFACE.getNetworkInfo((info) => {
+        window.BACKGROUND_INTERFACE.call({func: 'getNetworkInfo'}, (info) => {
             const state = {network: info} ;
             self.setState(state) ;
         }) ;
@@ -50,7 +50,11 @@ class App extends React.Component {
 
     getAccountFromStorage = () => {
         let self = this ;
-        window.BACKGROUND_INTERFACE.getAccount((result) => {
+        const message = {
+            func: 'getData',
+            field: 'account'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (result) => {
             self.setState({account:result}, () => {
                 self.subscribeToBalance() ;
                 self._mountedAccount = true ;
@@ -61,7 +65,11 @@ class App extends React.Component {
 
     getTabFromStorage = () => {
         let self = this ;
-        window.BACKGROUND_INTERFACE.getTab((result) => {
+        const message = {
+            func: 'getData',
+            field: 'tab'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (result) => {
             if (!result) {
                 result = 'splash';
             }
@@ -77,9 +85,13 @@ class App extends React.Component {
     }
 
     signTransaction = (txType, params, address, callback) => {
-        const self = this ;
         console.log('signTransaction -> data', txType, params, address, this._mounted) ;
-        window.BACKGROUND_INTERFACE.getAccounts((accounts) => {
+        const self = this ;
+        const message = {
+            func: 'getData',
+            field: 'accounts'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (accounts) => {
             const account = findAccount(accounts, address) ;
             console.log('signTransaction -> account', account) ;
             if (account) {
@@ -100,7 +112,12 @@ class App extends React.Component {
         let networkState = self.state.network ;
         networkState.ready = false ;
         self.setState({network:networkState}, () => {
-            window.BACKGROUND_INTERFACE.connect(networkState.type, networkState.url, () => {
+            const message = {
+                func: 'connect',
+                networkType: networkState.type,
+                networkUrl: networkState.url
+            };
+            window.BACKGROUND_INTERFACE.call(message, () => {
                 networkState.ready = true ;
                 self.setState({network:networkState}, ) ;
             }) ;
@@ -119,8 +136,12 @@ class App extends React.Component {
         } ;
         self.setState({balance:clearBalance}, () => {
             if (self.state.account && self.state.network.ready) {
-                let address = self.state.account.address;
-                window.BACKGROUND_INTERFACE.getBalance(address, (result) => {
+                const address = self.state.account.address;
+                const message = {
+                    func: 'getBalance',
+                    address: address
+                };
+                window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
                     let balanceWika = convertToWika(result.data.free) ;
                     let balanceUsd = wikaToUsd(balanceWika) ;
                     self.setState({
@@ -141,13 +162,23 @@ class App extends React.Component {
 
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
-        window.BACKGROUND_INTERFACE.setAccount(account, ()=>{}) ;
+        const message = {
+            func: 'saveData',
+            field: 'account',
+            data: account
+        };
+        window.BACKGROUND_INTERFACE.call(message, ()=>{}) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
     navigate = (tab) => {
         console.log('App.navigate', tab) ;
-        window.BACKGROUND_INTERFACE.setTab(tab, ()=>{}) ;
+        const message = {
+            func: 'saveData',
+            field: 'tab',
+            data: tab
+        };
+        window.BACKGROUND_INTERFACE.call(message, ()=>{}) ;
         this.setState({tab: tab});
     }
 

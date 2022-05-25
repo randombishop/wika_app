@@ -3,7 +3,7 @@
 const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=630,left=400,top=100" ;
 
 
-class ExtensionPort {
+class ExtensionExternalPort {
 
     constructor() {
         this.registerListener() ;
@@ -11,7 +11,7 @@ class ExtensionPort {
 
     registerListener = () => {
         let self = this ;
-        window.chrome.runtime.onMessageExternal.addListener(
+        chrome.runtime.onMessageExternal.addListener(
           function(request, sender, sendResponse) {
             const source = sender.documentId ;
             const message = request.message ;

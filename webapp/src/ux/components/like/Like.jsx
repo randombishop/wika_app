@@ -38,9 +38,9 @@ class Like extends React.Component {
     }
 
     getLikePrice = () => {
-        let self = this;
-        window.BACKGROUND_INTERFACE.getLikePrice((result) => {
-            let price = convertToWika(result) ;
+        const self = this;
+        window.BACKGROUND_INTERFACE.call({func: 'getLikePrice'}, (result) => {
+            const price = convertToWika(result) ;
             self.setState({likePrice:price}) ;
         }) ;
     }
@@ -72,8 +72,7 @@ class Like extends React.Component {
             self.unsubUrl = null ;
         }
         let url = this.state.url;
-        // Todo: same issue
-        window.BACKGROUND_INTERFACE.getUrl(url, (result) => {
+        window.BACKGROUND_INTERFACE.subscribe({func: 'getUrl', url: url}, (result) => {
             let urlLikes = Number(result[0]) ;
             self.setState({urlLikes:urlLikes}) ;
         }) ;
@@ -85,9 +84,14 @@ class Like extends React.Component {
             self.unsubLike() ;
             self.unsubLike = null ;
         }
-        let address = this.context.account.address;
-        let url = this.state.url;
-        window.BACKGROUND_INTERFACE.getLike(address, url, (result) => {
+        const address = this.context.account.address;
+        const url = this.state.url;
+        const message = {
+            func: 'getLike',
+            address: address,
+            url: url
+        } ;
+        window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
             self.setState({
                 likesSubmittedAt:Number(result[0]),
                 likesSubmittedCount:Number(result[1]),

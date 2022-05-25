@@ -28,7 +28,7 @@ class AccountCreate extends React.Component {
 
     componentDidMount = () => {
         let self = this ;
-        window.BACKGROUND_INTERFACE.generateAccount((account) => {
+        window.BACKGROUND_INTERFACE.call({func: 'generateAccount'}, (account) => {
             console.log('newAccount', account) ;
             self.setState(account) ;
         }) ;

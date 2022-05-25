@@ -13,10 +13,7 @@ import WikaBackground from './background/background.js' ;
 import WebappPort from './ux/utils/webapp_port' ;
 
 
-// Enable Web3 when available
-web3Enable("Wika Network").then((result) => {
-    console.log('web3Enable', result) ;
-})
+
 
 // Define the Wika Background Interface
 window.BACKGROUND_INTERFACE = new WikaBackground() ;
@@ -27,15 +24,18 @@ window.WIKA_BRIDGE = new WebappPort() ;
 // Initialize and startup the app
 const defaultNetworkType = "Wika Testnet" ;
 const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
-//window.BACKGROUND_INTERFACE.initialize(defaultNetworkType, defaultNetworkUrl, () => {
+window.BACKGROUND_INTERFACE.initialize(defaultNetworkType, defaultNetworkUrl, () => {
     ReactDOM.render(
       <React.StrictMode>
         <App ref={(x) => {window.wikaReactApp = x;}}/>
       </React.StrictMode>,
       document.getElementById('root')
     );
-//}) ;
+}) ;
 
 
-
+// Enable Web3 when available
+web3Enable("Wika Network").then((result) => {
+    console.log('web3Enable', result) ;
+})
 

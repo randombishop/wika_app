@@ -53,7 +53,11 @@ class AccountConnectWeb3 extends React.Component {
         let name = account.meta.name ;
         let source = account.meta.source ;
         let self = this ;
-        window.BACKGROUND_INTERFACE.getRawAddress(address, (addressRaw) => {
+        const message = {
+            func: 'getRawAddress',
+            address: address
+        };
+        window.BACKGROUND_INTERFACE.call(message, (addressRaw) => {
             let data = {
                 mode: 'web3',
                 name: name,

@@ -22,7 +22,12 @@ function parseError(result) {
 
 
 function createTransaction(txType, params, callback) {
-    window.BACKGROUND_INTERFACE.createTransaction(txType, params, (tx) => {
+    const message = {
+        func: 'createTransaction',
+        txType: txType,
+        params: params
+    }
+    window.BACKGROUND_INTERFACE.call(message, (tx) => {
         callback(tx) ;
     }) ;
 }

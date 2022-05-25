@@ -60,7 +60,7 @@ class ClaimPage extends React.Component {
 
     getOwnersRequestPrice = () => {
         let self = this;
-        window.BACKGROUND_INTERFACE.getOwnersRequestPrice((result) => {
+        window.BACKGROUND_INTERFACE.call({func: 'getOwnersRequestPrice'}, (result) => {
             let price = convertToWika(result) ;
             self.setState({requestPrice:price}) ;
         }) ;
@@ -72,8 +72,7 @@ class ClaimPage extends React.Component {
             self.unsubBlockNumber() ;
             self.unsubBlockNumber = null ;
         }
-        // TODO: same problem as getBalance
-        window.BACKGROUND_INTERFACE.getBlockNumber((result) => {
+        window.BACKGROUND_INTERFACE.subscribe({func: 'getBlockNumber'}, (result) => {
             self.setState({
                 currentBlock:Number(result)
             }) ;
@@ -107,8 +106,7 @@ class ClaimPage extends React.Component {
         }
         let url = self.state.url;
         this.setState({owner:null}, () => {
-            // TODO: same problem as getBalance
-            window.BACKGROUND_INTERFACE.getUrlOwner(url, (result) => {
+            window.BACKGROUND_INTERFACE.subscribe({func: 'getBlockNumber', url: url}, (result) => {
                 self.setState({owner: ("" + result)});
             })
         }) ;
@@ -127,7 +125,7 @@ class ClaimPage extends React.Component {
         } ;
         this.setState(clearState, () => {
             // TODO: same problem as getBalance
-            window.BACKGROUND_INTERFACE.getOwnerRequest(url, (result) => {
+            window.BACKGROUND_INTERFACE.subscribe({func: 'getOwnerRequest', url: url}, (result) => {
                 self.setState({
                     requestBlock: Number(result[0]),
                     requestAccount: ""+result[1]
@@ -153,7 +151,7 @@ class ClaimPage extends React.Component {
             resultOutcome: null
         } ;
         this.setState(clearState, () => {
-            window.BACKGROUND_INTERFACE.getOwnerResult(url, (result) => {
+            window.BACKGROUND_INTERFACE.subscribe({func: 'getOwnerResult', url: url}, (result) => {
                 let data = {
                     resultBlock: Number(result[0]),
                     resultNumVotes: Number(result[1]),
