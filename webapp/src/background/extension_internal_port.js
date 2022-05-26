@@ -11,8 +11,10 @@ class ExtensionInternalPort {
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.funcType === 'call') {
                 this.background.call(message, sendResponse) ;
+                return true ;
             } else if (message.funcType === 'subscribe') {
                 this.background.subscribe(message, sendResponse) ;
+                return true ;
             } else {
                 sendResponse({err: 'Unrecognized funcType', originalMessage: message}) ;
             }

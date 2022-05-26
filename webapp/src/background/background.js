@@ -32,15 +32,15 @@ class WikaBackground {
             case 'initialize': return this.initialize(message.networkType, message.networkUrl, callback) ;
             case 'connect': return this.connect(message.networkType, message.networkUrl, callback) ;
             case 'getNetworkInfo': return this.getNetworkInfo(callback) ;
-            case 'getLikePrice': return this.network.getLikePrice(callback) ;
-            case 'getOwnersRequestPrice': return this.network.getOwnersRequestPrice(callback) ;
+            case 'getLikePrice': return this.getLikePrice(callback) ;
+            case 'getOwnersRequestPrice': return this.getOwnersRequestPrice(callback) ;
             case 'createTransaction': return this.createTransaction(message.txType, message.params, callback) ;
-            case 'keccakAsHex': return callback(keccakAsHex(message.text)) ;
-            case 'generateAccount': return callback(generateAccount()) ;
+            case 'keccakAsHex': return this.keccakAsHex(message.text, callback) ;
+            case 'generateAccount': return this.generateAccount(callback) ;
             case 'importAccount': return this.importAccount(message.phrase, callback) ;
             case 'getRawAddress': return this.getRawAddress(message.address, callback) ;
-            case 'getData': return this.storage.get(message.field, callback) ;
-            case 'saveData': return this.storage.set(message.field, message.data, callback) ;
+            case 'getData': return this.getData(message.field, callback) ;
+            case 'saveData': return this.saveData(message.field, message.data, callback) ;
             default: return null ;
         }
     }
@@ -94,6 +94,10 @@ class WikaBackground {
         callback(tx) ;
     }
 
+    generateAccount = (callback) => {
+        callback(generateAccount()) ;
+    }
+
     importAccount = (phrase, callback) => {
         try {
             const account = importAccount(phrase) ;
@@ -108,6 +112,28 @@ class WikaBackground {
         const addressU8 = decodeAddress(address) ;
         const addressRaw = u8aToHex(addressU8) ;
         callback(addressRaw) ;
+    }
+
+    getLikePrice = (callback) => {
+        this.network.getLikePrice(callback) ;
+    }
+
+    getOwnersRequestPrice = (callback) => {
+        this.network.getOwnersRequestPrice(callback) ;
+    }
+
+    keccakAsHex = (text, callback) => {
+        callback(keccakAsHex(text)) ;
+    }
+
+    getData = (field, callback) => {
+        console.log('getData', field) ;
+        //callback({'test': '123'}) ;
+        this.storage.get(field, callback) ;
+    }
+
+    saveData = (field, data, callback) => {
+        this.storage.set(field, data, callback) ;
     }
 
 }

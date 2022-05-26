@@ -50179,448 +50179,6 @@ function u8aToHex(value, bitLength = -1, isPrefixed = true) {
   const length = Math.ceil(bitLength / 8);
   return `${isPrefixed ? '0x' : ''}${!value || !value.length ? '' : length > 0 && value.length > length ? `${hex(value.subarray(0, length / 2))}…${hex(value.subarray(value.length - length / 2))}` : hex(value)}`;
 }
-;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/_u64.js
-const U32_MASK64 = BigInt(2 ** 32 - 1);
-const _32n = BigInt(32);
-function fromBig(n, le = false) {
-    if (le)
-        return { h: Number(n & U32_MASK64), l: Number((n >> _32n) & U32_MASK64) };
-    return { h: Number((n >> _32n) & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
-}
-function split(lst, le = false) {
-    let Ah = new Uint32Array(lst.length);
-    let Al = new Uint32Array(lst.length);
-    for (let i = 0; i < lst.length; i++) {
-        const { h, l } = fromBig(lst[i], le);
-        [Ah[i], Al[i]] = [h, l];
-    }
-    return [Ah, Al];
-}
-const toBig = (h, l) => (BigInt(h >>> 0) << _32n) | BigInt(l >>> 0);
-// for Shift in [0, 32)
-const shrSH = (h, l, s) => h >>> s;
-const shrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
-// Right rotate for Shift in [1, 32)
-const rotrSH = (h, l, s) => (h >>> s) | (l << (32 - s));
-const rotrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
-// Right rotate for Shift in (32, 64), NOTE: 32 is special case.
-const rotrBH = (h, l, s) => (h << (64 - s)) | (l >>> (s - 32));
-const rotrBL = (h, l, s) => (h >>> (s - 32)) | (l << (64 - s));
-// Right rotate for shift===32 (just swaps l&h)
-const rotr32H = (h, l) => l;
-const rotr32L = (h, l) => h;
-// Left rotate for Shift in [1, 32)
-const rotlSH = (h, l, s) => (h << s) | (l >>> (32 - s));
-const rotlSL = (h, l, s) => (l << s) | (h >>> (32 - s));
-// Left rotate for Shift in (32, 64), NOTE: 32 is special case.
-const rotlBH = (h, l, s) => (l << (s - 32)) | (h >>> (64 - s));
-const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
-// JS uses 32-bit signed integers for bitwise operations which means we cannot
-// simple take carry out of low bit sum by shift, we need to use division.
-function add(Ah, Al, Bh, Bl) {
-    const l = (Al >>> 0) + (Bl >>> 0);
-    return { h: (Ah + Bh + ((l / 2 ** 32) | 0)) | 0, l: l | 0 };
-}
-// Addition with more than 2 elements
-const add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
-const add3H = (low, Ah, Bh, Ch) => (Ah + Bh + Ch + ((low / 2 ** 32) | 0)) | 0;
-const add4L = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
-const add4H = (low, Ah, Bh, Ch, Dh) => (Ah + Bh + Ch + Dh + ((low / 2 ** 32) | 0)) | 0;
-const add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
-const add5H = (low, Ah, Bh, Ch, Dh, Eh) => (Ah + Bh + Ch + Dh + Eh + ((low / 2 ** 32) | 0)) | 0;
-
-;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/cryptoBrowser.js
-const cryptoBrowser_crypto = {
-    node: undefined,
-    web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,
-};
-
-;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/utils.js
-/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// The import here is via the package name. This is to ensure
-// that exports mapping/resolution does fall into place.
-
-// Cast array to different type
-const u8 = (arr) => new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
-const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
-// Cast array to view
-const utils_createView = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
-// The rotate right (circular right shift) operation for uint32
-const rotr = (word, shift) => (word << (32 - shift)) | (word >>> shift);
-const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
-// There is almost no big endian hardware, but js typed arrays uses platform specific endianess.
-// So, just to be sure not to corrupt anything.
-if (!isLE)
-    throw new Error('Non little-endian hardware is not supported');
-const hexes = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
-/**
- * @example bytesToHex(Uint8Array.from([0xde, 0xad, 0xbe, 0xef]))
- */
-function bytesToHex(uint8a) {
-    // pre-caching improves the speed 6x
-    let hex = '';
-    for (let i = 0; i < uint8a.length; i++) {
-        hex += hexes[uint8a[i]];
-    }
-    return hex;
-}
-/**
- * @example hexToBytes('deadbeef')
- */
-function hexToBytes(hex) {
-    if (typeof hex !== 'string') {
-        throw new TypeError('hexToBytes: expected string, got ' + typeof hex);
-    }
-    if (hex.length % 2)
-        throw new Error('hexToBytes: received invalid unpadded hex');
-    const array = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < array.length; i++) {
-        const j = i * 2;
-        const hexByte = hex.slice(j, j + 2);
-        const byte = Number.parseInt(hexByte, 16);
-        if (Number.isNaN(byte))
-            throw new Error('Invalid byte sequence');
-        array[i] = byte;
-    }
-    return array;
-}
-// Currently avoid insertion of polyfills with packers (browserify/webpack/etc)
-// But setTimeout is pretty slow, maybe worth to investigate howto do minimal polyfill here
-const nextTick = (() => {
-    const nodeRequire = typeof module !== 'undefined' &&
-        typeof module.require === 'function' &&
-        module.require.bind(module);
-    try {
-        if (nodeRequire) {
-            const { setImmediate } = nodeRequire('timers');
-            return () => new Promise((resolve) => setImmediate(resolve));
-        }
-    }
-    catch (e) { }
-    return () => new Promise((resolve) => setTimeout(resolve, 0));
-})();
-// Returns control to thread each 'tick' ms to avoid blocking
-async function utils_asyncLoop(iters, tick, cb) {
-    let ts = Date.now();
-    for (let i = 0; i < iters; i++) {
-        cb(i);
-        // Date.now() is not monotonic, so in case if clock goes backwards we return return control too
-        const diff = Date.now() - ts;
-        if (diff >= 0 && diff < tick)
-            continue;
-        await nextTick();
-        ts += diff;
-    }
-}
-function utf8ToBytes(str) {
-    if (typeof str !== 'string') {
-        throw new TypeError(`utf8ToBytes expected string, got ${typeof str}`);
-    }
-    return new TextEncoder().encode(str);
-}
-function toBytes(data) {
-    if (typeof data === 'string')
-        data = utf8ToBytes(data);
-    if (!(data instanceof Uint8Array))
-        throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
-    return data;
-}
-/**
- * Concats Uint8Array-s into one; like `Buffer.concat([buf1, buf2])`
- * @example concatBytes(buf1, buf2)
- */
-function concatBytes(...arrays) {
-    if (!arrays.every((a) => a instanceof Uint8Array))
-        throw new Error('Uint8Array list expected');
-    if (arrays.length === 1)
-        return arrays[0];
-    const length = arrays.reduce((a, arr) => a + arr.length, 0);
-    const result = new Uint8Array(length);
-    for (let i = 0, pad = 0; i < arrays.length; i++) {
-        const arr = arrays[i];
-        result.set(arr, pad);
-        pad += arr.length;
-    }
-    return result;
-}
-function assertNumber(n) {
-    if (!Number.isSafeInteger(n) || n < 0)
-        throw new Error(`Wrong positive integer: ${n}`);
-}
-function assertBool(b) {
-    if (typeof b !== 'boolean') {
-        throw new Error(`Expected boolean, not ${b}`);
-    }
-}
-function assertBytes(bytes, ...lengths) {
-    if (bytes instanceof Uint8Array && (!lengths.length || lengths.includes(bytes.length))) {
-        return;
-    }
-    throw new TypeError(`Expected ${lengths} bytes, not ${typeof bytes} with length=${bytes.length}`);
-}
-function assertHash(hash) {
-    if (typeof hash !== 'function' || typeof hash.create !== 'function')
-        throw new Error('Hash should be wrapped by utils.wrapConstructor');
-    assertNumber(hash.outputLen);
-    assertNumber(hash.blockLen);
-}
-// For runtime check if class implements interface
-class Hash {
-    // Safe version that clones internal state
-    clone() {
-        return this._cloneInto();
-    }
-}
-// Check if object doens't have custom constructor (like Uint8Array/Array)
-const isPlainObject = (obj) => Object.prototype.toString.call(obj) === '[object Object]' && obj.constructor === Object;
-function checkOpts(def, _opts) {
-    if (_opts !== undefined && (typeof _opts !== 'object' || !isPlainObject(_opts)))
-        throw new TypeError('Options should be object or undefined');
-    const opts = Object.assign(def, _opts);
-    return opts;
-}
-function wrapConstructor(hashConstructor) {
-    const hashC = (message) => hashConstructor().update(toBytes(message)).digest();
-    const tmp = hashConstructor();
-    hashC.outputLen = tmp.outputLen;
-    hashC.blockLen = tmp.blockLen;
-    hashC.create = () => hashConstructor();
-    return hashC;
-}
-function wrapConstructorWithOpts(hashCons) {
-    const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
-    const tmp = hashCons({});
-    hashC.outputLen = tmp.outputLen;
-    hashC.blockLen = tmp.blockLen;
-    hashC.create = (opts) => hashCons(opts);
-    return hashC;
-}
-/**
- * Secure PRNG
- */
-function randomBytes(bytesLength = 32) {
-    if (crypto.web) {
-        return crypto.web.getRandomValues(new Uint8Array(bytesLength));
-    }
-    else if (crypto.node) {
-        return new Uint8Array(crypto.node.randomBytes(bytesLength).buffer);
-    }
-    else {
-        throw new Error("The environment doesn't have randomBytes function");
-    }
-}
-
-;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/sha3.js
-
-
-// Various per round constants calculations
-const [SHA3_PI, SHA3_ROTL, _SHA3_IOTA] = [[], [], []];
-const _0n = BigInt(0);
-const _1n = BigInt(1);
-const _2n = BigInt(2);
-const _7n = BigInt(7);
-const _256n = BigInt(256);
-const _0x71n = BigInt(0x71);
-for (let round = 0, R = _1n, x = 1, y = 0; round < 24; round++) {
-    // Pi
-    [x, y] = [y, (2 * x + 3 * y) % 5];
-    SHA3_PI.push(2 * (5 * y + x));
-    // Rotational
-    SHA3_ROTL.push((((round + 1) * (round + 2)) / 2) % 64);
-    // Iota
-    let t = _0n;
-    for (let j = 0; j < 7; j++) {
-        R = ((R << _1n) ^ ((R >> _7n) * _0x71n)) % _256n;
-        if (R & _2n)
-            t ^= _1n << ((_1n << BigInt(j)) - _1n);
-    }
-    _SHA3_IOTA.push(t);
-}
-const [SHA3_IOTA_H, SHA3_IOTA_L] = split(_SHA3_IOTA, true);
-// Left rotation (without 0, 32, 64)
-const rotlH = (h, l, s) => s > 32 ? rotlBH(h, l, s) : rotlSH(h, l, s);
-const rotlL = (h, l, s) => s > 32 ? rotlBL(h, l, s) : rotlSL(h, l, s);
-// Same as keccakf1600, but allows to skip some rounds
-function keccakP(s, rounds = 24) {
-    const B = new Uint32Array(5 * 2);
-    // NOTE: all indices are x2 since we store state as u32 instead of u64 (bigints to slow in js)
-    for (let round = 24 - rounds; round < 24; round++) {
-        // Theta θ
-        for (let x = 0; x < 10; x++)
-            B[x] = s[x] ^ s[x + 10] ^ s[x + 20] ^ s[x + 30] ^ s[x + 40];
-        for (let x = 0; x < 10; x += 2) {
-            const idx1 = (x + 8) % 10;
-            const idx0 = (x + 2) % 10;
-            const B0 = B[idx0];
-            const B1 = B[idx0 + 1];
-            const Th = rotlH(B0, B1, 1) ^ B[idx1];
-            const Tl = rotlL(B0, B1, 1) ^ B[idx1 + 1];
-            for (let y = 0; y < 50; y += 10) {
-                s[x + y] ^= Th;
-                s[x + y + 1] ^= Tl;
-            }
-        }
-        // Rho (ρ) and Pi (π)
-        let curH = s[2];
-        let curL = s[3];
-        for (let t = 0; t < 24; t++) {
-            const shift = SHA3_ROTL[t];
-            const Th = rotlH(curH, curL, shift);
-            const Tl = rotlL(curH, curL, shift);
-            const PI = SHA3_PI[t];
-            curH = s[PI];
-            curL = s[PI + 1];
-            s[PI] = Th;
-            s[PI + 1] = Tl;
-        }
-        // Chi (χ)
-        for (let y = 0; y < 50; y += 10) {
-            for (let x = 0; x < 10; x++)
-                B[x] = s[y + x];
-            for (let x = 0; x < 10; x++)
-                s[y + x] ^= ~B[(x + 2) % 10] & B[(x + 4) % 10];
-        }
-        // Iota (ι)
-        s[0] ^= SHA3_IOTA_H[round];
-        s[1] ^= SHA3_IOTA_L[round];
-    }
-    B.fill(0);
-}
-class Keccak extends Hash {
-    // NOTE: we accept arguments in bytes instead of bits here.
-    constructor(blockLen, suffix, outputLen, enableXOF = false, rounds = 24) {
-        super();
-        this.blockLen = blockLen;
-        this.suffix = suffix;
-        this.outputLen = outputLen;
-        this.enableXOF = enableXOF;
-        this.rounds = rounds;
-        this.pos = 0;
-        this.posOut = 0;
-        this.finished = false;
-        this.destroyed = false;
-        // Can be passed from user as dkLen
-        assertNumber(outputLen);
-        // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
-        if (0 >= this.blockLen || this.blockLen >= 200)
-            throw new Error('Sha3 supports only keccak-f1600 function');
-        this.state = new Uint8Array(200);
-        this.state32 = u32(this.state);
-    }
-    keccak() {
-        keccakP(this.state32, this.rounds);
-        this.posOut = 0;
-        this.pos = 0;
-    }
-    update(data) {
-        if (this.destroyed)
-            throw new Error('instance is destroyed');
-        if (this.finished)
-            throw new Error('digest() was already called');
-        const { blockLen, state } = this;
-        data = toBytes(data);
-        const len = data.length;
-        for (let pos = 0; pos < len;) {
-            const take = Math.min(blockLen - this.pos, len - pos);
-            for (let i = 0; i < take; i++)
-                state[this.pos++] ^= data[pos++];
-            if (this.pos === blockLen)
-                this.keccak();
-        }
-        return this;
-    }
-    finish() {
-        if (this.finished)
-            return;
-        this.finished = true;
-        const { state, suffix, pos, blockLen } = this;
-        // Do the padding
-        state[pos] ^= suffix;
-        if ((suffix & 0x80) !== 0 && pos === blockLen - 1)
-            this.keccak();
-        state[blockLen - 1] ^= 0x80;
-        this.keccak();
-    }
-    writeInto(out) {
-        if (this.destroyed)
-            throw new Error('instance is destroyed');
-        if (!(out instanceof Uint8Array))
-            throw new Error('Keccak: invalid output buffer');
-        this.finish();
-        for (let pos = 0, len = out.length; pos < len;) {
-            if (this.posOut >= this.blockLen)
-                this.keccak();
-            const take = Math.min(this.blockLen - this.posOut, len - pos);
-            out.set(this.state.subarray(this.posOut, this.posOut + take), pos);
-            this.posOut += take;
-            pos += take;
-        }
-        return out;
-    }
-    xofInto(out) {
-        // Sha3/Keccak usage with XOF is probably mistake, only SHAKE instances can do XOF
-        if (!this.enableXOF)
-            throw new Error('XOF is not possible for this instance');
-        return this.writeInto(out);
-    }
-    xof(bytes) {
-        assertNumber(bytes);
-        return this.xofInto(new Uint8Array(bytes));
-    }
-    digestInto(out) {
-        if (out.length < this.outputLen)
-            throw new Error('Keccak: invalid output buffer');
-        if (this.finished)
-            throw new Error('digest() was already called');
-        this.finish();
-        this.writeInto(out);
-        this.destroy();
-        return out;
-    }
-    digest() {
-        return this.digestInto(new Uint8Array(this.outputLen));
-    }
-    destroy() {
-        this.destroyed = true;
-        this.state.fill(0);
-    }
-    _cloneInto(to) {
-        const { blockLen, suffix, outputLen, rounds, enableXOF } = this;
-        to || (to = new Keccak(blockLen, suffix, outputLen, enableXOF, rounds));
-        to.state32.set(this.state32);
-        to.pos = this.pos;
-        to.posOut = this.posOut;
-        to.finished = this.finished;
-        to.rounds = rounds;
-        // Suffix can change in cSHAKE
-        to.suffix = suffix;
-        to.outputLen = outputLen;
-        to.enableXOF = enableXOF;
-        to.destroyed = this.destroyed;
-        return to;
-    }
-}
-const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
-const sha3_224 = gen(0x06, 144, 224 / 8);
-/**
- * SHA3-256 hash function
- * @param message - that would be hashed
- */
-const sha3_256 = gen(0x06, 136, 256 / 8);
-const sha3_384 = gen(0x06, 104, 384 / 8);
-const sha3_512 = gen(0x06, 72, 512 / 8);
-const keccak_224 = gen(0x01, 144, 224 / 8);
-/**
- * keccak-256 hash function. Different from SHA3-256.
- * @param message - that would be hashed
- */
-const keccak_256 = gen(0x01, 136, 256 / 8);
-const keccak_384 = gen(0x01, 104, 384 / 8);
-const keccak_512 = gen(0x01, 72, 512 / 8);
-const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen !== undefined ? opts.dkLen : outputLen, true));
-const shake128 = genShake(0x1f, 168, 128 / 8);
-const shake256 = genShake(0x1f, 136, 256 / 8);
-
 ;// CONCATENATED MODULE: ./node_modules/@polkadot/util/is/function.js
 // Copyright 2017-2022 @polkadot/util authors & contributors
 // SPDX-License-Identifier: Apache-2.0
@@ -51110,20 +50668,20 @@ function createWasmFn(root, wasmBytes, asmFn) {
 /* eslint-disable */
 // inflate state
 // aliases for shorter compressed code (most minifers don't do this)
-const fflate_u8 = Uint8Array,
+const u8 = Uint8Array,
       u16 = Uint16Array,
-      fflate_u32 = Uint32Array; // code length index map
+      u32 = Uint32Array; // code length index map
 
-const clim = new fflate_u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]); // fixed length extra bits
+const clim = new u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]); // fixed length extra bits
 
-const fleb = new fflate_u8([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
+const fleb = new u8([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
 /* unused */
 0, 0,
 /* impossible */
 0]); // fixed distance extra bits
 // see fleb note
 
-const fdeb = new fflate_u8([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
+const fdeb = new u8([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
 /* unused */
 0, 0]); // get base, reverse index map from extra bits
 
@@ -51135,7 +50693,7 @@ const freb = (eb, start) => {
   } // numbers here are at max 18 bits
 
 
-  const r = new fflate_u32(b[30]);
+  const r = new u32(b[30]);
 
   for (let i = 1; i < 30; ++i) {
     for (let j = b[i]; j < b[i + 1]; ++j) {
@@ -51214,7 +50772,7 @@ const hMap = (cd, mb, r) => {
 }; // fixed length tree
 
 
-const flt = new fflate_u8(288);
+const flt = new u8(288);
 
 for (let i = 0; i < 144; ++i) flt[i] = 8;
 
@@ -51225,7 +50783,7 @@ for (let i = 256; i < 280; ++i) flt[i] = 7;
 for (let i = 280; i < 288; ++i) flt[i] = 8; // fixed distance tree
 
 
-const fdt = new fflate_u8(32);
+const fdt = new u8(32);
 
 for (let i = 0; i < 32; ++i) fdt[i] = 5; // fixed length map
 
@@ -51254,7 +50812,7 @@ const slc = (v, s, e) => {
   if (s == null || s < 0) s = 0;
   if (e == null || e > v.length) e = v.length; // can't use .constructor in case user-supplied
 
-  const n = new (v instanceof u16 ? u16 : v instanceof fflate_u32 ? fflate_u32 : fflate_u8)(e - s);
+  const n = new (v instanceof u16 ? u16 : v instanceof u32 ? u32 : u8)(e - s);
   n.set(v.subarray(s, e));
   return n;
 }; // find max of array
@@ -51279,14 +50837,14 @@ const inflt = (dat, buf, st) => {
 
   const noBuf = !buf || !noSt; // Assumes roughly 33% compression ratio average
 
-  if (!buf) buf = new fflate_u8(sl * 3); // ensure buffer can fit at least l elements
+  if (!buf) buf = new u8(sl * 3); // ensure buffer can fit at least l elements
 
   const cbuf = l => {
     let bl = buf.length; // need to increase size to fit
 
     if (l > bl) {
       // Double or set to necessary, whichever is greater
-      const nbuf = new fflate_u8(Math.max(bl << 1, l));
+      const nbuf = new u8(Math.max(bl << 1, l));
       nbuf.set(buf);
       buf = nbuf;
     }
@@ -51337,9 +50895,9 @@ const inflt = (dat, buf, st) => {
         const tl = hLit + bits(dat, pos + 5, 31) + 1;
         pos += 14; // length+distance tree
 
-        const ldt = new fflate_u8(tl); // code length tree
+        const ldt = new u8(tl); // code length tree
 
-        const clt = new fflate_u8(19);
+        const clt = new u8(19);
 
         for (let i = 0; i < hcLen; ++i) {
           // use index map to get real code
@@ -51664,6 +51222,39 @@ async function waitReady() {
     return false;
   }
 }
+;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/crypto.js
+// Copyright 2017-2022 @polkadot/util-crypto authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+
+const cryptoIsReady = (/* unused pure expression or super */ null && (isReady));
+function cryptoWaitReady() {
+  return waitReady().then(() => {
+    assert(bundle_isReady(), 'Unable to initialize @polkadot/util-crypto');
+    return true;
+  }).catch(() => false);
+}
+;// CONCATENATED MODULE: ./node_modules/@polkadot/util/is/u8a.js
+// Copyright 2017-2022 @polkadot/util authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * @name isU8a
+ * @summary Tests for a `Uint8Array` object instance.
+ * @description
+ * Checks to see if the input object is an instance of `Uint8Array`.
+ * @example
+ * <BR>
+ *
+ * ```javascript
+ * import { isUint8Array } from '@polkadot/util';
+ *
+ * console.log('isU8a', isU8a([])); // => false
+ * ```
+ */
+function isU8a(value) {
+  return value instanceof Uint8Array;
+}
 ;// CONCATENATED MODULE: ./node_modules/@polkadot/util/is/hex.js
 // Copyright 2017-2022 @polkadot/util authors & contributors
 // SPDX-License-Identifier: Apache-2.0
@@ -51803,27 +51394,6 @@ const hasWasm = typeof WebAssembly !== 'undefined';
 function isBuffer(value) {
   return hasBuffer && Buffer.isBuffer(value);
 }
-;// CONCATENATED MODULE: ./node_modules/@polkadot/util/is/u8a.js
-// Copyright 2017-2022 @polkadot/util authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-
-/**
- * @name isU8a
- * @summary Tests for a `Uint8Array` object instance.
- * @description
- * Checks to see if the input object is an instance of `Uint8Array`.
- * @example
- * <BR>
- *
- * ```javascript
- * import { isUint8Array } from '@polkadot/util';
- *
- * console.log('isU8a', isU8a([])); // => false
- * ```
- */
-function isU8a(value) {
-  return value instanceof Uint8Array;
-}
 ;// CONCATENATED MODULE: ./node_modules/@polkadot/util/u8a/toU8a.js
 // Copyright 2017-2022 @polkadot/util authors & contributors
 // SPDX-License-Identifier: Apache-2.0
@@ -51850,83 +51420,6 @@ function isU8a(value) {
 
 function u8aToU8a(value) {
   return value ? Array.isArray(value) || isBuffer(value) ? new Uint8Array(value) : isU8a(value) ? value : isHex(value) ? hexToU8a(value) : stringToU8a(value) : new Uint8Array();
-}
-;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/helpers.js
-// Copyright 2017-2022 @polkadot/util-crypto authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-
- // re-export so TS *.d.ts generation is correct
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createAsHex(fn) {
-  return (...args) => u8aToHex(fn(...args));
-}
-function createBitHasher(bitLength, fn) {
-  return (data, onlyJs) => fn(data, bitLength, onlyJs);
-}
-function createDualHasher(wa, js) {
-  return (value, bitLength = 256, onlyJs) => {
-    const u8a = u8aToU8a(value);
-    return !hasBigInt || !onlyJs && bundle_isReady() ? wa[bitLength](u8a) : js[bitLength](u8a);
-  };
-}
-;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/keccak/asU8a.js
-// Copyright 2017-2022 @polkadot/util-crypto authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-
-
-
-/**
- * @name keccakAsU8a
- * @summary Creates a keccak Uint8Array from the input.
- * @description
- * From either a `string` or a `Buffer` input, create the keccak and return the result as a `Uint8Array`.
- * @example
- * <BR>
- *
- * ```javascript
- * import { keccakAsU8a } from '@polkadot/util-crypto';
- *
- * keccakAsU8a('123'); // => Uint8Array
- * ```
- */
-
-const keccakAsU8a = createDualHasher({
-  256: keccak256,
-  512: keccak512
-}, {
-  256: keccak_256,
-  512: keccak_512
-});
-/**
- * @name keccak256AsU8a
- * @description Creates a keccak256 Uint8Array from the input.
- */
-
-const keccak256AsU8a = createBitHasher(256, keccakAsU8a);
-/**
- * @name keccak512AsU8a
- * @description Creates a keccak512 Uint8Array from the input.
- */
-
-const keccak512AsU8a = createBitHasher(512, keccakAsU8a);
-/**
- * @name keccakAsHex
- * @description Creates a keccak hex string from the input.
- */
-
-const keccakAsHex = createAsHex(keccakAsU8a);
-;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/crypto.js
-// Copyright 2017-2022 @polkadot/util-crypto authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-
-
-const cryptoIsReady = (/* unused pure expression or super */ null && (isReady));
-function cryptoWaitReady() {
-  return waitReady().then(() => {
-    assert(bundle_isReady(), 'Unable to initialize @polkadot/util-crypto');
-    return true;
-  }).catch(() => false);
 }
 // EXTERNAL MODULE: ./node_modules/@scure/base/index.js
 var base = __webpack_require__(90);
@@ -52063,6 +51556,187 @@ function u8aConcat(...list) {
 
   return result;
 }
+;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/cryptoBrowser.js
+const cryptoBrowser_crypto = {
+    node: undefined,
+    web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,
+};
+
+;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/utils.js
+/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+// The import here is via the package name. This is to ensure
+// that exports mapping/resolution does fall into place.
+
+// Cast array to different type
+const utils_u8 = (arr) => new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
+const utils_u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
+// Cast array to view
+const utils_createView = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
+// The rotate right (circular right shift) operation for uint32
+const rotr = (word, shift) => (word << (32 - shift)) | (word >>> shift);
+const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
+// There is almost no big endian hardware, but js typed arrays uses platform specific endianess.
+// So, just to be sure not to corrupt anything.
+if (!isLE)
+    throw new Error('Non little-endian hardware is not supported');
+const hexes = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
+/**
+ * @example bytesToHex(Uint8Array.from([0xde, 0xad, 0xbe, 0xef]))
+ */
+function bytesToHex(uint8a) {
+    // pre-caching improves the speed 6x
+    let hex = '';
+    for (let i = 0; i < uint8a.length; i++) {
+        hex += hexes[uint8a[i]];
+    }
+    return hex;
+}
+/**
+ * @example hexToBytes('deadbeef')
+ */
+function hexToBytes(hex) {
+    if (typeof hex !== 'string') {
+        throw new TypeError('hexToBytes: expected string, got ' + typeof hex);
+    }
+    if (hex.length % 2)
+        throw new Error('hexToBytes: received invalid unpadded hex');
+    const array = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < array.length; i++) {
+        const j = i * 2;
+        const hexByte = hex.slice(j, j + 2);
+        const byte = Number.parseInt(hexByte, 16);
+        if (Number.isNaN(byte))
+            throw new Error('Invalid byte sequence');
+        array[i] = byte;
+    }
+    return array;
+}
+// Currently avoid insertion of polyfills with packers (browserify/webpack/etc)
+// But setTimeout is pretty slow, maybe worth to investigate howto do minimal polyfill here
+const nextTick = (() => {
+    const nodeRequire = typeof module !== 'undefined' &&
+        typeof module.require === 'function' &&
+        module.require.bind(module);
+    try {
+        if (nodeRequire) {
+            const { setImmediate } = nodeRequire('timers');
+            return () => new Promise((resolve) => setImmediate(resolve));
+        }
+    }
+    catch (e) { }
+    return () => new Promise((resolve) => setTimeout(resolve, 0));
+})();
+// Returns control to thread each 'tick' ms to avoid blocking
+async function utils_asyncLoop(iters, tick, cb) {
+    let ts = Date.now();
+    for (let i = 0; i < iters; i++) {
+        cb(i);
+        // Date.now() is not monotonic, so in case if clock goes backwards we return return control too
+        const diff = Date.now() - ts;
+        if (diff >= 0 && diff < tick)
+            continue;
+        await nextTick();
+        ts += diff;
+    }
+}
+function utf8ToBytes(str) {
+    if (typeof str !== 'string') {
+        throw new TypeError(`utf8ToBytes expected string, got ${typeof str}`);
+    }
+    return new TextEncoder().encode(str);
+}
+function toBytes(data) {
+    if (typeof data === 'string')
+        data = utf8ToBytes(data);
+    if (!(data instanceof Uint8Array))
+        throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
+    return data;
+}
+/**
+ * Concats Uint8Array-s into one; like `Buffer.concat([buf1, buf2])`
+ * @example concatBytes(buf1, buf2)
+ */
+function concatBytes(...arrays) {
+    if (!arrays.every((a) => a instanceof Uint8Array))
+        throw new Error('Uint8Array list expected');
+    if (arrays.length === 1)
+        return arrays[0];
+    const length = arrays.reduce((a, arr) => a + arr.length, 0);
+    const result = new Uint8Array(length);
+    for (let i = 0, pad = 0; i < arrays.length; i++) {
+        const arr = arrays[i];
+        result.set(arr, pad);
+        pad += arr.length;
+    }
+    return result;
+}
+function assertNumber(n) {
+    if (!Number.isSafeInteger(n) || n < 0)
+        throw new Error(`Wrong positive integer: ${n}`);
+}
+function assertBool(b) {
+    if (typeof b !== 'boolean') {
+        throw new Error(`Expected boolean, not ${b}`);
+    }
+}
+function assertBytes(bytes, ...lengths) {
+    if (bytes instanceof Uint8Array && (!lengths.length || lengths.includes(bytes.length))) {
+        return;
+    }
+    throw new TypeError(`Expected ${lengths} bytes, not ${typeof bytes} with length=${bytes.length}`);
+}
+function assertHash(hash) {
+    if (typeof hash !== 'function' || typeof hash.create !== 'function')
+        throw new Error('Hash should be wrapped by utils.wrapConstructor');
+    assertNumber(hash.outputLen);
+    assertNumber(hash.blockLen);
+}
+// For runtime check if class implements interface
+class Hash {
+    // Safe version that clones internal state
+    clone() {
+        return this._cloneInto();
+    }
+}
+// Check if object doens't have custom constructor (like Uint8Array/Array)
+const isPlainObject = (obj) => Object.prototype.toString.call(obj) === '[object Object]' && obj.constructor === Object;
+function checkOpts(def, _opts) {
+    if (_opts !== undefined && (typeof _opts !== 'object' || !isPlainObject(_opts)))
+        throw new TypeError('Options should be object or undefined');
+    const opts = Object.assign(def, _opts);
+    return opts;
+}
+function wrapConstructor(hashConstructor) {
+    const hashC = (message) => hashConstructor().update(toBytes(message)).digest();
+    const tmp = hashConstructor();
+    hashC.outputLen = tmp.outputLen;
+    hashC.blockLen = tmp.blockLen;
+    hashC.create = () => hashConstructor();
+    return hashC;
+}
+function wrapConstructorWithOpts(hashCons) {
+    const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
+    const tmp = hashCons({});
+    hashC.outputLen = tmp.outputLen;
+    hashC.blockLen = tmp.blockLen;
+    hashC.create = (opts) => hashCons(opts);
+    return hashC;
+}
+/**
+ * Secure PRNG
+ */
+function randomBytes(bytesLength = 32) {
+    if (crypto.web) {
+        return crypto.web.getRandomValues(new Uint8Array(bytesLength));
+    }
+    else if (crypto.node) {
+        return new Uint8Array(crypto.node.randomBytes(bytesLength).buffer);
+    }
+    else {
+        throw new Error("The environment doesn't have randomBytes function");
+    }
+}
+
 ;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/_blake2.js
 
 // prettier-ignore
@@ -52101,7 +51775,7 @@ class BLAKE2 extends Hash {
             throw new Error(`Salt should be ${saltLen} byte long or undefined`);
         if (opts.personalization !== undefined && opts.personalization.length !== persLen)
             throw new Error(`Personalization should be ${persLen} byte long or undefined`);
-        this.buffer32 = u32((this.buffer = new Uint8Array(blockLen)));
+        this.buffer32 = utils_u32((this.buffer = new Uint8Array(blockLen)));
     }
     update(data) {
         if (this.destroyed)
@@ -52151,7 +51825,7 @@ class BLAKE2 extends Hash {
         // Padding
         this.buffer.subarray(pos).fill(0);
         this.compress(buffer32, 0, true);
-        const out32 = u32(out);
+        const out32 = utils_u32(out);
         this.get().forEach((v, i) => (out32[i] = v));
     }
     digest() {
@@ -52174,6 +51848,56 @@ class BLAKE2 extends Hash {
         return to;
     }
 }
+
+;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/_u64.js
+const U32_MASK64 = BigInt(2 ** 32 - 1);
+const _32n = BigInt(32);
+function fromBig(n, le = false) {
+    if (le)
+        return { h: Number(n & U32_MASK64), l: Number((n >> _32n) & U32_MASK64) };
+    return { h: Number((n >> _32n) & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
+}
+function split(lst, le = false) {
+    let Ah = new Uint32Array(lst.length);
+    let Al = new Uint32Array(lst.length);
+    for (let i = 0; i < lst.length; i++) {
+        const { h, l } = fromBig(lst[i], le);
+        [Ah[i], Al[i]] = [h, l];
+    }
+    return [Ah, Al];
+}
+const toBig = (h, l) => (BigInt(h >>> 0) << _32n) | BigInt(l >>> 0);
+// for Shift in [0, 32)
+const shrSH = (h, l, s) => h >>> s;
+const shrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
+// Right rotate for Shift in [1, 32)
+const rotrSH = (h, l, s) => (h >>> s) | (l << (32 - s));
+const rotrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
+// Right rotate for Shift in (32, 64), NOTE: 32 is special case.
+const rotrBH = (h, l, s) => (h << (64 - s)) | (l >>> (s - 32));
+const rotrBL = (h, l, s) => (h >>> (s - 32)) | (l << (64 - s));
+// Right rotate for shift===32 (just swaps l&h)
+const rotr32H = (h, l) => l;
+const rotr32L = (h, l) => h;
+// Left rotate for Shift in [1, 32)
+const rotlSH = (h, l, s) => (h << s) | (l >>> (32 - s));
+const rotlSL = (h, l, s) => (l << s) | (h >>> (32 - s));
+// Left rotate for Shift in (32, 64), NOTE: 32 is special case.
+const rotlBH = (h, l, s) => (l << (s - 32)) | (h >>> (64 - s));
+const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
+// JS uses 32-bit signed integers for bitwise operations which means we cannot
+// simple take carry out of low bit sum by shift, we need to use division.
+function add(Ah, Al, Bh, Bl) {
+    const l = (Al >>> 0) + (Bl >>> 0);
+    return { h: (Ah + Bh + ((l / 2 ** 32) | 0)) | 0, l: l | 0 };
+}
+// Addition with more than 2 elements
+const add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
+const add3H = (low, Ah, Bh, Ch) => (Ah + Bh + Ch + ((low / 2 ** 32) | 0)) | 0;
+const add4L = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
+const add4H = (low, Ah, Bh, Ch, Dh) => (Ah + Bh + Ch + Dh + ((low / 2 ** 32) | 0)) | 0;
+const add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
+const add5H = (low, Ah, Bh, Ch, Dh, Eh) => (Ah + Bh + Ch + Dh + Eh + ((low / 2 ** 32) | 0)) | 0;
 
 ;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/blake2b.js
 
@@ -52259,14 +51983,14 @@ class BLAKE2b extends BLAKE2 {
         const keyLength = opts.key ? opts.key.length : 0;
         this.v0l ^= this.outputLen | (keyLength << 8) | (0x01 << 16) | (0x01 << 24);
         if (opts.salt) {
-            const salt = u32(toBytes(opts.salt));
+            const salt = utils_u32(toBytes(opts.salt));
             this.v4l ^= salt[0];
             this.v4h ^= salt[1];
             this.v5l ^= salt[2];
             this.v5h ^= salt[3];
         }
         if (opts.personalization) {
-            const pers = u32(toBytes(opts.personalization));
+            const pers = utils_u32(toBytes(opts.personalization));
             this.v6l ^= pers[0];
             this.v6h ^= pers[1];
             this.v7l ^= pers[2];
@@ -52365,6 +52089,25 @@ class BLAKE2b extends BLAKE2 {
  */
 const blake2b_blake2b = wrapConstructorWithOpts((opts) => new BLAKE2b(opts));
 
+;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/helpers.js
+// Copyright 2017-2022 @polkadot/util-crypto authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+ // re-export so TS *.d.ts generation is correct
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createAsHex(fn) {
+  return (...args) => u8aToHex(fn(...args));
+}
+function createBitHasher(bitLength, fn) {
+  return (data, onlyJs) => fn(data, bitLength, onlyJs);
+}
+function createDualHasher(wa, js) {
+  return (value, bitLength = 256, onlyJs) => {
+    const u8a = u8aToU8a(value);
+    return !hasBigInt || !onlyJs && bundle_isReady() ? wa[bitLength](u8a) : js[bitLength](u8a);
+  };
+}
 ;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/blake2/asU8a.js
 // Copyright 2017-2022 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
@@ -53801,6 +53544,263 @@ function decodeAddress(encoded, ignoreChecksum, ss58Format = -1) {
     throw new Error(`Decoding ${encoded}: ${error.message}`);
   }
 }
+;// CONCATENATED MODULE: ./node_modules/@noble/hashes/esm/sha3.js
+
+
+// Various per round constants calculations
+const [SHA3_PI, SHA3_ROTL, _SHA3_IOTA] = [[], [], []];
+const _0n = BigInt(0);
+const _1n = BigInt(1);
+const _2n = BigInt(2);
+const _7n = BigInt(7);
+const _256n = BigInt(256);
+const _0x71n = BigInt(0x71);
+for (let round = 0, R = _1n, x = 1, y = 0; round < 24; round++) {
+    // Pi
+    [x, y] = [y, (2 * x + 3 * y) % 5];
+    SHA3_PI.push(2 * (5 * y + x));
+    // Rotational
+    SHA3_ROTL.push((((round + 1) * (round + 2)) / 2) % 64);
+    // Iota
+    let t = _0n;
+    for (let j = 0; j < 7; j++) {
+        R = ((R << _1n) ^ ((R >> _7n) * _0x71n)) % _256n;
+        if (R & _2n)
+            t ^= _1n << ((_1n << BigInt(j)) - _1n);
+    }
+    _SHA3_IOTA.push(t);
+}
+const [SHA3_IOTA_H, SHA3_IOTA_L] = split(_SHA3_IOTA, true);
+// Left rotation (without 0, 32, 64)
+const rotlH = (h, l, s) => s > 32 ? rotlBH(h, l, s) : rotlSH(h, l, s);
+const rotlL = (h, l, s) => s > 32 ? rotlBL(h, l, s) : rotlSL(h, l, s);
+// Same as keccakf1600, but allows to skip some rounds
+function keccakP(s, rounds = 24) {
+    const B = new Uint32Array(5 * 2);
+    // NOTE: all indices are x2 since we store state as u32 instead of u64 (bigints to slow in js)
+    for (let round = 24 - rounds; round < 24; round++) {
+        // Theta θ
+        for (let x = 0; x < 10; x++)
+            B[x] = s[x] ^ s[x + 10] ^ s[x + 20] ^ s[x + 30] ^ s[x + 40];
+        for (let x = 0; x < 10; x += 2) {
+            const idx1 = (x + 8) % 10;
+            const idx0 = (x + 2) % 10;
+            const B0 = B[idx0];
+            const B1 = B[idx0 + 1];
+            const Th = rotlH(B0, B1, 1) ^ B[idx1];
+            const Tl = rotlL(B0, B1, 1) ^ B[idx1 + 1];
+            for (let y = 0; y < 50; y += 10) {
+                s[x + y] ^= Th;
+                s[x + y + 1] ^= Tl;
+            }
+        }
+        // Rho (ρ) and Pi (π)
+        let curH = s[2];
+        let curL = s[3];
+        for (let t = 0; t < 24; t++) {
+            const shift = SHA3_ROTL[t];
+            const Th = rotlH(curH, curL, shift);
+            const Tl = rotlL(curH, curL, shift);
+            const PI = SHA3_PI[t];
+            curH = s[PI];
+            curL = s[PI + 1];
+            s[PI] = Th;
+            s[PI + 1] = Tl;
+        }
+        // Chi (χ)
+        for (let y = 0; y < 50; y += 10) {
+            for (let x = 0; x < 10; x++)
+                B[x] = s[y + x];
+            for (let x = 0; x < 10; x++)
+                s[y + x] ^= ~B[(x + 2) % 10] & B[(x + 4) % 10];
+        }
+        // Iota (ι)
+        s[0] ^= SHA3_IOTA_H[round];
+        s[1] ^= SHA3_IOTA_L[round];
+    }
+    B.fill(0);
+}
+class Keccak extends Hash {
+    // NOTE: we accept arguments in bytes instead of bits here.
+    constructor(blockLen, suffix, outputLen, enableXOF = false, rounds = 24) {
+        super();
+        this.blockLen = blockLen;
+        this.suffix = suffix;
+        this.outputLen = outputLen;
+        this.enableXOF = enableXOF;
+        this.rounds = rounds;
+        this.pos = 0;
+        this.posOut = 0;
+        this.finished = false;
+        this.destroyed = false;
+        // Can be passed from user as dkLen
+        assertNumber(outputLen);
+        // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
+        if (0 >= this.blockLen || this.blockLen >= 200)
+            throw new Error('Sha3 supports only keccak-f1600 function');
+        this.state = new Uint8Array(200);
+        this.state32 = utils_u32(this.state);
+    }
+    keccak() {
+        keccakP(this.state32, this.rounds);
+        this.posOut = 0;
+        this.pos = 0;
+    }
+    update(data) {
+        if (this.destroyed)
+            throw new Error('instance is destroyed');
+        if (this.finished)
+            throw new Error('digest() was already called');
+        const { blockLen, state } = this;
+        data = toBytes(data);
+        const len = data.length;
+        for (let pos = 0; pos < len;) {
+            const take = Math.min(blockLen - this.pos, len - pos);
+            for (let i = 0; i < take; i++)
+                state[this.pos++] ^= data[pos++];
+            if (this.pos === blockLen)
+                this.keccak();
+        }
+        return this;
+    }
+    finish() {
+        if (this.finished)
+            return;
+        this.finished = true;
+        const { state, suffix, pos, blockLen } = this;
+        // Do the padding
+        state[pos] ^= suffix;
+        if ((suffix & 0x80) !== 0 && pos === blockLen - 1)
+            this.keccak();
+        state[blockLen - 1] ^= 0x80;
+        this.keccak();
+    }
+    writeInto(out) {
+        if (this.destroyed)
+            throw new Error('instance is destroyed');
+        if (!(out instanceof Uint8Array))
+            throw new Error('Keccak: invalid output buffer');
+        this.finish();
+        for (let pos = 0, len = out.length; pos < len;) {
+            if (this.posOut >= this.blockLen)
+                this.keccak();
+            const take = Math.min(this.blockLen - this.posOut, len - pos);
+            out.set(this.state.subarray(this.posOut, this.posOut + take), pos);
+            this.posOut += take;
+            pos += take;
+        }
+        return out;
+    }
+    xofInto(out) {
+        // Sha3/Keccak usage with XOF is probably mistake, only SHAKE instances can do XOF
+        if (!this.enableXOF)
+            throw new Error('XOF is not possible for this instance');
+        return this.writeInto(out);
+    }
+    xof(bytes) {
+        assertNumber(bytes);
+        return this.xofInto(new Uint8Array(bytes));
+    }
+    digestInto(out) {
+        if (out.length < this.outputLen)
+            throw new Error('Keccak: invalid output buffer');
+        if (this.finished)
+            throw new Error('digest() was already called');
+        this.finish();
+        this.writeInto(out);
+        this.destroy();
+        return out;
+    }
+    digest() {
+        return this.digestInto(new Uint8Array(this.outputLen));
+    }
+    destroy() {
+        this.destroyed = true;
+        this.state.fill(0);
+    }
+    _cloneInto(to) {
+        const { blockLen, suffix, outputLen, rounds, enableXOF } = this;
+        to || (to = new Keccak(blockLen, suffix, outputLen, enableXOF, rounds));
+        to.state32.set(this.state32);
+        to.pos = this.pos;
+        to.posOut = this.posOut;
+        to.finished = this.finished;
+        to.rounds = rounds;
+        // Suffix can change in cSHAKE
+        to.suffix = suffix;
+        to.outputLen = outputLen;
+        to.enableXOF = enableXOF;
+        to.destroyed = this.destroyed;
+        return to;
+    }
+}
+const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
+const sha3_224 = gen(0x06, 144, 224 / 8);
+/**
+ * SHA3-256 hash function
+ * @param message - that would be hashed
+ */
+const sha3_256 = gen(0x06, 136, 256 / 8);
+const sha3_384 = gen(0x06, 104, 384 / 8);
+const sha3_512 = gen(0x06, 72, 512 / 8);
+const keccak_224 = gen(0x01, 144, 224 / 8);
+/**
+ * keccak-256 hash function. Different from SHA3-256.
+ * @param message - that would be hashed
+ */
+const keccak_256 = gen(0x01, 136, 256 / 8);
+const keccak_384 = gen(0x01, 104, 384 / 8);
+const keccak_512 = gen(0x01, 72, 512 / 8);
+const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen !== undefined ? opts.dkLen : outputLen, true));
+const shake128 = genShake(0x1f, 168, 128 / 8);
+const shake256 = genShake(0x1f, 136, 256 / 8);
+
+;// CONCATENATED MODULE: ./node_modules/@polkadot/util-crypto/keccak/asU8a.js
+// Copyright 2017-2022 @polkadot/util-crypto authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+
+
+/**
+ * @name keccakAsU8a
+ * @summary Creates a keccak Uint8Array from the input.
+ * @description
+ * From either a `string` or a `Buffer` input, create the keccak and return the result as a `Uint8Array`.
+ * @example
+ * <BR>
+ *
+ * ```javascript
+ * import { keccakAsU8a } from '@polkadot/util-crypto';
+ *
+ * keccakAsU8a('123'); // => Uint8Array
+ * ```
+ */
+
+const keccakAsU8a = createDualHasher({
+  256: keccak256,
+  512: keccak512
+}, {
+  256: keccak_256,
+  512: keccak_512
+});
+/**
+ * @name keccak256AsU8a
+ * @description Creates a keccak256 Uint8Array from the input.
+ */
+
+const keccak256AsU8a = createBitHasher(256, keccakAsU8a);
+/**
+ * @name keccak512AsU8a
+ * @description Creates a keccak512 Uint8Array from the input.
+ */
+
+const keccak512AsU8a = createBitHasher(512, keccakAsU8a);
+/**
+ * @name keccakAsHex
+ * @description Creates a keccak hex string from the input.
+ */
+
+const keccakAsHex = createAsHex(keccakAsU8a);
 // EXTERNAL MODULE: ./node_modules/@polkadot/wasm-crypto-asmjs/cjs/data.js
 var data = __webpack_require__(683);
 ;// CONCATENATED MODULE: ./node_modules/@polkadot/wasm-crypto-init/asm.js
@@ -89054,10 +89054,10 @@ function scryptInit(password, salt, _opts) {
     // [B0...Bp−1] ← PBKDF2HMAC-SHA256(Passphrase, Salt, 1, blockSize*ParallelizationFactor)
     // Since it has only one iteration there is no reason to use async variant
     const B = pbkdf2_pbkdf2(sha256_sha256, password, salt, { c: 1, dkLen: blockSize * p });
-    const B32 = u32(B);
+    const B32 = utils_u32(B);
     // Re-used between parallel iterations. Array(iterations) of B
-    const V = u32(new Uint8Array(blockSize * N));
-    const tmp = u32(new Uint8Array(blockSize));
+    const V = utils_u32(new Uint8Array(blockSize * N));
+    const tmp = utils_u32(new Uint8Array(blockSize));
     let blockMixCb = () => { };
     if (onProgress) {
         const totalBlockMix = 2 * N * p;
@@ -90012,7 +90012,9 @@ class StorageApp {
 class StorageExt {
 
   get = (key, callback) => {
+    console.log('StorageExt.get key', key) ;
     chrome.storage.local.get([key], (result) => {
+        console.log('StorageExt.get result', result[key]) ;
         callback(result[key]) ;
     }) ;
   }
@@ -90061,15 +90063,15 @@ class WikaBackground {
             case 'initialize': return this.initialize(message.networkType, message.networkUrl, callback) ;
             case 'connect': return this.connect(message.networkType, message.networkUrl, callback) ;
             case 'getNetworkInfo': return this.getNetworkInfo(callback) ;
-            case 'getLikePrice': return this.network.getLikePrice(callback) ;
-            case 'getOwnersRequestPrice': return this.network.getOwnersRequestPrice(callback) ;
+            case 'getLikePrice': return this.getLikePrice(callback) ;
+            case 'getOwnersRequestPrice': return this.getOwnersRequestPrice(callback) ;
             case 'createTransaction': return this.createTransaction(message.txType, message.params, callback) ;
-            case 'keccakAsHex': return callback(keccakAsHex(message.text)) ;
-            case 'generateAccount': return callback(generateAccount()) ;
+            case 'keccakAsHex': return this.keccakAsHex(message.text, callback) ;
+            case 'generateAccount': return this.generateAccount(callback) ;
             case 'importAccount': return this.importAccount(message.phrase, callback) ;
             case 'getRawAddress': return this.getRawAddress(message.address, callback) ;
-            case 'getData': return this.storage.get(message.field, callback) ;
-            case 'saveData': return this.storage.set(message.field, message.data, callback) ;
+            case 'getData': return this.getData(message.field, callback) ;
+            case 'saveData': return this.saveData(message.field, message.data, callback) ;
             default: return null ;
         }
     }
@@ -90123,6 +90125,10 @@ class WikaBackground {
         callback(tx) ;
     }
 
+    generateAccount = (callback) => {
+        callback(generateAccount()) ;
+    }
+
     importAccount = (phrase, callback) => {
         try {
             const account = importAccount(phrase) ;
@@ -90137,6 +90143,28 @@ class WikaBackground {
         const addressU8 = decodeAddress(address) ;
         const addressRaw = u8aToHex(addressU8) ;
         callback(addressRaw) ;
+    }
+
+    getLikePrice = (callback) => {
+        this.network.getLikePrice(callback) ;
+    }
+
+    getOwnersRequestPrice = (callback) => {
+        this.network.getOwnersRequestPrice(callback) ;
+    }
+
+    keccakAsHex = (text, callback) => {
+        callback(keccakAsHex(text)) ;
+    }
+
+    getData = (field, callback) => {
+        console.log('getData', field) ;
+        //callback({'test': '123'}) ;
+        this.storage.get(field, callback) ;
+    }
+
+    saveData = (field, data, callback) => {
+        this.storage.set(field, data, callback) ;
     }
 
 }
@@ -90168,8 +90196,10 @@ class ExtensionInternalPort {
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.funcType === 'call') {
                 this.background.call(message, sendResponse) ;
+                return true ;
             } else if (message.funcType === 'subscribe') {
                 this.background.subscribe(message, sendResponse) ;
+                return true ;
             } else {
                 sendResponse({err: 'Unrecognized funcType', originalMessage: message}) ;
             }

@@ -24,7 +24,9 @@ class StorageApp {
 class StorageExt {
 
   get = (key, callback) => {
+    console.log('StorageExt.get key', key) ;
     chrome.storage.local.get([key], (result) => {
+        console.log('StorageExt.get result', result[key]) ;
         callback(result[key]) ;
     }) ;
   }
