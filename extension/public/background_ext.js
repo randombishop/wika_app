@@ -90052,12 +90052,21 @@ class WikaBackground {
         this.network = new network() ;
         // Storage implementation
         this.storage = (this.env==='app')?new StorageApp():new StorageExt() ;
+        // Unsubscription functions
+        this.unsubFunctions = {} ;
         // Done
         console.log('env = '+this.env) ;
         console.log('WikaBackground Constructor DONE') ;
     }
 
-    call(message, callback) {
+
+
+
+    // ------------
+    // Simple calls
+    // ------------
+
+    call = (message, callback) => {
         const func = message.func ;
         switch (func) {
             case 'initialize': return this.initialize(message.networkType, message.networkUrl, callback) ;
@@ -90075,22 +90084,6 @@ class WikaBackground {
             default: return null ;
         }
     }
-
-    subscribe(message, callback) {
-        const func = message.func ;
-        switch (func) {
-            case 'getBalance': return this.network.getBalance(message.address, callback) ;
-            case 'getUrl': return this.network.getUrl(message.url, callback) ;
-            case 'getLike': return this.network.getLike(message.address, message.url, callback) ;
-            case 'getBlockNumber': return this.network.getBlockNumber(callback) ;
-            case 'getUrlOwner': return this.network.getUrlOwner(message.url, callback) ;
-            case 'getOwnerRequest': return this.network.getOwnerRequest(message.url, callback) ;
-            case 'getOwnerResult': return this.network.getOwnerResult(message.url, callback) ;
-            default: return null ;
-        }
-    }
-
-
 
     initialize = (networkType, networkUrl, callback) => {
         const self = this ;
@@ -90165,6 +90158,53 @@ class WikaBackground {
 
     saveData = (field, data, callback) => {
         this.storage.set(field, data, callback) ;
+    }
+
+
+
+
+
+
+    // -------------
+    // Subscriptions
+    // -------------
+
+    subscribe = (message, callback) => {
+        const func = message.func ;
+        switch (func) {
+            case 'getBalance': return this.getBalance(message.address, callback) ;
+            case 'getUrl': return this.network.getUrl(message.url, callback) ;
+            case 'getLike': return this.network.getLike(message.address, message.url, callback) ;
+            case 'getBlockNumber': return this.network.getBlockNumber(callback) ;
+            case 'getUrlOwner': return this.network.getUrlOwner(message.url, callback) ;
+            case 'getOwnerRequest': return this.network.getOwnerRequest(message.url, callback) ;
+            case 'getOwnerResult': return this.network.getOwnerResult(message.url, callback) ;
+            default: return null ;
+        }
+    }
+
+    getBalance = (address, callback) => {
+        const self = this ;
+        self.network.getBalance(address, callback).then((f) => {
+            self.unsubFunctions['getBalance'] = f ;
+        }) ;
+    }
+
+
+
+
+    // -----
+    // Unsub
+    // -----
+
+    unsub = (func, callback) => {
+        const unsub_func = this.unsubFunctions[func] ;
+        if (unsub_func) {
+            unsub_func() ;
+        }
+        if (callback) {
+            callback() ;
+        }
     }
 
 }

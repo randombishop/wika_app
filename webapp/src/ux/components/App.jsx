@@ -126,37 +126,30 @@ class App extends React.Component {
 
     subscribeToBalance = () => {
         let self = this;
-        if (self.unsubGetBalance) {
-            self.unsubGetBalance() ;
-            self.unsubGetBalance = null ;
-        }
-        let clearBalance = {
-            wika:null,
-            usd:null
-        } ;
-        self.setState({balance:clearBalance}, () => {
-            if (self.state.account && self.state.network.ready) {
-                const address = self.state.account.address;
-                const message = {
-                    func: 'getBalance',
-                    address: address
-                };
-                window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
-                    let balanceWika = convertToWika(result.data.free) ;
-                    let balanceUsd = wikaToUsd(balanceWika) ;
-                    self.setState({
-                        balance:{
-                            wika:balanceWika,
-                            usd:balanceUsd
-                        }
+        window.BACKGROUND_INTERFACE.unsub('getBalance', () => {
+            let clearBalance = {
+                wika:null,
+                usd:null
+            } ;
+            self.setState({balance:clearBalance}, () => {
+                if (self.state.account && self.state.network.ready) {
+                    const address = self.state.account.address;
+                    const message = {
+                        func: 'getBalance',
+                        address: address
+                    };
+                    window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
+                        let balanceWika = convertToWika(result.data.free) ;
+                        let balanceUsd = wikaToUsd(balanceWika) ;
+                        self.setState({
+                            balance:{
+                                wika:balanceWika,
+                                usd:balanceUsd
+                            }
+                        });
                     });
-                });
-                // TODO: We have a problem here, one message one response between popup and service worker is not enough
-                // we need some port connection here...
-                //).then((s) => {
-                //    self.unsubGetBalance = s ;
-                //});
-            }
+                }
+            }) ;
         }) ;
     }
 

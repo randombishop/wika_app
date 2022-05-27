@@ -1,6 +1,20 @@
 
 class BackgroundInterface {
 
+    constructor() {
+        this.port = window.chrome.runtime.connect({name: "background_interface"});
+        this.callbacks = {} ;
+        this.port.onMessage.addListener(this.receiveMessage);
+    }
+
+    receiveMessage = (msg) => {
+        const callbackName = msg.callbackName ;
+        const data = msg.data ;
+        if (this.callbacks[callbackName]) {
+            this.callbacks[callbackName](data) ;
+        }
+    }
+
     sendMessage = (message, callback) => {
         try {
             console.log('BackgroundInterface message', message) ;
@@ -29,6 +43,16 @@ class BackgroundInterface {
 
     subscribe = (message, callback) => {
         message.funcType = 'subscribe' ;
+        const callbackName = message.func ;
+        this.callbacks[callbackName] = callback ;
+        this.sendMessage(message) ;
+    }
+
+    unsub = (funcName, callback) => {
+        const message = {
+            funcType: 'unsub',
+            func: funcName
+        }
         this.sendMessage(message, callback) ;
     }
 
