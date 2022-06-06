@@ -11,7 +11,6 @@ import Button from '@mui/material/Button';
 
 import AppContext from "../../utils/context";
 
-
 class AccountConnectModes extends React.Component {
 
     static contextType = AppContext;

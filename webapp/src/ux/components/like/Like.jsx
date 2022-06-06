@@ -4,12 +4,13 @@ import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-
+import styled from 'styled-components';
 
 import AppContext from "../../utils/context";
 import {convertToWika} from "../../utils/misc";
 import Like1 from "./Like1";
 import Like2 from "./Like2";
+import { Heading1 } from "../../styles/textStyle"
 
 
 class Like extends React.Component {
@@ -118,10 +119,6 @@ class Like extends React.Component {
         }
     }
 
-
-
-
-
     renderInputAdornment = () => {
         return (
             <InputAdornment position="end">
@@ -185,7 +182,12 @@ class Like extends React.Component {
     render = () => {
         return (
             <div>
-                {this.renderUrlInput()}
+                <Title>
+                    Like Current Page
+                </Title>
+                <UrlInput>
+                    {this.renderUrlInput()}
+                </UrlInput>
                 {this.renderUrlNumLikes()}
                 <br/>
                 <br/>
@@ -195,6 +197,21 @@ class Like extends React.Component {
     }
 
 }
+
+const Title = styled.div`
+    ${Heading1};
+    font-weight: 700;
+    color: #888888;
+    padding: 15px 20px 5px 20px;
+    border: 1px;
+    border-color: #DFDBDB;
+    border-style: none none solid none;
+    display: flex;
+    justify-content: center;
+`
+const UrlInput = styled.div`
+    padding: 20px 0 0 0;
+`
 
 export default Like ;
 

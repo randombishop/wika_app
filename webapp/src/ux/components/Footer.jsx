@@ -9,29 +9,33 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import CircularProgress from '@mui/material/CircularProgress';
+import styled from 'styled-components';
 
 import AppContext from "../utils/context";
-
+import {BodyCopy} from '../styles/textStyle'
+// import plus from '../images/plus.svg'
+import LikeIcon from '../images/LikeIcon.svg'
+import BuyIcon from '../images/BuyIcon.svg'
+import SendIcon from '../images/SendIcon.svg'
+import ClaimIcon from '../images/ClaimIcon.svg'
+import LikeIconSelected from '../images/LikeIconSelected.svg'
+import BuyIconSelected from '../images/BuyIconSelected.svg'
+import SendIconSelected from '../images/SendIconSelected.svg'
+import ClaimIconSelected from '../images/ClaimIconSelected.svg'
 
 class Footer extends React.Component {
 
     static contextType = AppContext;
 
-    styleFooter = {
-        backgroundColor: '#F9F9F9',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '60px',
-        padding: '10px 50px',
-        borderTop: '1px dashed lightgray'
-    }
-
-    styleMenu = {
-        position: 'absolute',
-        bottom: '85px',
-        right: '5px'
-    }
+    // styleFooter = {
+    //     backgroundColor: '#F9F9F9',
+    //     bottom: 0,
+    //     left: 0,
+    //     right: 0,
+    //     height: '60px',
+    //     padding: '10px 50px',
+    //     borderTop: '1px dashed lightgray'
+    // }
 
     constructor(props) {
         super(props);
@@ -44,7 +48,7 @@ class Footer extends React.Component {
         if (value==='toggleMenu') {
             this.toggleMenu() ;
         } else {
-            this.navigate(value) ;
+            this.navigateAction(value) ;
         }
     }
 
@@ -53,46 +57,12 @@ class Footer extends React.Component {
         this.setState({menuOpened:toggle}) ;
     }
 
-    navigate = (tab) => {
+    navigateAction = (action) => {
         this.setState({menuOpened:false}) ;
-        this.context.navigate(tab);
-    }
-
-
-
-
-    renderMenuItem = (icon, text, target) => {
-        return (
-            <MenuItem onClick={() => this.navigate(target)}>
-              <ListItemIcon>
-                <i className={'far '+icon}></i>
-              </ListItemIcon>
-              <ListItemText>
-                {text}
-              </ListItemText>
-            </MenuItem>
-        ) ;
-    }
-
-    renderMenu = () => {
-        if (this.state.menuOpened) {
-            return (
-                <Paper style={this.styleMenu}>
-                    <MenuList>
-                        {this.renderMenuItem('fa-user', 'Account', 'account')}
-                        {this.renderMenuItem('fa-heart', 'Liked pages', 'liked_pages')}
-                        {this.renderMenuItem('fa-bookmark', 'Owned pages', 'owned_pages')}
-                        {this.renderMenuItem('fa-registered', 'Claim page ownership', 'claim_page')}
-                        {this.renderMenuItem('fa-file-code', 'Keccak 256', 'keccak')}
-                        {this.renderMenuItem('fa-handshake', 'Blockchains', 'blockchains')}
-                        {this.renderMenuItem('fa-save', 'Settings', 'settings')}
-                        {this.renderMenuItem('fa-gem', 'About', 'about')}
-                    </MenuList>
-                </Paper>
-            );
-        } else {
-            return "" ;
+        if (this.context.tab != 'landing'){
+            this.context.navigate('landing')
         }
+        this.context.navigateAction(action);
     }
 
     renderIcon = (label, icon, target) => {
@@ -127,16 +97,36 @@ class Footer extends React.Component {
     }
 
     renderMainActions() {
+        let actionMap = {
+            'like': (this.context.action == 'like') ? LikeIconSelected : LikeIcon,
+            'buy': (this.context.action == 'buy') ? BuyIconSelected : BuyIcon,
+            'send': (this.context.action == 'send') ? SendIconSelected : SendIcon,
+            'more': (this.context.action == 'more') ? ClaimIconSelected : ClaimIcon
+        }
+
         return (
-            <React.Fragment>
-              <Grid container spacing={2}>
-                {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
-                {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
-                {this.renderIcon('Send', 'fa-paper-plane', 'wallet')}
-                {this.renderIcon('More', 'fa-plus-square', 'toggleMenu')}
-              </Grid>
-              {this.renderMenu()}
-            </React.Fragment>
+            <NavFooter>
+                <NavContainer>
+                    <NavIcons>
+                        <Icon 
+                            src={actionMap['like']}
+                            onClick={() => this.buttonClicked('like')}
+                        />
+                        <Icon 
+                            src={actionMap['buy']}
+                            onClick={() => this.buttonClicked('buy')}
+                        />
+                        <Icon 
+                            src={actionMap['send']}
+                            onClick={() => this.buttonClicked('send')}
+                        />
+                        <Icon 
+                            src={actionMap['more']}
+                            onClick={() => this.buttonClicked('more')}
+                        />
+                    </NavIcons>
+                </NavContainer>
+            </NavFooter>
         ) ;
     }
 
@@ -167,7 +157,10 @@ class Footer extends React.Component {
     renderSwitch() {
         if (this.context.account) {
             if (this.context.tab !== 'sign_transaction') {
-                return this.renderMainActions() ;
+                if (this.context.tab === 'landing') {
+
+                    return this.renderMainActions() ;
+                }
             } else {
                 return this.renderTransactionButtons() ;
             }
@@ -181,13 +174,45 @@ class Footer extends React.Component {
     }
 
     render() {
-        return (<div style={this.styleFooter}>
-                    {this.renderSwitch()}
-                </div>) ;
+        return (
+            <div >
+                {this.renderSwitch()}
+            </div>) ;
     }
 
 }
 
+const NavFooter = styled.div`
+  ${BodyCopy};
+  background: #F9F9F9;
+  display: flex;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+`
+const NavContainer = styled.div`
+  position: absolute;
+  background: #F9F9F9;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+`
+const NavIcons = styled.div`
+  display:flex;
+  max-width: 400px;
+  width: 60%;
+  justify-content: space-between;
+`
+const Icon = styled.img`
+  &:hover {
+    filter: brightness(60%);
+  };
+  cursor: pointer;
+`
 
 export default Footer ;
 

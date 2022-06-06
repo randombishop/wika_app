@@ -6,12 +6,13 @@ import AccountInfo from "./AccountInfo";
 import AccountConnect from "./AccountConnect";
 import AccountSelect from "./AccountSelect";
 
+import BodyContainer from "../../styles/BodyStyle"
 
 class Account extends React.Component {
 
     static contextType = AppContext;
 
-    render = () => {
+    renderAccount = () => {
         if (this.context.account) {
             return <AccountInfo /> ;
         } else {
@@ -22,6 +23,14 @@ class Account extends React.Component {
                 return <AccountSelect />;
             }
         }
+    }
+
+    render = () => {
+        return (
+            <BodyContainer>
+                {this.renderAccount()}
+            </BodyContainer>
+        )
     }
 
 }

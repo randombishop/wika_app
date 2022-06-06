@@ -5,7 +5,7 @@ import AppContext from '../utils/context' ;
 import {convertToWika, wikaToUsd, findAccount} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
-
+import styled from 'styled-components';
 
 class App extends React.Component {
 
@@ -13,6 +13,7 @@ class App extends React.Component {
         super(props);
         this.state = {
             tab: null,
+            action: null,
             transactionType: null,
             transactionParams: null,
             transactionSent: false,
@@ -36,6 +37,7 @@ class App extends React.Component {
     componentDidMount = () => {
         this.getAccountFromStorage() ;
         this.getTabFromStorage() ;
+        this.getActionFromStorage() ;
     }
 
     getAccountFromStorage = () => {
@@ -44,7 +46,7 @@ class App extends React.Component {
             self.setState({account:result}, () => {
                 self.subscribeToBalance() ;
                 self._mountedAccount = true ;
-                self._mounted = self._mountedTab && self._mountedAccount ;
+                self._mounted = self._mountedAction && self._mountedTab && self._mountedAccount ;
             });
         })
     }
@@ -57,7 +59,20 @@ class App extends React.Component {
             }
             self.setState({tab:result}, () => {
                 self._mountedTab = true ;
-                self._mounted = self._mountedTab && self._mountedAccount ;
+                self._mounted = self._mountedAction && self._mountedTab && self._mountedAccount ;
+            });
+        })
+    }
+
+    getActionFromStorage = () => {
+        let self = this ;
+        window.BACKGROUND.storage.get('action', (result) => {
+            if (!result) {
+                result = 'splash';
+            }
+            self.setState({action:result}, () => {
+                self._mountedAction = true ;
+                self._mounted = self._mountedAction && self._mountedTab && self._mountedAccount ;
             });
         })
     }
@@ -138,6 +153,11 @@ class App extends React.Component {
         this.setState({tab: tab});
     }
 
+    navigateAction = (action) => {
+        window.BACKGROUND.storage.set('action', action) ;
+        this.setState({action: action});
+    }
+
     rejectTransaction = () => {
         this.signTransactionCallback('rejected') ;
         window.close() ;
@@ -163,21 +183,19 @@ class App extends React.Component {
         }
     }
 
-
-
-
-
     render() {
         return (
-            <div className="wika-app">
+            <AppContainer>
                 <AppContext.Provider value={{
                     // Context data
                     tab: this.state.tab,
+                    action: this.state.action,
                     network: this.state.network,
                     account: this.state.account,
                     balance: this.state.balance,
                     // Context functions
                     navigate: this.navigate,
+                    navigateAction: this.navigateAction,
                     selectAccount: this.selectAccount,
                     // API Endpoint
                     apiEndpoint: this.state.api,
@@ -191,10 +209,17 @@ class App extends React.Component {
                     <MainContent />
                     <Footer />
                 </AppContext.Provider>
-            </div>
+            </AppContainer>
         );
     }
-
 }
+
+const AppContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    width: 100vw;
+`
 
 export default App;

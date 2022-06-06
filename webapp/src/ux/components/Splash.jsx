@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 
 
 import AppContext from "../utils/context";
-
+import BodyContainer from "../styles/BodyStyle"
 
 class Splash extends React.Component {
 
@@ -36,7 +36,7 @@ class Splash extends React.Component {
 
     render = () => {
         return (
-            <div>
+            <BodyContainer>
                 <Grid container spacing={2}>
                   <Grid item xs={4}>
                     {this.renderColumn(
@@ -57,7 +57,7 @@ class Splash extends React.Component {
                         "Protect your privacy and promote quality content.")}
                   </Grid>
                 </Grid>
-            </div>
+            </BodyContainer>
         );
     }
 
