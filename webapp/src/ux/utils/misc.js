@@ -153,10 +153,23 @@ function findAccount(accounts, address) {
 
 
 
+// app vs ext env
+function getEnvironment() {
+    try {
+        const url = window.location.href
+        const env = (url.split(':')[0] === 'chrome-extension') ? 'ext' : 'app'
+        return env ;
+    } catch (e) {
+        return 'ext' ;
+    }
+}
+
+
 
 export {
     copyToClipboard,
     convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, shortenAddress,
     hexToBytes, bytesToString, bytesToHex,
-    findAccount
+    findAccount,
+    getEnvironment
 } ;

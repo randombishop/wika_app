@@ -1,22 +1,23 @@
 const wikaExtensionId = "ggmlfkkonbpgadcefifckbldnkfjajae";
 
-class WikaBridge {
+class WebappPort {
 
     sendMessage = (message, callback) => {
         try {
             window.chrome.runtime.sendMessage(wikaExtensionId, message, (response, error) => {
                 if (window.chrome.runtime.lastError) {
-                    console.log('WikaBridge Error: '+JSON.stringify(window.chrome.runtime.lastError)) ;
+                    console.log('WebappPort Error', window.chrome.runtime.lastError) ;
                     callback(null) ;
                 } else if (response) {
-                    console.log('WikaBridge response', response) ;
+                    console.log('WebappPort response', response) ;
                     callback(response) ;
                 } else {
-                    console.log('WikaBridge response empty') ;
+                    console.log('WebappPort response empty') ;
                     callback(null) ;
                 }
             });
         } catch (e) {
+            console.log('WebappPort Error', e) ;
             callback(null) ;
         }
     }
@@ -42,4 +43,4 @@ class WikaBridge {
 
 }
 
-export default WikaBridge ;
+export default WebappPort ;

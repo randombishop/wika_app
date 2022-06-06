@@ -38,12 +38,10 @@ class Like extends React.Component {
     }
 
     getLikePrice = () => {
-        let self = this;
-        window.BACKGROUND.network.getLikePrice((result) => {
-            let price = convertToWika(result) ;
+        const self = this;
+        window.BACKGROUND_INTERFACE.call({func: 'getLikePrice'}, (result) => {
+            const price = convertToWika(result) ;
             self.setState({likePrice:price}) ;
-        }).catch((err) => {
-            alert(err) ;
         }) ;
     }
 
@@ -68,40 +66,33 @@ class Like extends React.Component {
     }
 
     subscribeToUrl = () => {
-        let self = this;
-        if (self.unsubUrl) {
-            self.unsubUrl() ;
-            self.unsubUrl = null ;
-        }
-        let url = this.state.url;
-        window.BACKGROUND.network.getUrl(url, (result) => {
-            let urlLikes = Number(result[0]) ;
-            self.setState({urlLikes:urlLikes}) ;
-        }).then((s) => {
-            self.unsubUrl = s ;
-        }).catch((err) => {
-            alert(err) ;
+        const self = this;
+        const url = this.state.url;
+        window.BACKGROUND_INTERFACE.unsub('getUrl', () => {
+            window.BACKGROUND_INTERFACE.subscribe({func: 'getUrl', url: url}, (result) => {
+                let urlLikes = Number(result[0]) ;
+                self.setState({urlLikes:urlLikes}) ;
+            }) ;
         }) ;
     }
 
     subscribeToLike = () => {
-        let self = this;
-        if (self.unsubLike) {
-            self.unsubLike() ;
-            self.unsubLike = null ;
-        }
-        let address = this.context.account.address;
-        let url = this.state.url;
-        window.BACKGROUND.network.getLike(address, url, (result) => {
-            self.setState({
-                likesSubmittedAt:Number(result[0]),
-                likesSubmittedCount:Number(result[1]),
-                likesSubmittedRemaining:Number(result[2])
+        const self = this;
+        const address = this.context.account.address;
+        const url = this.state.url;
+        const message = {
+            func: 'getLike',
+            address: address,
+            url: url
+        } ;
+        window.BACKGROUND_INTERFACE.unsub('getLike', () => {
+            window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
+                self.setState({
+                    likesSubmittedAt:Number(result[0]),
+                    likesSubmittedCount:Number(result[1]),
+                    likesSubmittedRemaining:Number(result[2])
+                }) ;
             }) ;
-        }).then((s) => {
-            self.unsubLike = s ;
-        }).catch((err) => {
-            alert(err) ;
         }) ;
     }
 
@@ -110,12 +101,8 @@ class Like extends React.Component {
     }
 
     unsubscribe = () => {
-        if (this.unsubUrl) {
-            this.unsubUrl() ;
-        }
-        if (this.unsubLike) {
-            this.unsubLike() ;
-        }
+        window.BACKGROUND_INTERFACE.unsub('getUrl', () => {}) ;
+        window.BACKGROUND_INTERFACE.unsub('getLike', () => {}) ;
     }
 
 

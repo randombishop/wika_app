@@ -1,68 +1,192 @@
-import {web3Enable, web3Accounts} from '@polkadot/extension-dapp';
-import {u8aToHex} from '@polkadot/util';
-import {cryptoWaitReady, keccakAsHex, decodeAddress} from '@polkadot/util-crypto';
+import {u8aToHex} from '@polkadot/util' ;
+import {cryptoWaitReady, keccakAsHex, decodeAddress} from '@polkadot/util-crypto' ;
+import '@polkadot/wasm-crypto/initOnlyAsm';
+
 
 
 import {getEnvironment} from './utils.js' ;
 import WikaNetwork from './network.js' ;
-import sendTransaction from './transaction.js' ;
-import {encryptWithAES, decryptWithAES, importAccount, generateAccount} from './crypto.js' ;
+import {importAccount, generateAccount} from './crypto.js' ;
 import {StorageApp, StorageExt} from './storage.js' ;
-import ExtensionPort from './extension_port.js' ;
 
 
-console.log('EXECUTING BACKGROUND SCRIPT') ;
+class WikaBackground {
+
+    constructor() {
+        console.log('WikaBackground Constructor START') ;
+        // Environment: 'app' or 'ext'
+        this.env = getEnvironment() ;
+        // Crypto and blockchain connection
+        this.cryptoReady = false ;
+        this.network = new WikaNetwork() ;
+        // Storage implementation
+        this.storage = (this.env==='app')?new StorageApp():new StorageExt() ;
+        // Unsubscription functions
+        this.unsubFunctions = {} ;
+        // Done
+        console.log('env = '+this.env) ;
+        console.log('WikaBackground Constructor DONE') ;
+    }
 
 
-// Pointers to background functions
-window.BACKGROUND = {
-    cryptoReady: false,
-    web3Wallets: null,
-    network: new WikaNetwork(),
-    encryptWithAES: encryptWithAES,
-    decryptWithAES: decryptWithAES,
-    importAccount: importAccount,
-    generateAccount: generateAccount,
-    web3Enable: web3Enable,
-    web3Accounts: web3Accounts,
-    u8aToHex: u8aToHex,
-    decodeAddress: decodeAddress,
-    keccakAsHex: keccakAsHex,
-    sendTransaction: sendTransaction
-}
 
-// Environment 'app' vs 'ext'
-const env = getEnvironment() ;
-window.BACKGROUND.env = env ;
-console.log('Detected env = '+env) ;
 
-// Storage implementation
-window.BACKGROUND.storage = (env==='app')?new StorageApp():new StorageExt() ;
+    // ------------
+    // Simple calls
+    // ------------
 
-// Crypto and network initialization, must be called before starting the app
-window.BACKGROUND.initialize = (networkType, networkUrl, callback) => {
-    cryptoWaitReady().then(() => {
-        window.BACKGROUND.cryptoReady = true;
-        window.BACKGROUND.network.connect(networkType, networkUrl, () => {
-            window.BACKGROUND.web3Enable("Wika Network").then((result) => {
-                window.BACKGROUND.web3Wallets = result ;
-                callback() ;
-            });
+    call = (message, callback) => {
+        const func = message.func ;
+        switch (func) {
+            case 'initialize': return this.initialize(message.networkType, message.networkUrl, callback) ;
+            case 'connect': return this.connect(message.networkType, message.networkUrl, callback) ;
+            case 'getNetworkInfo': return this.getNetworkInfo(callback) ;
+            case 'getLikePrice': return this.getLikePrice(callback) ;
+            case 'getOwnersRequestPrice': return this.getOwnersRequestPrice(callback) ;
+            case 'createTransaction': return this.createTransaction(message.txType, message.params, callback) ;
+            case 'keccakAsHex': return this.keccakAsHex(message.text, callback) ;
+            case 'generateAccount': return this.generateAccount(callback) ;
+            case 'importAccount': return this.importAccount(message.phrase, callback) ;
+            case 'getRawAddress': return this.getRawAddress(message.address, callback) ;
+            case 'getData': return this.getData(message.field, callback) ;
+            case 'saveData': return this.saveData(message.field, message.data, callback) ;
+            default: return null ;
+        }
+    }
+
+    initialize = (networkType, networkUrl, callback) => {
+        const self = this ;
+        cryptoWaitReady().then(() => {
+            self.cryptoReady = true;
+            self.connect(networkType, networkUrl, callback);
         }) ;
-    }) ;
+    }
+
+    connect = (networkType, networkUrl, callback) => {
+        this.network.connect(networkType, networkUrl, callback) ;
+    }
+
+    getNetworkInfo = (callback) => {
+        callback({
+            type: this.network.type,
+            url: this.network.endpoint,
+            ready: this.network.getReady()
+        }) ;
+    }
+
+    createTransaction = (txType, params, callback) => {
+        const self = this ;
+        function _tx() {
+            switch (txType) {
+                case 'like': return self.network.txLike(params.url, params.referrer, params.numLikes) ;
+                case 'owner_request': return self.network.txOwnerRequest(params.url) ;
+                default: return null ;
+            }
+        }
+        const tx = _tx() ;
+        callback(tx) ;
+    }
+
+    generateAccount = (callback) => {
+        callback(generateAccount()) ;
+    }
+
+    importAccount = (phrase, callback) => {
+        try {
+            const account = importAccount(phrase) ;
+            account.imported = true ;
+            callback(account) ;
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    getRawAddress = (address, callback) => {
+        const addressU8 = decodeAddress(address) ;
+        const addressRaw = u8aToHex(addressU8) ;
+        callback(addressRaw) ;
+    }
+
+    getLikePrice = (callback) => {
+        this.network.getLikePrice(callback) ;
+    }
+
+    getOwnersRequestPrice = (callback) => {
+        this.network.getOwnersRequestPrice(callback) ;
+    }
+
+    keccakAsHex = (text, callback) => {
+        callback(keccakAsHex(text)) ;
+    }
+
+    getData = (field, callback) => {
+        console.log('getData', field) ;
+        //callback({'test': '123'}) ;
+        this.storage.get(field, callback) ;
+    }
+
+    saveData = (field, data, callback) => {
+        this.storage.set(field, data, callback) ;
+    }
+
+
+
+
+
+
+    // -------------
+    // Subscriptions
+    // -------------
+
+    subscribe = (message, callback) => {
+        const func = message.func ;
+        switch (func) {
+            case 'getBalance': return this.getBalance(message.address, callback) ;
+            case 'getUrl': return this.network.getUrl(message.url, callback) ;
+            case 'getLike': return this.network.getLike(message.address, message.url, callback) ;
+            case 'getBlockNumber': return this.network.getBlockNumber(callback) ;
+            case 'getUrlOwner': return this.network.getUrlOwner(message.url, callback) ;
+            case 'getOwnerRequest': return this.network.getOwnerRequest(message.url, callback) ;
+            case 'getOwnerResult': return this.network.getOwnerResult(message.url, callback) ;
+            default: return null ;
+        }
+    }
+
+    getBalance = (address, callback) => {
+        const self = this ;
+        self.network.getBalance(address, callback).then((f) => {
+            self.unsubFunctions['getBalance'] = f ;
+        }) ;
+    }
+
+
+
+
+    // -----
+    // Unsub
+    // -----
+
+    unsub = (func, callback) => {
+        const unsub_func = this.unsubFunctions[func] ;
+        if (unsub_func) {
+            unsub_func() ;
+        }
+        if (callback) {
+            callback() ;
+        }
+    }
+
 }
 
-// One time initialization if we are in extension
-if (env === 'ext') {
-    const defaultNetworkType = "Wika Testnet" ;
-    const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
-    window.BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
-        console.log('BACKGROUND init done.')
-    }) ;
-}
 
-// Instantiate Extension bridge
-if (env === 'ext') {
-    window.BACKGROUND.port = new ExtensionPort() ;
-}
+export default WikaBackground ;
+
+
+
+
+
+
+
+
+
 

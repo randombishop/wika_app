@@ -24,11 +24,17 @@ class Keccak extends React.Component {
     }
 
     generateHash = () => {
-        let text = this.state.text ;
-        let hash = window.BACKGROUND.keccakAsHex(text) ;
-        console.log('generateHash: ' + text + ' -> ' + hash) ;
-        this.setState({
-            hash:hash
+        const self = this ;
+        const text = this.state.text ;
+        const message = {
+            func: 'keccakAsHex',
+            text: text
+        } ;
+        window.BACKGROUND_INTERFACE.call(message, (hash) => {
+            console.log('generateHash: ' + text + ' -> ' + hash) ;
+            self.setState({
+                hash:hash
+            }) ;
         }) ;
     }
 

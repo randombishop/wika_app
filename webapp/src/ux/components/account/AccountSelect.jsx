@@ -22,11 +22,16 @@ class AccountSelect extends React.Component {
     }
 
     componentDidMount = () => {
-        window.BACKGROUND.storage.get('accounts', (accounts) => {
+        let self = this ;
+        const message = {
+            func: 'getData',
+            field: 'accounts'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (accounts) => {
             if (accounts && accounts.length>0) {
-                this.setState({accounts:accounts});
+                self.setState({accounts:accounts});
             } else {
-                this.setState({accounts:[]});
+                self.setState({accounts:[]});
             }
         });
     }
@@ -49,8 +54,13 @@ class AccountSelect extends React.Component {
             accounts = [] ;
         }
         accounts.push(account) ;
-        let self = this ;
-        window.BACKGROUND.storage.set('accounts', accounts, () => {
+        const self = this ;
+        const message = {
+            func: 'saveData',
+            field: 'accounts',
+            data: accounts
+        };
+        window.BACKGROUND_INTERFACE.call(message, () => {
             self.setState({view:'list', accounts:accounts});
         }) ;
     }

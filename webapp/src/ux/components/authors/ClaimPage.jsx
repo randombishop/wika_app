@@ -11,6 +11,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 import AppContext from "../../utils/context";
 import {bytesToString, convertToWika, copyToClipboard} from "../../utils/misc";
+import sendTransaction from '../../utils/transaction' ;
 
 
 class ClaimPage extends React.Component {
@@ -59,29 +60,21 @@ class ClaimPage extends React.Component {
 
     getOwnersRequestPrice = () => {
         let self = this;
-        window.BACKGROUND.network.getOwnersRequestPrice((result) => {
+        window.BACKGROUND_INTERFACE.call({func: 'getOwnersRequestPrice'}, (result) => {
             let price = convertToWika(result) ;
             self.setState({requestPrice:price}) ;
-        }).catch((err) => {
-            alert(err) ;
         }) ;
     }
 
     subscribeToBlockNumber = () => {
         let self = this;
-        if (self.unsubBlockNumber) {
-            self.unsubBlockNumber() ;
-            self.unsubBlockNumber = null ;
-        }
-        window.BACKGROUND.network.getBlockNumber((result) => {
-            self.setState({
-                currentBlock:Number(result)
-            }) ;
-        }).then((s) => {
-            self.unsubBlockNumber = s ;
-        }).catch((err) => {
-            alert(err) ;
-        }) ;
+        window.BACKGROUND_INTERFACE.unsub('getBlockNumber', () => {
+            window.BACKGROUND_INTERFACE.subscribe({func: 'getBlockNumber'}, (result) => {
+                self.setState({
+                    currentBlock:Number(result)
+                }) ;
+            });
+        })
     }
 
 
@@ -104,58 +97,41 @@ class ClaimPage extends React.Component {
     }
 
     subscribeToUrlOwner = () => {
-        let self = this;
-        if (self.unsubUrlOwner) {
-            self.unsubUrlOwner() ;
-            self.unsubUrlOwner = null ;
-        }
-        let url = self.state.url;
-        this.setState({owner:null}, () => {
-            window.BACKGROUND.network.getUrlOwner(url, (result) => {
-                self.setState({
-                    owner: "" + result
-                });
-            }).then((s) => {
-                self.unsubUrlOwner = s;
-            }).catch((err) => {
-                alert(err);
-            });
+        const self = this;
+        const url = self.state.url;
+        window.BACKGROUND_INTERFACE.unsub('getUrlOwner', () => {
+            this.setState({owner:null}, () => {
+                window.BACKGROUND_INTERFACE.subscribe({func: 'getUrlOwner', url: url}, (result) => {
+                    self.setState({owner: ("" + result)});
+                })
+            }) ;
         }) ;
+
     }
 
     subscribeToOwnerRequest = () => {
-        let self = this;
-        if (self.unsubOwnerRequest) {
-            self.unsubOwnerRequest() ;
-            self.unsubOwnerRequest = null ;
-        }
-        let url = self.state.url;
-        let clearState = {
+        const self = this;
+        const url = self.state.url;
+        const clearState = {
             requestBlock: null,
             requestAccount: null
         } ;
-        this.setState(clearState, () => {
-            window.BACKGROUND.network.getOwnerRequest(url, (result) => {
-                self.setState({
-                    requestBlock: Number(result[0]),
-                    requestAccount: ""+result[1]
-                });
-            }).then((s) => {
-                self.unsubOwnerRequest = s;
-            }).catch((err) => {
-                alert(err);
-            });
+        window.BACKGROUND_INTERFACE.unsub('getOwnerRequest', () => {
+            self.setState(clearState, () => {
+                window.BACKGROUND_INTERFACE.subscribe({func: 'getOwnerRequest', url: url}, (result) => {
+                    self.setState({
+                        requestBlock: Number(result[0]),
+                        requestAccount: ""+result[1]
+                    });
+                }) ;
+            }) ;
         }) ;
     }
 
     subscribeToOwnerResult = () => {
-        let self = this;
-        if (self.unsubOwnerResult) {
-            self.unsubOwnerResult() ;
-            self.unsubOwnerResult = null ;
-        }
-        let url = self.state.url;
-        let clearState = {
+        const self = this;
+        const url = self.state.url;
+        const clearState = {
             resultBlock: null,
             resultNumVotes: null,
             resultNumVotesYes: null,
@@ -164,35 +140,33 @@ class ClaimPage extends React.Component {
             resultMark: null,
             resultOutcome: null
         } ;
-        this.setState(clearState, () => {
-            window.BACKGROUND.network.getOwnerResult(url, (result) => {
-                let data = {
-                    resultBlock: Number(result[0]),
-                    resultNumVotes: Number(result[1]),
-                    resultNumVotesYes: Number(result[2]),
-                    resultNumVotesMajority: Number(result[3]),
-                    resultIntro: result[4],
-                    resultMark: result[5],
-                    resultOutcome: result[6]
-                };
-                console.log('ownerResult', data) ;
-                self.setState(data);
-            }).then((s) => {
-                self.unsubOwnerResult = s;
-            });
+        window.BACKGROUND_INTERFACE.unsub('getOwnerResult', () => {
+            self.setState(clearState, () => {
+                window.BACKGROUND_INTERFACE.subscribe({func: 'getOwnerResult', url: url}, (result) => {
+                    let data = {
+                        resultBlock: Number(result[0]),
+                        resultNumVotes: Number(result[1]),
+                        resultNumVotesYes: Number(result[2]),
+                        resultNumVotesMajority: Number(result[3]),
+                        resultIntro: result[4],
+                        resultMark: result[5],
+                        resultOutcome: result[6]
+                    };
+                    console.log('ownerResult', data) ;
+                    self.setState(data);
+                }) ;
+            }) ;
         }) ;
     }
 
     unsubscribeUrl = () => {
-        if (this.unsubUrlOwner) {
-            this.unsubUrlOwner() ;
-        }
-        if (this.unsubOwnerRequest) {
-            this.unsubOwnerRequest() ;
-        }
-        if (this.unsubOwnerResult) {
-            this.unsubOwnerResult() ;
-        }
+        window.BACKGROUND_INTERFACE.unsub('getUrlOwner', () => {}) ;
+        window.BACKGROUND_INTERFACE.unsub('getOwnerRequest', () => {}) ;
+        window.BACKGROUND_INTERFACE.unsub('getOwnerResult', () => {}) ;
+    }
+
+    unsubscribeBlockNumber = () => {
+        window.BACKGROUND_INTERFACE.unsub('getBlockNumber', () => {}) ;
     }
 
     clearUrl = () => {
@@ -212,7 +186,7 @@ class ClaimPage extends React.Component {
     submitRequest = () => {
         let url = this.state.url ;
         let account = this.context.account ;
-        window.BACKGROUND.sendTransaction('owner_request', {url:url}, account, this.monitorRequest) ;
+        sendTransaction('owner_request', {url:url}, account, this.monitorRequest) ;
     }
 
     monitorRequest = (result) => {
@@ -253,18 +227,8 @@ class ClaimPage extends React.Component {
 
     componentWillUnmount = () => {
         this._mounted = false;
-        if (this.unsubUrlOwner) {
-            this.unsubUrlOwner() ;
-        }
-        if (this.unsubOwnerRequest) {
-            this.unsubOwnerRequest() ;
-        }
-        if (this.unsubOwnerResult) {
-            this.unsubOwnerResult() ;
-        }
-        if (this.unsubBlockNumber) {
-            this.unsubBlockNumber() ;
-        }
+        this.unsubscribeUrl() ;
+        this.unsubscribeBlockNumber() ;
     }
 
 

@@ -6,7 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-
+import {web3Accounts} from '@polkadot/extension-dapp' ;
 
 
 import AccountList from './AccountList' ;
@@ -29,7 +29,7 @@ class AccountConnectWeb3 extends React.Component {
 
     getAccounts = () => {
         this.setState({accounts: []}, () => {
-            window.BACKGROUND.web3Accounts().then((result) => {
+            web3Accounts().then((result) => {
                 this.setState({accounts: result});
             });
         });
@@ -52,16 +52,21 @@ class AccountConnectWeb3 extends React.Component {
         let address = account.address ;
         let name = account.meta.name ;
         let source = account.meta.source ;
-        let addressU8 = window.BACKGROUND.decodeAddress(address) ;
-        let addressRaw = window.BACKGROUND.u8aToHex(addressU8) ;
-        let data = {
-            mode: 'web3',
-            name: name,
-            address: address,
-            addressRaw: addressRaw,
-            source: source
+        let self = this ;
+        const message = {
+            func: 'getRawAddress',
+            address: address
         };
-        this.props.next(data) ;
+        window.BACKGROUND_INTERFACE.call(message, (addressRaw) => {
+            let data = {
+                mode: 'web3',
+                name: name,
+                address: address,
+                addressRaw: addressRaw,
+                source: source
+            };
+            self.props.next(data) ;
+        }) ;
     }
 
 

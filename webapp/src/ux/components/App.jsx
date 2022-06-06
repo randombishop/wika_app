@@ -5,6 +5,7 @@ import AppContext from '../utils/context' ;
 import {convertToWika, wikaToUsd, findAccount} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
+import sendTransaction from '../utils/transaction' ;
 
 
 class App extends React.Component {
@@ -17,9 +18,9 @@ class App extends React.Component {
             transactionParams: null,
             transactionSent: false,
             network: {
-                type: window.BACKGROUND.network.type,
-                url: window.BACKGROUND.network.endpoint,
-                ready: window.BACKGROUND.network.getReady()
+                type: null,
+                url: null,
+                ready: false
             },
             api: {
                 type: "Test API",
@@ -34,24 +35,41 @@ class App extends React.Component {
     }
 
     componentDidMount = () => {
+        this.getNetworkState() ;
         this.getAccountFromStorage() ;
         this.getTabFromStorage() ;
     }
 
+    getNetworkState = () => {
+        let self = this ;
+        window.BACKGROUND_INTERFACE.call({func: 'getNetworkInfo'}, (info) => {
+            const state = {network: info} ;
+            self.setState(state) ;
+        }) ;
+    }
+
     getAccountFromStorage = () => {
         let self = this ;
-        window.BACKGROUND.storage.get('account', (result) => {
+        const message = {
+            func: 'getData',
+            field: 'account'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (result) => {
             self.setState({account:result}, () => {
                 self.subscribeToBalance() ;
                 self._mountedAccount = true ;
                 self._mounted = self._mountedTab && self._mountedAccount ;
             });
-        })
+        }) ;
     }
 
     getTabFromStorage = () => {
         let self = this ;
-        window.BACKGROUND.storage.get('tab', (result) => {
+        const message = {
+            func: 'getData',
+            field: 'tab'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (result) => {
             if (!result) {
                 result = 'splash';
             }
@@ -59,7 +77,7 @@ class App extends React.Component {
                 self._mountedTab = true ;
                 self._mounted = self._mountedTab && self._mountedAccount ;
             });
-        })
+        }) ;
     }
 
     ping = () => {
@@ -67,9 +85,13 @@ class App extends React.Component {
     }
 
     signTransaction = (txType, params, address, callback) => {
-        const self = this ;
         console.log('signTransaction -> data', txType, params, address, this._mounted) ;
-        window.BACKGROUND.storage.get('accounts', (accounts) => {
+        const self = this ;
+        const message = {
+            func: 'getData',
+            field: 'accounts'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (accounts) => {
             const account = findAccount(accounts, address) ;
             console.log('signTransaction -> account', account) ;
             if (account) {
@@ -90,8 +112,12 @@ class App extends React.Component {
         let networkState = self.state.network ;
         networkState.ready = false ;
         self.setState({network:networkState}, () => {
-            let network = window.BACKGROUND.network ;
-            network.connect(networkState.type, networkState.url, () => {
+            const message = {
+                func: 'connect',
+                networkType: networkState.type,
+                networkUrl: networkState.url
+            };
+            window.BACKGROUND_INTERFACE.call(message, () => {
                 networkState.ready = true ;
                 self.setState({network:networkState}, ) ;
             }) ;
@@ -100,41 +126,52 @@ class App extends React.Component {
 
     subscribeToBalance = () => {
         let self = this;
-        if (self.unsubGetBalance) {
-            self.unsubGetBalance() ;
-            self.unsubGetBalance = null ;
-        }
-        let clearBalance = {
-            wika:null,
-            usd:null
-        } ;
-        self.setState({balance:clearBalance}, () => {
-            if (self.state.account && self.state.network.ready) {
-            let address = self.state.account.address;
-            window.BACKGROUND.network.getBalance(address, (result) => {
-                let balanceWika = convertToWika(result.data.free) ;
-                let balanceUsd = wikaToUsd(balanceWika) ;
-                self.setState({
-                    balance:{
-                        wika:balanceWika,
-                        usd:balanceUsd
-                    }
-                });
-            }).then((s) => {
-                self.unsubGetBalance = s ;
-            });
-        }
+        window.BACKGROUND_INTERFACE.unsub('getBalance', () => {
+            let clearBalance = {
+                wika:null,
+                usd:null
+            } ;
+            self.setState({balance:clearBalance}, () => {
+                if (self.state.account && self.state.network.ready) {
+                    const address = self.state.account.address;
+                    const message = {
+                        func: 'getBalance',
+                        address: address
+                    };
+                    window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
+                        let balanceWika = convertToWika(result.data.free) ;
+                        let balanceUsd = wikaToUsd(balanceWika) ;
+                        self.setState({
+                            balance:{
+                                wika:balanceWika,
+                                usd:balanceUsd
+                            }
+                        });
+                    });
+                }
+            }) ;
         }) ;
     }
 
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
-        window.BACKGROUND.storage.set('account', account) ;
+        const message = {
+            func: 'saveData',
+            field: 'account',
+            data: account
+        };
+        window.BACKGROUND_INTERFACE.call(message, ()=>{}) ;
         this.setState({account: account}, this.subscribeToBalance) ;
     }
 
     navigate = (tab) => {
-        window.BACKGROUND.storage.set('tab', tab) ;
+        console.log('App.navigate', tab) ;
+        const message = {
+            func: 'saveData',
+            field: 'tab',
+            data: tab
+        };
+        window.BACKGROUND_INTERFACE.call(message, ()=>{}) ;
         this.setState({tab: tab});
     }
 
@@ -148,7 +185,7 @@ class App extends React.Component {
         const txParams = this.state.transactionParams ;
         const account = this.state.account ;
         this.setState({transactionSent: true}) ;
-        window.BACKGROUND.sendTransaction(txType, txParams, account, (result) => {
+        sendTransaction(txType, txParams, account, (result) => {
             if (result.status==='In block') {
                 this.signTransactionCallback('confirmed') ;
                 window.close() ;
@@ -158,9 +195,9 @@ class App extends React.Component {
 
     componentWillUnmount = () => {
         this._mounted = false;
-        if (this.unsubGetBalance) {
-            this.unsubGetBalance() ;
-        }
+        window.BACKGROUND_INTERFACE.unsub('getBalance', () => {
+            console.log('Unsubscribed getBalance') ;
+        }) ;
     }
 
 

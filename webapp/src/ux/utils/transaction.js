@@ -1,5 +1,6 @@
 import {Keyring} from '@polkadot/api';
 import {web3FromSource} from '@polkadot/extension-dapp';
+import { getEnvironment } from './misc';
 
 
 // Parse error returned from polkadot API
@@ -20,16 +21,20 @@ function parseError(result) {
 }
 
 
-function createTransaction(txType, params) {
-    switch (txType) {
-        case 'like': return window.BACKGROUND.network.txLike(params.url, params.referrer, params.numLikes) ;
-        case 'owner_request': return window.BACKGROUND.network.txOwnerRequest(params.url) ;
-        default: return null ;
+function createTransaction(txType, params, callback) {
+    const message = {
+        func: 'createTransaction',
+        txType: txType,
+        params: params
     }
+    window.BACKGROUND_INTERFACE.call(message, (tx) => {
+        callback(tx) ;
+    }) ;
 }
 
 function sendTransaction(txType, params, account, callback) {
-    if (window.BACKGROUND.env === 'ext') {
+    const env = getEnvironment() ;
+    if (env === 'ext') {
         sendTransactionInExtension(txType, params, account, callback) ;
     } else {
         if (account.mode === 'web3') {
@@ -41,15 +46,17 @@ function sendTransaction(txType, params, account, callback) {
 }
 
 function sendTransactionInExtension(txType, params, account, callback) {
-    let tx = createTransaction(txType, params) ;
-    let t = new Transaction(tx, account, callback) ;
-    t.sendInExtension() ;
+    createTransaction(txType, params, (tx) => {
+        let t = new Transaction(tx, account, callback) ;
+        t.sendInExtension() ;
+    }) ;
 }
 
 function sendTransactionUsingWeb3(txType, params, account, callback) {
-    let tx = createTransaction(txType, params) ;
-    let t = new Transaction(tx, account, callback) ;
-    t.sendUsingWeb3() ;
+    createTransaction(txType, params, (tx) => {
+        let t = new Transaction(tx, account, callback) ;
+        t.sendUsingWeb3() ;
+    }) ;
 }
 
 function sendTransactionUsingWika(txType, params, account, callback) {

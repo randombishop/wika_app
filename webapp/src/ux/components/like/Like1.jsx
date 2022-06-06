@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 
 import AppContext from "../../utils/context";
+import sendTransaction from '../../utils/transaction' ;
 
 
 class Like1 extends React.Component {
@@ -41,7 +42,7 @@ class Like1 extends React.Component {
                       referrer: this.state.referrer,
                       numLikes: this.state.numLikes} ;
         let account = this.context.account ;
-        window.BACKGROUND.sendTransaction('like', params, account, this.monitorLike) ;
+        sendTransaction('like', params, account, this.monitorLike) ;
     }
 
     monitorLike = (result) => {
