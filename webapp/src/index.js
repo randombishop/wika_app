@@ -10,7 +10,7 @@ import App from './ux/components/App';
 import './ux/css/wika.css';
 import './ux/css/awesome.css';
 import WikaBackground from './background/background.js' ;
-import WebappPort from './ux/utils/webapp_port' ;
+import WebappPort from './webapp_port' ;
 
 
 

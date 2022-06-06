@@ -195,9 +195,9 @@ class App extends React.Component {
 
     componentWillUnmount = () => {
         this._mounted = false;
-        if (this.unsubGetBalance) {
-            this.unsubGetBalance() ;
-        }
+        window.BACKGROUND_INTERFACE.unsub('getBalance', () => {
+            console.log('Unsubscribed getBalance') ;
+        }) ;
     }
 
 

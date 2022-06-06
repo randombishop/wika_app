@@ -4,16 +4,40 @@ class ExtensionInternalPort {
 
     constructor(background) {
         this.background = background ;
-        this.registerListener() ;
+        this.listenOnConnect() ;
+        this.listenOnMessage() ;
     }
 
-    registerListener = () => {
+    listenOnConnect = () => {
+        const self = this ;
+        chrome.runtime.onConnect.addListener(function(port) {
+          if (port.name === "background_interface") {
+            self.port = port ;
+          }
+        });
+    }
+
+    listenOnMessage = () => {
+        const self = this ;
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-            if (message.funcType === 'call') {
-                this.background.call(message, sendResponse) ;
+            const funcType = message.funcType ;
+            const func = message.func ;
+            if (funcType === 'call') {
+                self.background.call(message, sendResponse) ;
                 return true ;
-            } else if (message.funcType === 'subscribe') {
-                this.background.subscribe(message, sendResponse) ;
+            } else if (funcType === 'subscribe') {
+                self.background.subscribe(message, (data) => {
+                    const newMessage = {
+                        sub: func,
+                        data: data
+                    }
+                    self.port.postMessage(newMessage);
+                }).then((u) => {
+                    self.unsubFunctions[func] = u ;
+                }) ;
+                sendResponse('ack') ;
+            } else if (funcType === 'unsub') {
+                self.background.unsub(func, sendResponse) ;
                 return true ;
             } else {
                 sendResponse({err: 'Unrecognized funcType', originalMessage: message}) ;

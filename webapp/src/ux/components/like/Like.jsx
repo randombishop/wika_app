@@ -66,24 +66,18 @@ class Like extends React.Component {
     }
 
     subscribeToUrl = () => {
-        let self = this;
-        if (self.unsubUrl) {
-            self.unsubUrl() ;
-            self.unsubUrl = null ;
-        }
-        let url = this.state.url;
-        window.BACKGROUND_INTERFACE.subscribe({func: 'getUrl', url: url}, (result) => {
-            let urlLikes = Number(result[0]) ;
-            self.setState({urlLikes:urlLikes}) ;
+        const self = this;
+        const url = this.state.url;
+        window.BACKGROUND_INTERFACE.unsub('getUrl', () => {
+            window.BACKGROUND_INTERFACE.subscribe({func: 'getUrl', url: url}, (result) => {
+                let urlLikes = Number(result[0]) ;
+                self.setState({urlLikes:urlLikes}) ;
+            }) ;
         }) ;
     }
 
     subscribeToLike = () => {
-        let self = this;
-        if (self.unsubLike) {
-            self.unsubLike() ;
-            self.unsubLike = null ;
-        }
+        const self = this;
         const address = this.context.account.address;
         const url = this.state.url;
         const message = {
@@ -91,11 +85,13 @@ class Like extends React.Component {
             address: address,
             url: url
         } ;
-        window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
-            self.setState({
-                likesSubmittedAt:Number(result[0]),
-                likesSubmittedCount:Number(result[1]),
-                likesSubmittedRemaining:Number(result[2])
+        window.BACKGROUND_INTERFACE.unsub('getLike', () => {
+            window.BACKGROUND_INTERFACE.subscribe(message, (result) => {
+                self.setState({
+                    likesSubmittedAt:Number(result[0]),
+                    likesSubmittedCount:Number(result[1]),
+                    likesSubmittedRemaining:Number(result[2])
+                }) ;
             }) ;
         }) ;
     }
@@ -105,12 +101,8 @@ class Like extends React.Component {
     }
 
     unsubscribe = () => {
-        if (this.unsubUrl) {
-            this.unsubUrl() ;
-        }
-        if (this.unsubLike) {
-            this.unsubLike() ;
-        }
+        window.BACKGROUND_INTERFACE.unsub('getUrl', () => {}) ;
+        window.BACKGROUND_INTERFACE.unsub('getLike', () => {}) ;
     }
 
 

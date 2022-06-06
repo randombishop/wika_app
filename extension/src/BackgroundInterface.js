@@ -8,10 +8,10 @@ class BackgroundInterface {
     }
 
     receiveMessage = (msg) => {
-        const callbackName = msg.callbackName ;
+        const func = msg.func ;
         const data = msg.data ;
-        if (this.callbacks[callbackName]) {
-            this.callbacks[callbackName](data) ;
+        if (this.callbacks[func]) {
+            this.callbacks[func](data) ;
         }
     }
 
@@ -43,9 +43,13 @@ class BackgroundInterface {
 
     subscribe = (message, callback) => {
         message.funcType = 'subscribe' ;
-        const callbackName = message.func ;
-        this.callbacks[callbackName] = callback ;
-        this.sendMessage(message) ;
+        const func = message.func ;
+        this.callbacks[func] = callback ;
+        this.sendMessage(message, (res) => {
+            if (res !== 'ack') {
+                console.error('Subscription did not return ACK') ;
+            }
+        }) ;
     }
 
     unsub = (funcName, callback) => {
