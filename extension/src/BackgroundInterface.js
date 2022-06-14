@@ -8,6 +8,7 @@ class BackgroundInterface {
     }
 
     receiveMessage = (msg) => {
+        console.log('receivedMessage', msg) ;
         const func = msg.func ;
         const data = msg.data ;
         if (this.callbacks[func]) {

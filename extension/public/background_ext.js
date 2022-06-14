@@ -90253,12 +90253,10 @@ class ExtensionInternalPort {
             } else if (funcType === 'subscribe') {
                 self.background.subscribe(message, (data) => {
                     const newMessage = {
-                        sub: func,
+                        func: func,
                         data: data
                     }
                     self.port.postMessage(newMessage);
-                }).then((u) => {
-                    self.unsubFunctions[func] = u ;
                 }) ;
                 sendResponse('ack') ;
             } else if (funcType === 'unsub') {
