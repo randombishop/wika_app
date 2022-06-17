@@ -23,7 +23,16 @@ function parsePolkadotError(result) {
     }
 }
 
+function findAccount(accounts, address) {
+    if (accounts) {
+        return accounts.find(x => (x.address===address)) ;
+    } else {
+        return null ;
+    }
+}
+
 export {
     getEnvironment,
-    parsePolkadotError
+    parsePolkadotError,
+    findAccount
 } ;

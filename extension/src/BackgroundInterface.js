@@ -53,6 +53,11 @@ class BackgroundInterface {
         }) ;
     }
 
+    transaction = (message, callback) => {
+        message.funcType = 'transaction' ;
+        this.sendMessage(message, callback) ;
+    }
+
     unsub = (funcName, callback) => {
         const message = {
             funcType: 'unsub',

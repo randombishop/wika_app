@@ -1,6 +1,6 @@
 import {Keyring} from '@polkadot/api';
-import {web3FromSource} from '@polkadot/extension-dapp';
 import {parsePolkadotError} from './utils.js' ;
+
 
 
 class Transaction {
@@ -29,15 +29,7 @@ class Transaction {
         }
     }
 
-    send = () => {
-        if (this.account.mode === 'web3') {
-            this.sendUsingWeb3() ;
-        } else {
-            this.sendInExtension() ;
-        }
-    }
-
-    sendInExtension = () => {
+    sendUsingPrivatePhrase = () => {
         let address = this.account.address ;
         let keyring = new Keyring({ type: 'sr25519' });
         let signer = keyring.addFromUri(this.account.phrase);
@@ -55,7 +47,7 @@ class Transaction {
         let address = this.account.address ;
         console.log('sendTransactionWeb3', source, address);
         let self = this ;
-        web3FromSource(source).then((injector) => {
+        window.web3FromSource(source).then((injector) => {
             self.tx.signAndSend(address, {signer: injector.signer}, self.txMonitor).then((s) => {
                 self.unsubTransaction = s;
             }).catch((err) => {

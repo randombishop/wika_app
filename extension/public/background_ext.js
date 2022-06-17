@@ -53831,6 +53831,29 @@ function getEnvironment() {
     }
 }
 
+function parsePolkadotError(result) {
+    if (result.dispatchError) {
+        try {
+            let data = result.dispatchError.asModule;
+            let index = data.index;
+            let error = data.error;
+            return "Transaction error (" + index + "," + error + ")";
+        } catch (err) {
+            return "Transaction error";
+        }
+    } else {
+        return null;
+    }
+}
+
+function findAccount(accounts, address) {
+    if (accounts) {
+        return accounts.find(x => (x.address===address)) ;
+    } else {
+        return null ;
+    }
+}
+
 
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classPrivateFieldLooseBase.js
 function _classPrivateFieldBase(receiver, privateKey) {
@@ -90028,6 +90051,69 @@ class StorageExt {
 }
 
 
+;// CONCATENATED MODULE: ./src/background/transaction.js
+
+
+
+
+
+class Transaction {
+
+    constructor(tx, account, callback) {
+        this.tx = tx ;
+        this.account = account ;
+        this.callback = callback ;
+    }
+
+    txMonitor = (result) => {
+        let status = result.status ;
+        if (status.isInBlock) {
+            console.log('txMonitor: isInBlock') ;
+        } else if (status.isFinalized) {
+            console.log('txMonitor: isFinalized') ;
+            this.unsubTransaction();
+            let result = {} ;
+            let err = parsePolkadotError(result) ;
+            if (err) {
+                result.error = err ;
+            } else {
+                result.status = 'done' ;
+            }
+            this.callback(result) ;
+        }
+    }
+
+    sendUsingPrivatePhrase = () => {
+        let address = this.account.address ;
+        let keyring = new Keyring({ type: 'sr25519' });
+        let signer = keyring.addFromUri(this.account.phrase);
+        console.log('sendTransactionLocal', address, signer);
+        let self = this ;
+        self.tx.signAndSend(signer, self.txMonitor).then((s) => {
+            self.unsubTransaction = s;
+        }).catch((err) => {
+            self.callback({error:err}) ;
+        }) ;
+    }
+
+    sendUsingWeb3 = () => {
+        let source = this.account.source ;
+        let address = this.account.address ;
+        console.log('sendTransactionWeb3', source, address);
+        let self = this ;
+        window.web3FromSource(source).then((injector) => {
+            self.tx.signAndSend(address, {signer: injector.signer}, self.txMonitor).then((s) => {
+                self.unsubTransaction = s;
+            }).catch((err) => {
+                self.callback({error:err}) ;
+            }) ;
+        });
+    }
+
+}
+
+/* harmony default export */ const background_transaction = (Transaction);
+
 ;// CONCATENATED MODULE: ./src/background/background.js
 
 
@@ -90152,7 +90238,6 @@ class WikaBackground {
 
     getData = (field, callback) => {
         console.log('getData', field) ;
-        //callback({'test': '123'}) ;
         this.storage.get(field, callback) ;
     }
 
@@ -90192,6 +90277,39 @@ class WikaBackground {
 
 
 
+    // -----------
+    // Transaction
+    // -----------
+
+    transaction = (message, callback) => {
+        const self = this ;
+        const account = message.account ;
+        console.log('background.transaction.account', account) ;
+        self.createTransaction(message.txType, message.params, (tx) => {
+            if (account.mode === 'web3') {
+                self.sendTransactionUsingWeb3(tx, account, callback) ;
+            } else {
+                self.sendTransactionUsingPrivatePhrase(tx, account.address, callback) ;
+            }
+        }) ;
+
+    }
+
+    sendTransactionUsingPrivatePhrase = (tx, address, callback) => {
+        this.getData('accounts', (accounts) => {
+            const account = findAccount(accounts, address) ;
+            const transaction = new background_transaction(tx, account, callback) ;
+            transaction.sendUsingPrivatePhrase() ;
+        })
+    }
+
+    sendTransactionUsingWeb3 = (tx, account, callback) => {
+        const transaction = new background_transaction(tx, account, callback) ;
+        transaction.sendUsingWeb3() ;
+    }
+
+
+
 
     // -----
     // Unsub
@@ -90206,6 +90324,10 @@ class WikaBackground {
             callback() ;
         }
     }
+
+
+
+
 
 }
 
@@ -90259,6 +90381,9 @@ class ExtensionInternalPort {
                     self.port.postMessage(newMessage);
                 }) ;
                 sendResponse('ack') ;
+            } else if (funcType === 'transaction') {
+                self.background.transaction(message, sendResponse) ;
+                return true ;
             } else if (funcType === 'unsub') {
                 self.background.unsub(func, sendResponse) ;
                 return true ;
@@ -90272,10 +90397,97 @@ class ExtensionInternalPort {
 
 
 /* harmony default export */ const extension_internal_port = (ExtensionInternalPort);
+;// CONCATENATED MODULE: ./src/background/extension_external_port.js
+
+
+const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=630,left=400,top=100" ;
+
+
+class ExtensionExternalPort {
+
+    constructor(background) {
+        this.background = background ;
+        this.registerListener() ;
+    }
+
+    registerListener = () => {
+        let self = this ;
+        chrome.runtime.onMessageExternal.addListener(
+          function(request, sender, sendResponse) {
+            const source = sender.documentId ;
+            const message = request.message ;
+            switch (message) {
+                case 'ping': return self.ping(source, request, sendResponse) ;
+                case 'accounts': return self.accounts(source, request, sendResponse) ;
+                case 'transaction': return self.transaction(source, request, sendResponse) ;
+                default: return self.debug(source, request, sendResponse) ;
+            }
+          }
+        );
+    }
+
+    ping = (source, request, sendResponse) => {
+        sendResponse('pong') ;
+    }
+
+    accounts = (source, request, sendResponse) => {
+        this.background.getData('accounts', (list) => {
+            var ans = [] ;
+            if (list) {
+                ans = list.map((a) => {
+                    return {address: a.address,
+                            addressRaw: a.addressRaw,
+                            name: a.name} ;
+                })
+            }
+            sendResponse(ans) ;
+        }) ;
+    }
+
+    transaction = (source, request, sendResponse) => {
+        function done(outcome) {
+            if (outcome === 'confirmed') {
+                sendResponse({status:'ok'}) ;
+            } else {
+                sendResponse({err:'Transaction was not confirmed'}) ;
+            }
+        }
+        const win = window.open("index.html", "extension_popup", POPUP_PARAMS) ;
+        var counter = 0 ;
+        function check() {
+            counter++ ;
+            if(win.wikaReactApp && win.wikaReactApp._mounted) {
+                win.wikaReactApp.signTransaction(request.txType,
+                                                 request.params,
+                                                 request.address,
+                                                 done);
+            } else if (counter<250) {
+                setTimeout(check, 10);
+            } else {
+                sendResponse({status:null, err:'Could not open the Wika extension'}) ;
+            }
+        }
+        check() ;
+    }
+
+    debug = (source, request, sendResponse) => {
+        const data = {
+            message: 'debug',
+            source: source,
+            request: request
+        }
+        sendResponse(data) ;
+    }
+
+}
+
+
+/* harmony default export */ const extension_external_port = (ExtensionExternalPort);
 ;// CONCATENATED MODULE: ./src/background/background_ext.js
 
 
 console.log('WIKA BACKGROUND_EXT SCRIPT') ;
+
 
 
 
@@ -90285,7 +90497,8 @@ const defaultNetworkType = "Wika Testnet" ;
 const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
 
 const BACKGROUND = new background() ;
-const PORT = new extension_internal_port(BACKGROUND) ;
+const INTERNAL_PORT = new extension_internal_port(BACKGROUND) ;
+const EXTERNAL_PORT = new extension_external_port(BACKGROUND) ;
 console.log('background instances ok') ;
 
 BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {

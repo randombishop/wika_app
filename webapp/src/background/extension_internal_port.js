@@ -34,6 +34,9 @@ class ExtensionInternalPort {
                     self.port.postMessage(newMessage);
                 }) ;
                 sendResponse('ack') ;
+            } else if (funcType === 'transaction') {
+                self.background.transaction(message, sendResponse) ;
+                return true ;
             } else if (funcType === 'unsub') {
                 self.background.unsub(func, sendResponse) ;
                 return true ;
