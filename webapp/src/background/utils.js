@@ -8,6 +8,22 @@ function getEnvironment() {
     }
 }
 
+function parsePolkadotError(result) {
+    if (result.dispatchError) {
+        try {
+            let data = result.dispatchError.asModule;
+            let index = data.index;
+            let error = data.error;
+            return "Transaction error (" + index + "," + error + ")";
+        } catch (err) {
+            return "Transaction error";
+        }
+    } else {
+        return null;
+    }
+}
+
 export {
-    getEnvironment
+    getEnvironment,
+    parsePolkadotError
 } ;

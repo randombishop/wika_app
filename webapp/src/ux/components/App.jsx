@@ -5,7 +5,7 @@ import AppContext from '../utils/context' ;
 import {convertToWika, wikaToUsd, findAccount} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
-import sendTransaction from '../utils/transaction' ;
+import sendTransaction from '../utils/send_transaction' ;
 
 
 class App extends React.Component {
@@ -181,13 +181,17 @@ class App extends React.Component {
     }
 
     confirmTransaction = () => {
+        const self = this ;
         const txType = this.state.transactionType ;
         const txParams = this.state.transactionParams ;
         const account = this.state.account ;
-        this.setState({transactionSent: true}) ;
+        self.setState({transactionSent: true}) ;
         sendTransaction(txType, txParams, account, (result) => {
-            if (result.status==='In block') {
-                this.signTransactionCallback('confirmed') ;
+            if (result.error) {
+                self.signTransactionCallback('error') ;
+                window.close() ;
+            } else {
+                self.signTransactionCallback('confirmed') ;
                 window.close() ;
             }
         }) ;

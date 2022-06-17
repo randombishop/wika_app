@@ -8,7 +8,7 @@ import {getEnvironment} from './utils.js' ;
 import WikaNetwork from './network.js' ;
 import {importAccount, generateAccount} from './crypto.js' ;
 import {StorageApp, StorageExt} from './storage.js' ;
-
+import Transaction from './transaction.js' ;
 
 class WikaBackground {
 
@@ -161,6 +161,21 @@ class WikaBackground {
 
 
 
+    // -----------
+    // Transaction
+    // -----------
+
+    transaction = (message, callback) => {
+        const self = this ;
+        const account = message.account ;
+        self.createTransaction(message.txType, message.params, (tx) => {
+            const transaction = new Transaction(tx, account, callback) ;
+            transaction.send() ;
+        }) ;
+    }
+
+
+
 
     // -----
     // Unsub
@@ -175,6 +190,10 @@ class WikaBackground {
             callback() ;
         }
     }
+
+
+
+
 
 }
 
