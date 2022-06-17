@@ -90400,7 +90400,7 @@ class ExtensionInternalPort {
 ;// CONCATENATED MODULE: ./src/background/extension_external_port.js
 
 
-const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=630,left=400,top=100" ;
+
 
 
 class ExtensionExternalPort {
@@ -90444,30 +90444,43 @@ class ExtensionExternalPort {
         }) ;
     }
 
-    transaction = (source, request, sendResponse) => {
+     transaction = (source, request, sendResponse) => {
+        //const POPUP_PARAMS = ",," ;
         function done(outcome) {
             if (outcome === 'confirmed') {
-                sendResponse({status:'ok'}) ;
+                sendResponse({status:null}) ;
             } else {
-                sendResponse({err:'Transaction was not confirmed'}) ;
+                sendResponse({status:null, err:'Transaction was not confirmed'}) ;
             }
         }
-        const win = window.open("index.html", "extension_popup", POPUP_PARAMS) ;
-        var counter = 0 ;
-        function check() {
-            counter++ ;
-            if(win.wikaReactApp && win.wikaReactApp._mounted) {
-                win.wikaReactApp.signTransaction(request.txType,
-                                                 request.params,
-                                                 request.address,
-                                                 done);
-            } else if (counter<250) {
-                setTimeout(check, 10);
-            } else {
-                sendResponse({status:null, err:'Could not open the Wika extension'}) ;
+
+        const options = {
+            url: "index.html",
+            type: "popup",
+            width: 500,
+            height: 630,
+            left: 400,
+            top: 100,
+            focused: true
+        } ;
+        chrome.windows.create(options, (win) => {
+            var counter = 0 ;
+            function check() {
+                counter++ ;
+                console.log(counter, win) ;
+                if(win.wikaReactApp && win.wikaReactApp._mounted) {
+                    win.wikaReactApp.signTransaction(request.txType,
+                                                     request.params,
+                                                     request.address,
+                                                     done);
+                } else if (counter<250) {
+                    setTimeout(check, 100);
+                } else {
+                    sendResponse({status:null, err:'Could not open the Wika extension'}) ;
+                }
             }
-        }
-        check() ;
+            check() ;
+        });
     }
 
     debug = (source, request, sendResponse) => {

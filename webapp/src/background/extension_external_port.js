@@ -44,6 +44,45 @@ class ExtensionExternalPort {
         }) ;
     }
 
+     transaction = (source, request, sendResponse) => {
+        //const POPUP_PARAMS = ",," ;
+        function done(outcome) {
+            if (outcome === 'confirmed') {
+                sendResponse({status:null}) ;
+            } else {
+                sendResponse({status:null, err:'Transaction was not confirmed'}) ;
+            }
+        }
+
+        const options = {
+            url: "index.html",
+            type: "popup",
+            width: 500,
+            height: 630,
+            left: 400,
+            top: 100,
+            focused: true
+        } ;
+        chrome.windows.create(options, (win) => {
+            var counter = 0 ;
+            function check() {
+                counter++ ;
+                console.log(counter, win) ;
+                if(win.wikaReactApp && win.wikaReactApp._mounted) {
+                    win.wikaReactApp.signTransaction(request.txType,
+                                                     request.params,
+                                                     request.address,
+                                                     done);
+                } else if (counter<250) {
+                    setTimeout(check, 100);
+                } else {
+                    sendResponse({status:null, err:'Could not open the Wika extension'}) ;
+                }
+            }
+            check() ;
+        });
+    }
+
     debug = (source, request, sendResponse) => {
         const data = {
             message: 'debug',
