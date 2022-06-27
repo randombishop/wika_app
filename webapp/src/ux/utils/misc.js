@@ -165,11 +165,28 @@ function getEnvironment() {
 }
 
 
+function getPageParams() {
+    try {
+        const url_string = window.location.href ;
+        const url_params = new URL(url_string).searchParams ;
+        const params = {
+            txId: url_params.get("txId"),
+            txType: url_params.get("txType"),
+            txParams: JSON.parse(url_params.get("txParams")),
+            txAddress: url_params.get("txAddress")
+        }
+        return params ;
+    } catch (e) {
+        return null ;
+    }
+}
+
 
 export {
     copyToClipboard,
     convertToWika, formatWika, wikaToUsd, formatUsd, shortenText, shortenAddress,
     hexToBytes, bytesToString, bytesToHex,
     findAccount,
-    getEnvironment
+    getEnvironment,
+    getPageParams
 } ;

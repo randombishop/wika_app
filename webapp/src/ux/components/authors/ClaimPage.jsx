@@ -11,7 +11,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 import AppContext from "../../utils/context";
 import {bytesToString, convertToWika, copyToClipboard} from "../../utils/misc";
-import sendTransaction from '../../utils/transaction' ;
+import sendTransaction from '../../utils/send_transaction' ;
 
 
 class ClaimPage extends React.Component {
@@ -186,13 +186,14 @@ class ClaimPage extends React.Component {
     submitRequest = () => {
         let url = this.state.url ;
         let account = this.context.account ;
-        sendTransaction('owner_request', {url:url}, account, this.monitorRequest) ;
+        this.setState({txStatus: 'Sending...'}) ;
+        sendTransaction('owner_request', {url:url}, account, this.finishedTransaction) ;
     }
 
-    monitorRequest = (result) => {
-        console.log('monitorRequest', result);
+    finishedTransaction = (result) => {
+        console.log('finishedTransaction', result);
         if (this._mounted) {
-            this.setState({txStatus: result.status}) ;
+            this.setState({txStatus: null}) ;
         }
         if (result.error) {
             alert(result.error) ;

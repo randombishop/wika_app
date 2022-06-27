@@ -4,6 +4,7 @@ class WebappPort {
 
     sendMessage = (message, callback) => {
         try {
+            console.log('WebappPort.sendMessage', message) ;
             window.chrome.runtime.sendMessage(wikaExtensionId, message, (response, error) => {
                 if (window.chrome.runtime.lastError) {
                     console.log('WebappPort Error', window.chrome.runtime.lastError) ;
@@ -37,8 +38,13 @@ class WebappPort {
             params: params,
             address: account['address']
         } ;
-        callback({status:'Confirming'}) ;
-        this.sendMessage(message, callback) ;
+        this.sendMessage(message, (result) => {
+            if (result.txId) {
+                console.log('submitted transaction #', result.txId) ;
+            } else {
+                alert('Could not open Wika Extension') ;
+            }
+        }) ;
     }
 
 }

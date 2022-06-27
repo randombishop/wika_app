@@ -4,11 +4,11 @@ import '@polkadot/wasm-crypto/initOnlyAsm';
 
 
 
-import {getEnvironment} from './utils.js' ;
+import {getEnvironment, findAccount} from './utils.js' ;
 import WikaNetwork from './network.js' ;
 import {importAccount, generateAccount} from './crypto.js' ;
 import {StorageApp, StorageExt} from './storage.js' ;
-
+import Transaction from './transaction.js' ;
 
 class WikaBackground {
 
@@ -121,7 +121,6 @@ class WikaBackground {
 
     getData = (field, callback) => {
         console.log('getData', field) ;
-        //callback({'test': '123'}) ;
         this.storage.get(field, callback) ;
     }
 
@@ -161,6 +160,39 @@ class WikaBackground {
 
 
 
+    // -----------
+    // Transaction
+    // -----------
+
+    transaction = (message, callback) => {
+        const self = this ;
+        const account = message.account ;
+        console.log('background.transaction.account', account) ;
+        self.createTransaction(message.txType, message.params, (tx) => {
+            if (account.mode === 'web3') {
+                self.sendTransactionUsingWeb3(tx, account, callback) ;
+            } else {
+                self.sendTransactionUsingPrivatePhrase(tx, account.address, callback) ;
+            }
+        }) ;
+
+    }
+
+    sendTransactionUsingPrivatePhrase = (tx, address, callback) => {
+        this.getData('accounts', (accounts) => {
+            const account = findAccount(accounts, address) ;
+            const transaction = new Transaction(tx, account, callback) ;
+            transaction.sendUsingPrivatePhrase() ;
+        })
+    }
+
+    sendTransactionUsingWeb3 = (tx, account, callback) => {
+        const transaction = new Transaction(tx, account, callback) ;
+        transaction.sendUsingWeb3() ;
+    }
+
+
+
 
     // -----
     // Unsub
@@ -175,6 +207,10 @@ class WikaBackground {
             callback() ;
         }
     }
+
+
+
+
 
 }
 
