@@ -31,8 +31,24 @@ function findAccount(accounts, address) {
     }
 }
 
+function simpleHash(text) {
+    var hash = 0, i, chr;
+    if (text.length === 0) return hash;
+    for (i = 0; i < text.length; i++) {
+        chr   = text.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    if (hash<0) {
+        hash = -hash ;
+    }
+    return hash;
+}
+
+
 export {
     getEnvironment,
     parsePolkadotError,
-    findAccount
+    findAccount,
+    simpleHash
 } ;

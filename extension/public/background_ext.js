@@ -53854,6 +53854,21 @@ function findAccount(accounts, address) {
     }
 }
 
+function simpleHash(text) {
+    var hash = 0, i, chr;
+    if (text.length === 0) return hash;
+    for (i = 0; i < text.length; i++) {
+        chr   = text.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    if (hash<0) {
+        hash = -hash ;
+    }
+    return hash;
+}
+
+
 
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classPrivateFieldLooseBase.js
 function _classPrivateFieldBase(receiver, privateKey) {
@@ -90344,16 +90359,22 @@ class WikaBackground {
 
 
 
-;// CONCATENATED MODULE: ./src/background/extension_internal_port.js
+;// CONCATENATED MODULE: ./src/background/extension_port.js
 
 
-class ExtensionInternalPort {
+
+class ExtensionPort {
 
     constructor(background) {
         this.background = background ;
         this.listenOnConnect() ;
         this.listenOnMessage() ;
+        this.listenOnMessageExternal() ;
     }
+
+    // ------------------------------------------
+    // Internal Communication Extension-Extension
+    // ------------------------------------------
 
     listenOnConnect = () => {
         const self = this ;
@@ -90393,24 +90414,15 @@ class ExtensionInternalPort {
         });
     }
 
-}
-
-
-/* harmony default export */ const extension_internal_port = (ExtensionInternalPort);
-;// CONCATENATED MODULE: ./src/background/extension_external_port.js
 
 
 
 
+    // ------------------------------------------
+    // External Communication Webpage-Extension
+    // ------------------------------------------
 
-class ExtensionExternalPort {
-
-    constructor(background) {
-        this.background = background ;
-        this.registerListener() ;
-    }
-
-    registerListener = () => {
+    listenOnMessageExternal = () => {
         let self = this ;
         chrome.runtime.onMessageExternal.addListener(
           function(request, sender, sendResponse) {
@@ -90444,18 +90456,14 @@ class ExtensionExternalPort {
         }) ;
     }
 
-     transaction = (source, request, sendResponse) => {
-        //const POPUP_PARAMS = ",," ;
-        function done(outcome) {
-            if (outcome === 'confirmed') {
-                sendResponse({status:null}) ;
-            } else {
-                sendResponse({status:null, err:'Transaction was not confirmed'}) ;
-            }
-        }
-
+    transaction = (source, request, sendResponse) => {
+        const transaction_id = simpleHash(request.txType+'/'+JSON.stringify(request.params)) ;
+        let url = "index.html?txId="+transaction_id ;
+        url += '&txType='+request.txType ;
+        url += '&txParams='+JSON.stringify(request.params) ;
+        url += '&txAddress='+request.address ;
         const options = {
-            url: "index.html",
+            url: url,
             type: "popup",
             width: 500,
             height: 630,
@@ -90463,23 +90471,9 @@ class ExtensionExternalPort {
             top: 100,
             focused: true
         } ;
+        console.log('creating pop up', url) ;
         chrome.windows.create(options, (win) => {
-            var counter = 0 ;
-            function check() {
-                counter++ ;
-                console.log(counter, win) ;
-                if(win.wikaReactApp && win.wikaReactApp._mounted) {
-                    win.wikaReactApp.signTransaction(request.txType,
-                                                     request.params,
-                                                     request.address,
-                                                     done);
-                } else if (counter<250) {
-                    setTimeout(check, 100);
-                } else {
-                    sendResponse({status:null, err:'Could not open the Wika extension'}) ;
-                }
-            }
-            check() ;
+            sendResponse({txId: transaction_id}) ;
         });
     }
 
@@ -90495,12 +90489,14 @@ class ExtensionExternalPort {
 }
 
 
-/* harmony default export */ const extension_external_port = (ExtensionExternalPort);
+/* harmony default export */ const extension_port = (ExtensionPort);
+
+
+
 ;// CONCATENATED MODULE: ./src/background/background_ext.js
 
 
 console.log('WIKA BACKGROUND_EXT SCRIPT') ;
-
 
 
 
@@ -90510,8 +90506,7 @@ const defaultNetworkType = "Wika Testnet" ;
 const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
 
 const BACKGROUND = new background() ;
-const INTERNAL_PORT = new extension_internal_port(BACKGROUND) ;
-const EXTERNAL_PORT = new extension_external_port(BACKGROUND) ;
+const PORT = new extension_port(BACKGROUND) ;
 console.log('background instances ok') ;
 
 BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {
