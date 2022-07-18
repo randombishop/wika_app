@@ -1,4 +1,5 @@
 import {Keyring} from '@polkadot/api';
+<<<<<<< HEAD:webapp/src/ux/utils/transaction.js
 import {web3FromSource} from '@polkadot/extension-dapp';
 import { getEnvironment } from './misc';
 
@@ -62,10 +63,12 @@ function sendTransactionUsingWeb3(txType, params, account, callback) {
 function sendTransactionUsingWika(txType, params, account, callback) {
     window.WIKA_BRIDGE.transaction(txType, params, account, callback);
 }
+=======
+import {parsePolkadotError} from './utils.js' ;
+>>>>>>> master:webapp/src/background/transaction.js
 
 
 
-// Transaction
 class Transaction {
 
     constructor(tx, account, callback) {
@@ -77,29 +80,31 @@ class Transaction {
     txMonitor = (result) => {
         let status = result.status ;
         if (status.isInBlock) {
-            this.callback({status:'In block'}) ;
+            console.log('txMonitor: isInBlock') ;
         } else if (status.isFinalized) {
+            console.log('txMonitor: isFinalized') ;
             this.unsubTransaction();
-            let result = {status:null} ;
-            let err = parseError(result) ;
+            let result = {} ;
+            let err = parsePolkadotError(result) ;
             if (err) {
                 result.error = err ;
+            } else {
+                result.status = 'done' ;
             }
             this.callback(result) ;
         }
     }
 
-    sendInExtension = () => {
+    sendUsingPrivatePhrase = () => {
         let address = this.account.address ;
         let keyring = new Keyring({ type: 'sr25519' });
         let signer = keyring.addFromUri(this.account.phrase);
         console.log('sendTransactionLocal', address, signer);
         let self = this ;
-        self.callback({status:'Sending'}) ;
         self.tx.signAndSend(signer, self.txMonitor).then((s) => {
             self.unsubTransaction = s;
         }).catch((err) => {
-            self.callback({status:null, error:err}) ;
+            self.callback({error:err}) ;
         }) ;
     }
 
@@ -108,16 +113,15 @@ class Transaction {
         let address = this.account.address ;
         console.log('sendTransactionWeb3', source, address);
         let self = this ;
-        web3FromSource(source).then((injector) => {
-            self.callback({status:'Sending'}) ;
+        window.web3FromSource(source).then((injector) => {
             self.tx.signAndSend(address, {signer: injector.signer}, self.txMonitor).then((s) => {
                 self.unsubTransaction = s;
             }).catch((err) => {
-                self.callback({status:null, error:err}) ;
+                self.callback({error:err}) ;
             }) ;
         });
     }
 
 }
 
-export default sendTransaction ;
+export default Transaction ;

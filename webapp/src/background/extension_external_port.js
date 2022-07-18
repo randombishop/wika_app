@@ -1,15 +1,70 @@
+import {simpleHash} from './utils' ;
 
 
-const POPUP_PARAMS = "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=500,height=630,left=400,top=100" ;
+class ExtensionPort {
 
-
-class ExtensionExternalPort {
-
-    constructor() {
-        this.registerListener() ;
+    constructor(background) {
+        this.background = background ;
+        this.listenOnConnect() ;
+        this.listenOnMessage() ;
+        this.listenOnMessageExternal() ;
     }
 
-    registerListener = () => {
+<<<<<<< HEAD:webapp/src/background/extension_external_port.js
+class ExtensionExternalPort {
+=======
+    // ------------------------------------------
+    // Internal Communication Extension-Extension
+    // ------------------------------------------
+>>>>>>> master:webapp/src/background/extension_port.js
+
+    listenOnConnect = () => {
+        const self = this ;
+        chrome.runtime.onConnect.addListener(function(port) {
+          if (port.name === "background_interface") {
+            self.port = port ;
+          }
+        });
+    }
+
+    listenOnMessage = () => {
+        const self = this ;
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            const funcType = message.funcType ;
+            const func = message.func ;
+            if (funcType === 'call') {
+                self.background.call(message, sendResponse) ;
+                return true ;
+            } else if (funcType === 'subscribe') {
+                self.background.subscribe(message, (data) => {
+                    const newMessage = {
+                        func: func,
+                        data: data
+                    }
+                    self.port.postMessage(newMessage);
+                }) ;
+                sendResponse('ack') ;
+            } else if (funcType === 'transaction') {
+                self.background.transaction(message, sendResponse) ;
+                return true ;
+            } else if (funcType === 'unsub') {
+                self.background.unsub(func, sendResponse) ;
+                return true ;
+            } else {
+                sendResponse({err: 'Unrecognized funcType', originalMessage: message}) ;
+            }
+        });
+    }
+
+
+
+
+
+    // ------------------------------------------
+    // External Communication Webpage-Extension
+    // ------------------------------------------
+
+    listenOnMessageExternal = () => {
         let self = this ;
         chrome.runtime.onMessageExternal.addListener(
           function(request, sender, sendResponse) {
@@ -30,6 +85,7 @@ class ExtensionExternalPort {
     }
 
     accounts = (source, request, sendResponse) => {
+<<<<<<< HEAD:webapp/src/background/extension_external_port.js
         window.getBackground((BACKGROUND) => {
             BACKGROUND.storage.get('accounts', (list) => {
                 var ans = [] ;
@@ -42,33 +98,40 @@ class ExtensionExternalPort {
                 }
                 sendResponse(ans) ;
             }) ;
+=======
+        this.background.getData('accounts', (list) => {
+            var ans = [] ;
+            if (list) {
+                ans = list.map((a) => {
+                    return {address: a.address,
+                            addressRaw: a.addressRaw,
+                            name: a.name} ;
+                })
+            }
+            sendResponse(ans) ;
+>>>>>>> master:webapp/src/background/extension_port.js
         }) ;
     }
 
     transaction = (source, request, sendResponse) => {
-        function done(outcome) {
-            if (outcome === 'confirmed') {
-                sendResponse({status:null}) ;
-            } else {
-                sendResponse({status:null, err:'Transaction was not confirmed'}) ;
-            }
-        }
-        const win = window.open("index.html", "extension_popup", POPUP_PARAMS) ;
-        var counter = 0 ;
-        function check() {
-            counter++ ;
-            if(win.wikaReactApp && win.wikaReactApp._mounted) {
-                win.wikaReactApp.signTransaction(request.txType,
-                                                 request.params,
-                                                 request.address,
-                                                 done);
-            } else if (counter<250) {
-                setTimeout(check, 10);
-            } else {
-                sendResponse({status:null, err:'Could not open the Wika extension'}) ;
-            }
-        }
-        check() ;
+        const transaction_id = simpleHash(request.txType+'/'+JSON.stringify(request.params)) ;
+        let url = "index.html?txId="+transaction_id ;
+        url += '&txType='+request.txType ;
+        url += '&txParams='+JSON.stringify(request.params) ;
+        url += '&txAddress='+request.address ;
+        const options = {
+            url: url,
+            type: "popup",
+            width: 500,
+            height: 630,
+            left: 400,
+            top: 100,
+            focused: true
+        } ;
+        console.log('creating pop up', url) ;
+        chrome.windows.create(options, (win) => {
+            sendResponse({txId: transaction_id}) ;
+        });
     }
 
     debug = (source, request, sendResponse) => {
@@ -84,3 +147,5 @@ class ExtensionExternalPort {
 
 
 export default ExtensionPort ;
+
+

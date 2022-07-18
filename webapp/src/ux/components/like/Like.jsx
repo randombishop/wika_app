@@ -74,9 +74,7 @@ class Like extends React.Component {
         const url = this.state.url;
         window.BACKGROUND_INTERFACE.unsub('getUrl', () => {
             window.BACKGROUND_INTERFACE.subscribe({func: 'getUrl', url: url}, (result) => {
-                console.log('test url', url)
                 let urlLikes = Number(result[0]) ;
-                console.log('nLikes', urlLikes)
                 self.setState({urlLikes:urlLikes}) ;
             }) ;
         }) ;

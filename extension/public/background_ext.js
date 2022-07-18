@@ -53831,6 +53831,47 @@ function getEnvironment() {
     }
 }
 
+<<<<<<< HEAD
+=======
+function parsePolkadotError(result) {
+    if (result.dispatchError) {
+        try {
+            let data = result.dispatchError.asModule;
+            let index = data.index;
+            let error = data.error;
+            return "Transaction error (" + index + "," + error + ")";
+        } catch (err) {
+            return "Transaction error";
+        }
+    } else {
+        return null;
+    }
+}
+
+function findAccount(accounts, address) {
+    if (accounts) {
+        return accounts.find(x => (x.address===address)) ;
+    } else {
+        return null ;
+    }
+}
+
+function simpleHash(text) {
+    var hash = 0, i, chr;
+    if (text.length === 0) return hash;
+    for (i = 0; i < text.length; i++) {
+        chr   = text.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    if (hash<0) {
+        hash = -hash ;
+    }
+    return hash;
+}
+
+
+>>>>>>> master
 
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classPrivateFieldLooseBase.js
 function _classPrivateFieldBase(receiver, privateKey) {
@@ -90028,6 +90069,72 @@ class StorageExt {
 }
 
 
+<<<<<<< HEAD
+=======
+;// CONCATENATED MODULE: ./src/background/transaction.js
+
+
+
+
+
+class Transaction {
+
+    constructor(tx, account, callback) {
+        this.tx = tx ;
+        this.account = account ;
+        this.callback = callback ;
+    }
+
+    txMonitor = (result) => {
+        let status = result.status ;
+        if (status.isInBlock) {
+            console.log('txMonitor: isInBlock') ;
+        } else if (status.isFinalized) {
+            console.log('txMonitor: isFinalized') ;
+            this.unsubTransaction();
+            let result = {} ;
+            let err = parsePolkadotError(result) ;
+            if (err) {
+                result.error = err ;
+            } else {
+                result.status = 'done' ;
+            }
+            this.callback(result) ;
+        }
+    }
+
+    sendUsingPrivatePhrase = () => {
+        let address = this.account.address ;
+        let keyring = new Keyring({ type: 'sr25519' });
+        let signer = keyring.addFromUri(this.account.phrase);
+        console.log('sendTransactionLocal', address, signer);
+        let self = this ;
+        self.tx.signAndSend(signer, self.txMonitor).then((s) => {
+            self.unsubTransaction = s;
+        }).catch((err) => {
+            self.callback({error:err}) ;
+        }) ;
+    }
+
+    sendUsingWeb3 = () => {
+        let source = this.account.source ;
+        let address = this.account.address ;
+        console.log('sendTransactionWeb3', source, address);
+        let self = this ;
+        window.web3FromSource(source).then((injector) => {
+            self.tx.signAndSend(address, {signer: injector.signer}, self.txMonitor).then((s) => {
+                self.unsubTransaction = s;
+            }).catch((err) => {
+                self.callback({error:err}) ;
+            }) ;
+        });
+    }
+
+}
+
+/* harmony default export */ const background_transaction = (Transaction);
+
+>>>>>>> master
 ;// CONCATENATED MODULE: ./src/background/background.js
 
 
@@ -90152,7 +90259,10 @@ class WikaBackground {
 
     getData = (field, callback) => {
         console.log('getData', field) ;
+<<<<<<< HEAD
         //callback({'test': '123'}) ;
+=======
+>>>>>>> master
         this.storage.get(field, callback) ;
     }
 
@@ -90192,6 +90302,42 @@ class WikaBackground {
 
 
 
+<<<<<<< HEAD
+=======
+    // -----------
+    // Transaction
+    // -----------
+
+    transaction = (message, callback) => {
+        const self = this ;
+        const account = message.account ;
+        console.log('background.transaction.account', account) ;
+        self.createTransaction(message.txType, message.params, (tx) => {
+            if (account.mode === 'web3') {
+                self.sendTransactionUsingWeb3(tx, account, callback) ;
+            } else {
+                self.sendTransactionUsingPrivatePhrase(tx, account.address, callback) ;
+            }
+        }) ;
+
+    }
+
+    sendTransactionUsingPrivatePhrase = (tx, address, callback) => {
+        this.getData('accounts', (accounts) => {
+            const account = findAccount(accounts, address) ;
+            const transaction = new background_transaction(tx, account, callback) ;
+            transaction.sendUsingPrivatePhrase() ;
+        })
+    }
+
+    sendTransactionUsingWeb3 = (tx, account, callback) => {
+        const transaction = new background_transaction(tx, account, callback) ;
+        transaction.sendUsingWeb3() ;
+    }
+
+
+
+>>>>>>> master
 
     // -----
     // Unsub
@@ -90207,6 +90353,13 @@ class WikaBackground {
         }
     }
 
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> master
 }
 
 
@@ -90222,17 +90375,35 @@ class WikaBackground {
 
 
 
+<<<<<<< HEAD
 ;// CONCATENATED MODULE: ./src/background/extension_internal_port.js
 
 
 class ExtensionInternalPort {
+=======
+;// CONCATENATED MODULE: ./src/background/extension_port.js
+
+
+
+class ExtensionPort {
+>>>>>>> master
 
     constructor(background) {
         this.background = background ;
         this.listenOnConnect() ;
         this.listenOnMessage() ;
+<<<<<<< HEAD
     }
 
+=======
+        this.listenOnMessageExternal() ;
+    }
+
+    // ------------------------------------------
+    // Internal Communication Extension-Extension
+    // ------------------------------------------
+
+>>>>>>> master
     listenOnConnect = () => {
         const self = this ;
         chrome.runtime.onConnect.addListener(function(port) {
@@ -90253,6 +90424,7 @@ class ExtensionInternalPort {
             } else if (funcType === 'subscribe') {
                 self.background.subscribe(message, (data) => {
                     const newMessage = {
+<<<<<<< HEAD
                         sub: func,
                         data: data
                     }
@@ -90261,6 +90433,17 @@ class ExtensionInternalPort {
                     self.unsubFunctions[func] = u ;
                 }) ;
                 sendResponse('ack') ;
+=======
+                        func: func,
+                        data: data
+                    }
+                    self.port.postMessage(newMessage);
+                }) ;
+                sendResponse('ack') ;
+            } else if (funcType === 'transaction') {
+                self.background.transaction(message, sendResponse) ;
+                return true ;
+>>>>>>> master
             } else if (funcType === 'unsub') {
                 self.background.unsub(func, sendResponse) ;
                 return true ;
@@ -90270,10 +90453,92 @@ class ExtensionInternalPort {
         });
     }
 
+<<<<<<< HEAD
 }
 
 
 /* harmony default export */ const extension_internal_port = (ExtensionInternalPort);
+=======
+
+
+
+
+    // ------------------------------------------
+    // External Communication Webpage-Extension
+    // ------------------------------------------
+
+    listenOnMessageExternal = () => {
+        let self = this ;
+        chrome.runtime.onMessageExternal.addListener(
+          function(request, sender, sendResponse) {
+            const source = sender.documentId ;
+            const message = request.message ;
+            switch (message) {
+                case 'ping': return self.ping(source, request, sendResponse) ;
+                case 'accounts': return self.accounts(source, request, sendResponse) ;
+                case 'transaction': return self.transaction(source, request, sendResponse) ;
+                default: return self.debug(source, request, sendResponse) ;
+            }
+          }
+        );
+    }
+
+    ping = (source, request, sendResponse) => {
+        sendResponse('pong') ;
+    }
+
+    accounts = (source, request, sendResponse) => {
+        this.background.getData('accounts', (list) => {
+            var ans = [] ;
+            if (list) {
+                ans = list.map((a) => {
+                    return {address: a.address,
+                            addressRaw: a.addressRaw,
+                            name: a.name} ;
+                })
+            }
+            sendResponse(ans) ;
+        }) ;
+    }
+
+    transaction = (source, request, sendResponse) => {
+        const transaction_id = simpleHash(request.txType+'/'+JSON.stringify(request.params)) ;
+        let url = "index.html?txId="+transaction_id ;
+        url += '&txType='+request.txType ;
+        url += '&txParams='+JSON.stringify(request.params) ;
+        url += '&txAddress='+request.address ;
+        const options = {
+            url: url,
+            type: "popup",
+            width: 500,
+            height: 630,
+            left: 400,
+            top: 100,
+            focused: true
+        } ;
+        console.log('creating pop up', url) ;
+        chrome.windows.create(options, (win) => {
+            sendResponse({txId: transaction_id}) ;
+        });
+    }
+
+    debug = (source, request, sendResponse) => {
+        const data = {
+            message: 'debug',
+            source: source,
+            request: request
+        }
+        sendResponse(data) ;
+    }
+
+}
+
+
+/* harmony default export */ const extension_port = (ExtensionPort);
+
+
+
+>>>>>>> master
 ;// CONCATENATED MODULE: ./src/background/background_ext.js
 
 
@@ -90287,7 +90552,11 @@ const defaultNetworkType = "Wika Testnet" ;
 const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
 
 const BACKGROUND = new background() ;
+<<<<<<< HEAD
 const PORT = new extension_internal_port(BACKGROUND) ;
+=======
+const PORT = new extension_port(BACKGROUND) ;
+>>>>>>> master
 console.log('background instances ok') ;
 
 BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {

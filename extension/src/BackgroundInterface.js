@@ -8,6 +8,7 @@ class BackgroundInterface {
     }
 
     receiveMessage = (msg) => {
+        console.log('receivedMessage', msg) ;
         const func = msg.func ;
         const data = msg.data ;
         if (this.callbacks[func]) {
@@ -50,6 +51,11 @@ class BackgroundInterface {
                 console.error('Subscription did not return ACK') ;
             }
         }) ;
+    }
+
+    transaction = (message, callback) => {
+        message.funcType = 'transaction' ;
+        this.sendMessage(message, callback) ;
     }
 
     unsub = (funcName, callback) => {

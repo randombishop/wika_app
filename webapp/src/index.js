@@ -5,6 +5,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import {web3FromSource} from '@polkadot/extension-dapp';
 
 import App from './ux/components/App';
 import './ux/css/wika.css';
@@ -13,7 +14,8 @@ import WikaBackground from './background/background.js' ;
 import WebappPort from './webapp_port' ;
 
 
-
+// Define web3FromSource globally so we don't have to import it in background side
+window.web3FromSource = web3FromSource ;
 
 // Define the Wika Background Interface
 window.BACKGROUND_INTERFACE = new WikaBackground() ;

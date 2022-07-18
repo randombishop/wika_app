@@ -2,10 +2,10 @@ import React from "react";
 
 
 import AppContext from '../utils/context' ;
-import {convertToWika, wikaToUsd, findAccount} from "../utils/misc";
+import {convertToWika, wikaToUsd, findAccount, getPageParams} from "../utils/misc";
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
-import sendTransaction from '../utils/transaction' ;
+import sendTransaction from '../utils/send_transaction' ;
 import styled from 'styled-components';
 
 class App extends React.Component {
@@ -36,6 +36,13 @@ class App extends React.Component {
         };
     }
 
+
+
+
+    // -----------------------
+    // INITIALIZATION SEQUENCE
+    // -----------------------
+
     componentDidMount = () => {
         this.getNetworkState() ;
         this.getAccountFromStorage() ;
@@ -47,22 +54,7 @@ class App extends React.Component {
         let self = this ;
         window.BACKGROUND_INTERFACE.call({func: 'getNetworkInfo'}, (info) => {
             const state = {network: info} ;
-            self.setState(state) ;
-        }) ;
-    }
-
-    getAccountFromStorage = () => {
-        let self = this ;
-        const message = {
-            func: 'getData',
-            field: 'account'
-        };
-        window.BACKGROUND_INTERFACE.call(message, (result) => {
-            self.setState({account:result}, () => {
-                self.subscribeToBalance() ;
-                self._mountedAccount = true ;
-                self._mounted = self._mountedTab && self._mountedAccount && self._mountedAction;
-            });
+            self.setState(state, self.getTabFromStorage) ;
         }) ;
     }
 
@@ -96,52 +88,24 @@ class App extends React.Component {
             self.setState({action:result}, () => {
                 self._mountedAction = true ;
                 self._mounted = self._mountedTab && self._mountedAccount && self._mountedAction;
-            });
+                self.setState({tab:result}, self.getAccountFromStorage);
+            }) ;
         }) ;
     }
 
 
-    ping = () => {
-        console.log('pong') ;
-    }
-
-    signTransaction = (txType, params, address, callback) => {
-        console.log('signTransaction -> data', txType, params, address, this._mounted) ;
-        const self = this ;
+    getAccountFromStorage = () => {
+        let self = this ;
         const message = {
             func: 'getData',
-            field: 'accounts'
+            field: 'account'
         };
-        window.BACKGROUND_INTERFACE.call(message, (accounts) => {
-            const account = findAccount(accounts, address) ;
-            console.log('signTransaction -> account', account) ;
-            if (account) {
-                self.signTransactionCallback = callback ;
-                self.selectAccount(account) ;
-                self.setState({
-                    tab: 'sign_transaction',
-                    transactionType: txType,
-                    transactionParams: params,
-                    transactionSent: false
-                }) ;
-            }
-        }) ;
-    }
+        window.BACKGROUND_INTERFACE.call(message, (result) => {
+            self.setState({account:result}, () => {
+                self.subscribeToBalance() ;
+                self.checkIfSigningTransaction() ;
 
-    connectNetwork = (callback) => {
-        let self = this ;
-        let networkState = self.state.network ;
-        networkState.ready = false ;
-        self.setState({network:networkState}, () => {
-            const message = {
-                func: 'connect',
-                networkType: networkState.type,
-                networkUrl: networkState.url
-            };
-            window.BACKGROUND_INTERFACE.call(message, () => {
-                networkState.ready = true ;
-                self.setState({network:networkState}, ) ;
-            }) ;
+            });
         }) ;
     }
 
@@ -174,6 +138,47 @@ class App extends React.Component {
         }) ;
     }
 
+    checkIfSigningTransaction = () => {
+        const pageParams = getPageParams() ;
+        console.log('pageParams', pageParams) ;
+        if (pageParams.txType) {
+            this.signTransaction(pageParams.txId, pageParams.txType, pageParams.txParams, pageParams.txAddress) ;
+        }
+    }
+
+    signTransaction = (txId, txType, params, address) => {
+        console.log('signTransaction', txId, txType, params, address) ;
+        const self = this ;
+        const message = {
+            func: 'getData',
+            field: 'accounts'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (accounts) => {
+            const account = findAccount(accounts, address) ;
+            console.log('signTransaction -> account', account) ;
+            if (account) {
+                self.selectAccount(account) ;
+                self.setState({
+                    tab: 'sign_transaction',
+                    transactionId: txId,
+                    transactionType: txType,
+                    transactionParams: params,
+                    transactionSent: false
+                }) ;
+            }
+        }) ;
+    }
+
+
+
+
+
+
+
+    // --------------
+    // GLOBAL ACTIONS
+    // --------------
+
     selectAccount = (account) => {
         console.log('App.selectAccount', account) ;
         const message = {
@@ -186,7 +191,7 @@ class App extends React.Component {
     }
 
     navigate = (tab) => {
-        console.log('App.navigateTab', tab) ;
+        console.log('App.navigate', tab) ;
         const message = {
             func: 'saveData',
             field: 'tab',
@@ -208,22 +213,35 @@ class App extends React.Component {
     }
 
     rejectTransaction = () => {
-        this.signTransactionCallback('rejected') ;
         window.close() ;
     }
 
     confirmTransaction = () => {
+        const self = this ;
         const txType = this.state.transactionType ;
         const txParams = this.state.transactionParams ;
         const account = this.state.account ;
-        this.setState({transactionSent: true}) ;
+        self.setState({transactionSent: true}) ;
         sendTransaction(txType, txParams, account, (result) => {
-            if (result.status==='In block') {
-                this.signTransactionCallback('confirmed') ;
+            if (result.error) {
+                alert(result.error) ;
+            } else {
                 window.close() ;
             }
         }) ;
     }
+
+    ping = () => {
+        console.log('pong') ;
+    }
+
+
+
+
+
+    // --------
+    // CLEAN UP
+    // --------
 
     componentWillUnmount = () => {
         this._mounted = false;
@@ -244,6 +262,12 @@ class App extends React.Component {
         let toggle = !this.state.menuOpened ;
         this.setState({menuOpened:toggle}) ;
     }
+
+
+
+    // ----------
+    // RENDERING
+    // ----------
 
     render() {
         return (
