@@ -43,6 +43,7 @@ class AccountConnectModes extends React.Component {
         this.setState({wikaData: null}, () => {
             window.WIKA_BRIDGE.accounts((result) => {
                 this.setState({wikaData: result});
+                console.log(this.state.wikaData);
             }) ;
         });
     }

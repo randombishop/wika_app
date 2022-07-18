@@ -32,6 +32,8 @@ class AccountConnect extends React.Component {
 
     selectAccount = (account) => {
         this.context.selectAccount(account) ;
+        this.context.navigate('landing')
+        this.context.navigateAction('like')
     }
 
     render = () => {

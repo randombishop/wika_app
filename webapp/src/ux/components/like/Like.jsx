@@ -1,15 +1,17 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-
+import styled from 'styled-components';
 
 import AppContext from "../../utils/context";
+import AuthorBadge from "./AuthorBadge"
+import { getEnvironment } from '../../utils/misc';
 import {convertToWika} from "../../utils/misc";
 import Like1 from "./Like1";
 import Like2 from "./Like2";
+import { Heading1 } from "../../styles/textStyle"
 
 
 class Like extends React.Component {
@@ -26,10 +28,11 @@ class Like extends React.Component {
             rewardPrct: '33%',
             rewardTarget: 1.33,
             rewardWaitFactor: 4,
-            urlLikes: null,
+            urlLikes: 0,
             likesSubmittedAt: null,
             likesSubmittedCount: null,
-            likesSubmittedRemaining: null
+            likesSubmittedRemaining: null,
+            env: getEnvironment()
         }
     }
 
@@ -51,6 +54,7 @@ class Like extends React.Component {
     }
 
     lookupUrl = () => {
+        console.log('why blank?', this.state.url) ;
         this.subscribeToUrl() ;
         this.subscribeToLike() ;
         this.setState({lookedUp:true}) ;
@@ -70,7 +74,9 @@ class Like extends React.Component {
         const url = this.state.url;
         window.BACKGROUND_INTERFACE.unsub('getUrl', () => {
             window.BACKGROUND_INTERFACE.subscribe({func: 'getUrl', url: url}, (result) => {
+                console.log('test url', url)
                 let urlLikes = Number(result[0]) ;
+                console.log('nLikes', urlLikes)
                 self.setState({urlLikes:urlLikes}) ;
             }) ;
         }) ;
@@ -96,6 +102,7 @@ class Like extends React.Component {
         }) ;
     }
 
+
     componentWillUnmount = () => {
         this.unsubscribe() ;
     }
@@ -104,10 +111,6 @@ class Like extends React.Component {
         window.BACKGROUND_INTERFACE.unsub('getUrl', () => {}) ;
         window.BACKGROUND_INTERFACE.unsub('getLike', () => {}) ;
     }
-
-
-
-
 
     renderInputAdornment = () => {
         return (
@@ -120,23 +123,36 @@ class Like extends React.Component {
     }
 
     renderUrlInput = () => {
-        let inputProps = {endAdornment: this.renderInputAdornment()} ;
-        return (<TextField
-                    id="lookup-url-input"
-                    label="Lookup URL status"
-                    variant="outlined"
-                    fullWidth={true}
-                    value={this.state.url}
-                    onChange={this.handleUrlChange}
-                    InputProps={inputProps} />) ;
+        if (this.state.env === 'app'){
+            let inputProps = {endAdornment: this.renderInputAdornment()} ;
+            return (<TextField
+                        id="lookup-url-input"
+                        label="Lookup URL status"
+                        variant="outlined"
+                        fullWidth={true}
+                        value={this.state.url}
+                        onChange={this.handleUrlChange}
+                        InputProps={inputProps} />) ;
+        } else {
+            var self = this
+            window.chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                var activeTab = tabs[0].url;
+                if (self.state.lookedUp === false) {
+                    self.setState({url: activeTab}, () => {self.lookupUrl()});
+                }
+            });
+            // if (this.state.lookedUp === false) {
+            //     this.clearUrl();
+            // }
+            return 
+        }
     }
 
     renderUrlNumLikes = () => {
         if (this.state.lookedUp && this.state.urlLikes!=null) {
             return (
-                <Typography variant="body2" sx={{marginTop:"5px"}} >
-                    This page received <strong>{this.state.urlLikes} likes</strong>.
-                </Typography>) ;
+                <AuthorBadge url={this.state.url} nLikes={this.state.urlLikes} />
+            )
         } else {
             return "" ;
         }
@@ -171,19 +187,44 @@ class Like extends React.Component {
 
     render = () => {
         return (
-            <div>
-                {this.renderUrlInput()}
-                {this.renderUrlNumLikes()}
-                <br/>
-                <br/>
+            <LikeContainer>
+                <Title>
+                    Like Current Page
+                </Title>
+                <UrlInput>
+                    {this.renderUrlInput()}
+                </UrlInput>
                 {this.renderPart2()}
-            </div>
+                {this.renderUrlNumLikes()}
+            </LikeContainer>
         ) ;
     }
 
 }
 
+const LikeContainer = styled.div`
+    width: 90%;
+    max-wdith: 100px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+`
+
+const Title = styled.div`
+    ${Heading1};
+    font-weight: 700;
+    color: #888888;
+    padding: 15px 20px 5px 20px;
+    border: 1px;
+    border-color: #DFDBDB;
+    border-style: none none solid none;
+`
+const UrlInput = styled.div`
+    padding: 20px 0 0 0;
+    flex: 1;
+`
+
 export default Like ;
-
-
 
