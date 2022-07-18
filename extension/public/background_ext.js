@@ -53831,8 +53831,6 @@ function getEnvironment() {
     }
 }
 
-<<<<<<< HEAD
-=======
 function parsePolkadotError(result) {
     if (result.dispatchError) {
         try {
@@ -53871,7 +53869,6 @@ function simpleHash(text) {
 }
 
 
->>>>>>> master
 
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classPrivateFieldLooseBase.js
 function _classPrivateFieldBase(receiver, privateKey) {
@@ -90069,8 +90066,6 @@ class StorageExt {
 }
 
 
-<<<<<<< HEAD
-=======
 ;// CONCATENATED MODULE: ./src/background/transaction.js
 
 
@@ -90134,7 +90129,6 @@ class Transaction {
 
 /* harmony default export */ const background_transaction = (Transaction);
 
->>>>>>> master
 ;// CONCATENATED MODULE: ./src/background/background.js
 
 
@@ -90259,10 +90253,6 @@ class WikaBackground {
 
     getData = (field, callback) => {
         console.log('getData', field) ;
-<<<<<<< HEAD
-        //callback({'test': '123'}) ;
-=======
->>>>>>> master
         this.storage.get(field, callback) ;
     }
 
@@ -90302,8 +90292,6 @@ class WikaBackground {
 
 
 
-<<<<<<< HEAD
-=======
     // -----------
     // Transaction
     // -----------
@@ -90337,7 +90325,6 @@ class WikaBackground {
 
 
 
->>>>>>> master
 
     // -----
     // Unsub
@@ -90353,13 +90340,10 @@ class WikaBackground {
         }
     }
 
-<<<<<<< HEAD
-=======
 
 
 
 
->>>>>>> master
 }
 
 
@@ -90375,27 +90359,16 @@ class WikaBackground {
 
 
 
-<<<<<<< HEAD
-;// CONCATENATED MODULE: ./src/background/extension_internal_port.js
-
-
-class ExtensionInternalPort {
-=======
 ;// CONCATENATED MODULE: ./src/background/extension_port.js
 
 
 
 class ExtensionPort {
->>>>>>> master
 
     constructor(background) {
         this.background = background ;
         this.listenOnConnect() ;
         this.listenOnMessage() ;
-<<<<<<< HEAD
-    }
-
-=======
         this.listenOnMessageExternal() ;
     }
 
@@ -90403,7 +90376,6 @@ class ExtensionPort {
     // Internal Communication Extension-Extension
     // ------------------------------------------
 
->>>>>>> master
     listenOnConnect = () => {
         const self = this ;
         chrome.runtime.onConnect.addListener(function(port) {
@@ -90424,16 +90396,6 @@ class ExtensionPort {
             } else if (funcType === 'subscribe') {
                 self.background.subscribe(message, (data) => {
                     const newMessage = {
-<<<<<<< HEAD
-                        sub: func,
-                        data: data
-                    }
-                    self.port.postMessage(newMessage);
-                }).then((u) => {
-                    self.unsubFunctions[func] = u ;
-                }) ;
-                sendResponse('ack') ;
-=======
                         func: func,
                         data: data
                     }
@@ -90443,7 +90405,6 @@ class ExtensionPort {
             } else if (funcType === 'transaction') {
                 self.background.transaction(message, sendResponse) ;
                 return true ;
->>>>>>> master
             } else if (funcType === 'unsub') {
                 self.background.unsub(func, sendResponse) ;
                 return true ;
@@ -90453,12 +90414,6 @@ class ExtensionPort {
         });
     }
 
-<<<<<<< HEAD
-}
-
-
-/* harmony default export */ const extension_internal_port = (ExtensionInternalPort);
-=======
 
 
 
@@ -90538,7 +90493,6 @@ class ExtensionPort {
 
 
 
->>>>>>> master
 ;// CONCATENATED MODULE: ./src/background/background_ext.js
 
 
@@ -90552,11 +90506,7 @@ const defaultNetworkType = "Wika Testnet" ;
 const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
 
 const BACKGROUND = new background() ;
-<<<<<<< HEAD
-const PORT = new extension_internal_port(BACKGROUND) ;
-=======
 const PORT = new extension_port(BACKGROUND) ;
->>>>>>> master
 console.log('background instances ok') ;
 
 BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {

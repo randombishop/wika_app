@@ -10,13 +10,9 @@ class ExtensionPort {
         this.listenOnMessageExternal() ;
     }
 
-<<<<<<< HEAD:webapp/src/background/extension_external_port.js
-class ExtensionExternalPort {
-=======
     // ------------------------------------------
     // Internal Communication Extension-Extension
     // ------------------------------------------
->>>>>>> master:webapp/src/background/extension_port.js
 
     listenOnConnect = () => {
         const self = this ;
@@ -85,20 +81,6 @@ class ExtensionExternalPort {
     }
 
     accounts = (source, request, sendResponse) => {
-<<<<<<< HEAD:webapp/src/background/extension_external_port.js
-        window.getBackground((BACKGROUND) => {
-            BACKGROUND.storage.get('accounts', (list) => {
-                var ans = [] ;
-                if (list) {
-                    ans = list.map((a) => {
-                        return {address: a.address,
-                                addressRaw: a.addressRaw,
-                                name: a.name} ;
-                    })
-                }
-                sendResponse(ans) ;
-            }) ;
-=======
         this.background.getData('accounts', (list) => {
             var ans = [] ;
             if (list) {
@@ -109,7 +91,6 @@ class ExtensionExternalPort {
                 })
             }
             sendResponse(ans) ;
->>>>>>> master:webapp/src/background/extension_port.js
         }) ;
     }
 
