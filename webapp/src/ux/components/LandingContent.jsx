@@ -28,8 +28,9 @@ class LandingContent extends React.Component {
   pages = {
     like: {title:"Like a web page", component:<Like />}
   }
-
+  
   render = () => {
+    console.log(this.context.action)
 
     let translateMap = {
       'like': {

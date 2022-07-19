@@ -121,8 +121,8 @@ class Like extends React.Component {
     }
 
     renderUrlInput = () => {
+        let inputProps = {endAdornment: this.renderInputAdornment()} ;
         if (this.state.env === 'app'){
-            let inputProps = {endAdornment: this.renderInputAdornment()} ;
             return (<TextField
                         id="lookup-url-input"
                         label="Lookup URL status"
@@ -139,10 +139,14 @@ class Like extends React.Component {
                     self.setState({url: activeTab}, () => {self.lookupUrl()});
                 }
             });
-            // if (this.state.lookedUp === false) {
-            //     this.clearUrl();
-            // }
-            return 
+            return (<TextField
+                id="lookup-url-input"
+                label="Lookup URL status"
+                variant="outlined"
+                fullWidth={true}
+                value={this.state.url}
+                onChange={this.handleUrlChange}
+                InputProps={inputProps} />) ;
         }
     }
 
@@ -187,7 +191,7 @@ class Like extends React.Component {
         return (
             <LikeContainer>
                 <Title>
-                    Like Current Page
+                    Like Selected Page
                 </Title>
                 <UrlInput>
                     {this.renderUrlInput()}

@@ -67,7 +67,11 @@ class App extends React.Component {
         window.BACKGROUND_INTERFACE.call(message, (result) => {
             if (!result) {
                 result = 'splash';
+            } else if (this.state.account) {
+                result = 'landing'
+                console.log('landing')
             }
+            console.log(result)
             self.setState({tab:result}, () => {
                 self._mountedTab = true ;
                 self._mounted = self._mountedTab && self._mountedAccount && self._mountedAction;
@@ -84,7 +88,11 @@ class App extends React.Component {
         window.BACKGROUND_INTERFACE.call(message, (result) => {
             if (!result) {
                 result = null;
+            } else if (this.state.account) {
+                result = 'like'
+                console.log('like')
             }
+            console.log(result)
             self.setState({action:result}, () => {
                 self._mountedAction = true ;
                 self._mounted = self._mountedTab && self._mountedAccount && self._mountedAction;
