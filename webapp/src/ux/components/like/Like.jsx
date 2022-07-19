@@ -21,7 +21,8 @@ class Like extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            lookedUp:false,
+            lookedUp: false,
+            cleared: false,
             url: "",
             referrer: null,
             likePrice: null,
@@ -64,6 +65,7 @@ class Like extends React.Component {
         this.unsubscribe() ;
         this.setState({
             lookedUp:false,
+            cleared: true,
             url:"",
             likesSubmittedCount:null,
         }) ;
@@ -135,7 +137,7 @@ class Like extends React.Component {
             var self = this
             window.chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                 var activeTab = tabs[0].url;
-                if (self.state.lookedUp === false) {
+                if (self.state.lookedUp === false && self.state.cleared === false) {
                     self.setState({url: activeTab}, () => {self.lookupUrl()});
                 }
             });
