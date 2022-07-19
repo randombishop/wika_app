@@ -14,7 +14,7 @@ class AuthorBadge extends React.Component {
         var url = this.props.url
         var urlList = url.split('//')
         if (urlList.length >= 2){
-            url = urlList[1].split('.')[0]
+            url = urlList[1].split('.')[1]
         }
         return (
             <AuthorContainer>
