@@ -30,7 +30,6 @@ class LandingContent extends React.Component {
   }
   
   render = () => {
-    console.log(this.context.action)
 
     let translateMap = {
       'like': {
