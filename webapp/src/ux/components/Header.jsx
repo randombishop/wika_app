@@ -1,59 +1,79 @@
 import React from 'react';
-import Typography from '@mui/material/Typography' ;
+import styled from 'styled-components';
 
-
-import AppContext from "../utils/context";
-import MainLogo from "./MainLogo";
-import NetworkButton from "./NetworkButton";
-import AccountButton from "./AccountButton";
+import {Heading1} from '../styles/textStyle'
+import NetworkButton from './NetworkButton'
+import AccountButton from './AccountButton'
+import AppContext from '../utils/context' ;
+import thumb from '../images/white.svg'
 
 
 class Header extends React.Component {
 
     static contextType = AppContext;
 
-    headerStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        background: '#F9F9F9',
-        padding: '5px 15px',
-        textAlign: 'center'
-    }
-
-    titleStyle = {
-        marginLeft:'10px'
-    }
-
-    networkStyle = {
-        position: 'absolute',
-        top: '4px',
-        right: '15px',
-    }
-
-    accountStyle = {
-        position: 'absolute',
-        top: '35px',
-        right: '15px'
+    navigateHome() {
+        if (this.context.account) {
+            this.context.navigate('landing')
+        } else {
+            this.context.navigate('splash')
+        }
     }
 
     render() {
         return (
-            <div style={this.headerStyle}>
-                <MainLogo />
-                <Typography variant="h5" color="primary" style={this.titleStyle}>
-                    {this.props.title}
-                </Typography>
-                <div style={this.networkStyle}>
-                    <NetworkButton />
-                </div>
-                <div style={this.accountStyle}>
+            <MainHeader>
+                <WikaLogoFlex>
+                    <WikaLogo
+                        onClick={() => this.navigateHome()}
+                        src={thumb} alt="logo"
+                    />
+                </WikaLogoFlex>
+                <NetworkContainer>
+                    <NetworkButton/>
+                </NetworkContainer>
+                <AccountContainer>
                     <AccountButton />
-                </div>
-            </div>
-        );
+                </AccountContainer>
+            </MainHeader>
+        )
     }
 
 }
+
+
+const MainHeader = styled.div`
+  ${Heading1};
+  background: #F9F9F9;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  ${'' /* border: 2px solid red; */}
+`
+const WikaLogoFlex = styled.div`
+  ${'' /* border: 2px solid red; */}
+  flex:1;
+`
+const WikaLogo = styled.img`
+  cursor: pointer;
+  filter: drop-shadow(1px 2px 1.5px rgba(0, 0, 0, 0.15));
+  height: 35px;
+  padding: 0 0 0 20px
+`
+const NetworkContainer = styled.div`
+  ${'' /* border: 2px solid red; */}
+  flex:1;
+  display: flex;
+  justify-content: center;
+`
+const AccountContainer = styled.div`
+  ${'' /* border: 2px solid red; */}
+  flex:1;
+  display: flex;
+  justify-content: flex-end;
+`
 
 
 export default Header ;

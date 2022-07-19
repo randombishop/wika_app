@@ -129,4 +129,3 @@ class ExtensionPort {
 
 export default ExtensionPort ;
 
-

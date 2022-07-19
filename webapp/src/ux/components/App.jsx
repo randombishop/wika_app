@@ -6,7 +6,7 @@ import {convertToWika, wikaToUsd, findAccount, getPageParams} from "../utils/mis
 import MainContent from './MainContent' ;
 import Footer from './Footer' ;
 import sendTransaction from '../utils/send_transaction' ;
-
+import styled from 'styled-components';
 
 class App extends React.Component {
 
@@ -14,6 +14,8 @@ class App extends React.Component {
         super(props);
         this.state = {
             tab: null,
+            action: null,
+            menuOpened: false,
             transactionType: null,
             transactionParams: null,
             transactionSent: false,
@@ -43,6 +45,9 @@ class App extends React.Component {
 
     componentDidMount = () => {
         this.getNetworkState() ;
+        this.getAccountFromStorage() ;
+        this.getTabFromStorage() ;
+        this.getActionFromStorage() ;
     }
 
     getNetworkState = () => {
@@ -63,9 +68,31 @@ class App extends React.Component {
             if (!result) {
                 result = 'splash';
             }
-            self.setState({tab:result}, self.getAccountFromStorage);
+            self.setState({tab:result}, () => {
+                self._mountedTab = true ;
+                self._mounted = self._mountedTab && self._mountedAccount && self._mountedAction;
+            });
         }) ;
     }
+
+    getActionFromStorage = () => {
+        let self = this ;
+        const message = {
+            func: 'getData',
+            field: 'action'
+        };
+        window.BACKGROUND_INTERFACE.call(message, (result) => {
+            if (!result) {
+                result = null;
+            }
+            self.setState({action:result}, () => {
+                self._mountedAction = true ;
+                self._mounted = self._mountedTab && self._mountedAccount && self._mountedAction;
+                self.setState({tab:result}, self.getAccountFromStorage);
+            }) ;
+        }) ;
+    }
+
 
     getAccountFromStorage = () => {
         let self = this ;
@@ -77,6 +104,7 @@ class App extends React.Component {
             self.setState({account:result}, () => {
                 self.subscribeToBalance() ;
                 self.checkIfSigningTransaction() ;
+
             });
         }) ;
     }
@@ -173,6 +201,17 @@ class App extends React.Component {
         this.setState({tab: tab});
     }
 
+    navigateAction = (action) => {
+        console.log('App.navigateAction', action) ;
+        const message = {
+            func: 'saveData',
+            field: 'action',
+            data: action
+        };
+        window.BACKGROUND_INTERFACE.call(message, ()=>{}) ;
+        this.setState({action: action});
+    }
+
     rejectTransaction = () => {
         window.close() ;
     }
@@ -211,9 +250,18 @@ class App extends React.Component {
         }) ;
     }
 
+    closeMenu = () => {
+        if ( this.state.menuOpened ) {
+            this.setState({ 
+                menuOpened: false
+            });
+        }
+    }
 
-
-
+    toggleMenu = () => {
+        let toggle = !this.state.menuOpened ;
+        this.setState({menuOpened:toggle}) ;
+    }
 
 
 
@@ -223,16 +271,20 @@ class App extends React.Component {
 
     render() {
         return (
-            <div className="wika-app">
+            <AppContainer onClick={() => this.closeMenu()}>
                 <AppContext.Provider value={{
                     // Context data
                     tab: this.state.tab,
+                    action: this.state.action,
+                    menuOpened: this.state.menuOpened,
                     network: this.state.network,
                     account: this.state.account,
                     balance: this.state.balance,
                     // Context functions
                     navigate: this.navigate,
+                    navigateAction: this.navigateAction,
                     selectAccount: this.selectAccount,
+                    toggleMenu: this.toggleMenu,
                     // API Endpoint
                     apiEndpoint: this.state.api,
                     // Transaction signing
@@ -245,10 +297,19 @@ class App extends React.Component {
                     <MainContent />
                     <Footer />
                 </AppContext.Provider>
-            </div>
+            </AppContainer>
         );
     }
 
 }
+
+
+const AppContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    width: 100vw;
+`
 
 export default App;

@@ -7,7 +7,6 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import {web3FromSource} from '@polkadot/extension-dapp';
 
-
 import App from './ux/components/App';
 import './ux/css/wika.css';
 import './ux/css/awesome.css';

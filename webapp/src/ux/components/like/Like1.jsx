@@ -1,18 +1,11 @@
 import React from 'react';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
-import Container from '@mui/material/Container';
-import Slider from '@mui/material/Slider';
-import Stack from '@mui/material/Stack';
-import CardActions from '@mui/material/CardActions';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
-
+import styled from 'styled-components';
 
 import AppContext from "../../utils/context";
 import sendTransaction from '../../utils/send_transaction' ;
-
+import { Heading1, Heading2 } from "../../styles/textStyle"
 
 class Like1 extends React.Component {
 
@@ -56,9 +49,6 @@ class Like1 extends React.Component {
         }
     }
 
-
-
-
     renderButton = () => {
         if (this.state.txStatus==null) {
             return (
@@ -75,29 +65,58 @@ class Like1 extends React.Component {
 
     render = () => {
         return (
-            <React.Fragment>
-
-               <Container align="center">
-                   <Card sx={{width: '75%', paddingBottom: '10px', borderRadius: '25px'}}>
-                        <CardHeader title="Like transaction"
-                                    subheader={this.props.url}
-                        />
-                        <CardContent>
-                            <Stack direction="row" sx={{width:'75%'}}>
-                                <Slider aria-label="Number of likes" value={this.state.numLikes} onChange={this.handleNumLikeChange} />
-                            </Stack>
-                        </CardContent>
-                        <CardActions>
-                            <Container>{this.renderButton()}</Container>
-                        </CardActions>
-                   </Card>
-               </Container>
-
-            </React.Fragment>
+            <FormStyled>
+                <LikeInputContainer onChange={this.handleNumLikeChange}>
+                    <LikeInput type='number' placeholder={1}/>
+                </LikeInputContainer>
+                <LikeButtonContainer>
+                    <LikeButton onClick={this.submitLike}>
+                        LIKE
+                    </LikeButton>
+                </LikeButtonContainer>
+            </FormStyled>
         );
     }
 
 }
 
+const FormStyled = styled.form`
+    flex: 3;
+`
+const LikeInputContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    padding: 30px;
+`
+const LikeInput = styled.input`
+    ${Heading2}
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.15);
+    border-style: none;
+    height: 30px;
+    width: 60%;
+    border-radius: 8px;
+`
+const LikeButtonContainer = styled.div`
+    display: flex;
+    width: 100%;
+    justify-content: center;
+`
+const LikeButton = styled.div`
+    cursor: pointer;
+    border-radius: 100px;
+    background: radial-gradient(1629.2% 723.91% at -20.83% -235.87%, #2EABE1 0%, #5BE2FF 40.2%, #FDFF95 62.01%) /* warning: gradient uses a rotation that is not supported by CSS and may not behave as expected */;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    height: 60px;
+    width: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover {
+        background: linear-gradient(180deg, #3DB2E4 -110.22%, #005F88 171.17%);
+    }
+    ${Heading1};
+    font-size: 25px;
+    color: white;
+`
 
 export default Like1 ;

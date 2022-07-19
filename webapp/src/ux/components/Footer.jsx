@@ -1,37 +1,21 @@
 import React from 'react';
-import Paper from '@mui/material/Paper';
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Fab from '@mui/material/Fab';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import AppContext from "../utils/context";
+import styled from 'styled-components';
+import {BodyCopy} from '../styles/textStyle';
+import LikeIcon from '../images/footerIcons/LikeIcon.svg';
+import LikeIconSelected from '../images/footerIcons/LikeIconSelected.svg';
+import BuyIcon from '../images/footerIcons/BuyIcon.svg';
+import BuyIconSelected from '../images/footerIcons/BuyIconSelected.svg';
+import ChatIcon from '../images/footerIcons/ChatIcon.svg';
+import ChatIconSelected from '../images/footerIcons/ChatIconSelected.svg';
+import ClaimIcon from '../images/footerIcons/ClaimIcon.svg';
+import ClaimIconSelected from '../images/footerIcons/ClaimIconSelected.svg';
 
 
 class Footer extends React.Component {
 
     static contextType = AppContext;
-
-    styleFooter = {
-        backgroundColor: '#F9F9F9',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '60px',
-        padding: '10px 50px',
-        borderTop: '1px dashed lightgray'
-    }
-
-    styleMenu = {
-        position: 'absolute',
-        bottom: '85px',
-        right: '5px'
-    }
 
     constructor(props) {
         super(props);
@@ -44,7 +28,7 @@ class Footer extends React.Component {
         if (value==='toggleMenu') {
             this.toggleMenu() ;
         } else {
-            this.navigate(value) ;
+            this.navigateAction(value) ;
         }
     }
 
@@ -53,143 +37,94 @@ class Footer extends React.Component {
         this.setState({menuOpened:toggle}) ;
     }
 
-    navigate = (tab) => {
+    navigateAction = (action) => {
         this.setState({menuOpened:false}) ;
-        this.context.navigate(tab);
-    }
-
-
-
-
-    renderMenuItem = (icon, text, target) => {
-        return (
-            <MenuItem onClick={() => this.navigate(target)}>
-              <ListItemIcon>
-                <i className={'far '+icon}></i>
-              </ListItemIcon>
-              <ListItemText>
-                {text}
-              </ListItemText>
-            </MenuItem>
-        ) ;
-    }
-
-    renderMenu = () => {
-        if (this.state.menuOpened) {
-            return (
-                <Paper style={this.styleMenu}>
-                    <MenuList>
-                        {this.renderMenuItem('fa-user', 'Account', 'account')}
-                        {this.renderMenuItem('fa-heart', 'Liked pages', 'liked_pages')}
-                        {this.renderMenuItem('fa-bookmark', 'Owned pages', 'owned_pages')}
-                        {this.renderMenuItem('fa-registered', 'Claim page ownership', 'claim_page')}
-                        {this.renderMenuItem('fa-file-code', 'Keccak 256', 'keccak')}
-                        {this.renderMenuItem('fa-handshake', 'Blockchains', 'blockchains')}
-                        {this.renderMenuItem('fa-save', 'Settings', 'settings')}
-                        {this.renderMenuItem('fa-gem', 'About', 'about')}
-                    </MenuList>
-                </Paper>
-            );
-        } else {
-            return "" ;
+        if (this.context.tab !== 'landing'){
+            this.context.navigate('landing')
         }
-    }
-
-    renderIcon = (label, icon, target) => {
-        let color = "default" ;
-        if (target === this.context.tab) {
-            color = "primary" ;
-        }
-        return (<Grid item xs={3} align="center">
-                    <Fab size="small"
-                         color={color}
-                         aria-label="icon"
-                         onClick={() => this.buttonClicked(target)}
-                         sx={{fontSize: '18px', marginBottom:'5px'}}>
-                        <i className={'far '+icon}></i>
-                    </Fab>
-                    <br/>
-                    <Typography variant="subtitle2" color={color} onClick={() => this.buttonClicked(target)}>
-                        {label}
-                    </Typography>
-                </Grid>);
-    }
-
-    renderAccountButton() {
-        return (
-            <Container align="center" sx={{paddingTop:'7px'}}>
-                <Fab variant="extended" color="primary"
-                     onClick={() => this.context.navigate('account')}>
-                    Connect your account
-                </Fab>
-            </Container>
-        ) ;
+        this.context.navigateAction(action);
     }
 
     renderMainActions() {
+        let actionMap = {
+            'like': (this.context.action === 'like') ? LikeIconSelected : LikeIcon,
+            'buy': (this.context.action === 'buy') ? BuyIconSelected : BuyIcon,
+            'chat': (this.context.action === 'chat') ? ChatIconSelected : ChatIcon,
+            'more': (this.context.action === 'more') ? ClaimIconSelected : ClaimIcon
+        }
+
         return (
-            <React.Fragment>
-              <Grid container spacing={2}>
-                {this.renderIcon('Like', 'fa-thumbs-up', 'like')}
-                {this.renderIcon('Buy', 'fa-credit-card', 'buy')}
-                {this.renderIcon('Send', 'fa-paper-plane', 'wallet')}
-                {this.renderIcon('More', 'fa-plus-square', 'toggleMenu')}
-              </Grid>
-              {this.renderMenu()}
-            </React.Fragment>
+            <NavFooter>
+                <NavContainer>
+                    <NavIcons>
+                        <Icon 
+                            src={actionMap['like']}
+                            onClick={() => this.buttonClicked('like')}
+                        />
+                        <Icon 
+                            src={actionMap['buy']}
+                            onClick={() => this.buttonClicked('buy')}
+                        />
+                        <Icon 
+                            src={actionMap['chat']}
+                            onClick={() => this.buttonClicked('chat')}
+                        />
+                        <Icon 
+                            src={actionMap['more']}
+                            onClick={() => this.buttonClicked('more')}
+                        />
+                    </NavIcons>
+                </NavContainer>
+            </NavFooter>
         ) ;
     }
 
-    renderTransactionButtons() {
-        if (this.context.transactionSent) {
-            return (
-                <Container sx={{paddingTop:'7px'}} align="center">
-                    <CircularProgress />
-                </Container>
-            ) ;
-        } else {
-            return (
-                <Container align="center" sx={{paddingTop:'7px'}}>
-                    <Fab variant="extended" color="secondary"
-                         onClick={this.context.rejectTransaction}>
-                        Reject
-                    </Fab>
-                    &nbsp;&nbsp;
-                    <Fab variant="extended" color="primary"
-                         onClick={this.context.confirmTransaction}>
-                        Confirm
-                    </Fab>
-                </Container>
-            ) ;
-        }
-    }
-
     renderSwitch() {
-        if (this.context.account) {
-            if (this.context.tab !== 'sign_transaction') {
-                return this.renderMainActions() ;
-            } else {
-                return this.renderTransactionButtons() ;
-            }
-        } else {
-            if (this.context.tab !== 'account') {
-                return this.renderAccountButton() ;
-            } else {
-                return "" ;
-            }
+        if (this.context.tab === 'landing') {
+            return this.renderMainActions() ;
         }
     }
 
     render() {
-        return (<div style={this.styleFooter}>
-                    {this.renderSwitch()}
-                </div>) ;
+        return (
+            <div >
+                {this.renderSwitch()}
+            </div>) ;
     }
 
 }
 
+const NavFooter = styled.div`
+  ${BodyCopy};
+  background: #F9F9F9;
+  display: flex;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+`
+const NavContainer = styled.div`
+  position: absolute;
+  background: #F9F9F9;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+`
+const NavIcons = styled.div`
+  display:flex;
+  max-width: 400px;
+  width: 60%;
+  justify-content: space-between;
+`
+const Icon = styled.img`
+  &:hover {
+    filter: brightness(60%);
+  };
+  cursor: pointer;
+`
 
 export default Footer ;
-
-
 
