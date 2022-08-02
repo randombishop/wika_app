@@ -11,15 +11,9 @@ class AuthorBadge extends React.Component {
     static contextType = AppContext;
 
     render = () => {
-        var url = this.props.url
-        var urlList = url.split('//')
-        if (urlList.length >= 2){
-            url = urlList[1].split('.')[0]
-        }
         return (
             <AuthorContainer>
                 <img src={GreenCheck} alt='green checks'/>
-                <div>{url}</div>
                 <LikeBadge>{this.props.nLikes} likes</LikeBadge>
                 <Identicon size={30} value={'5GWEiv2fSRoeaXwhTCP1qvnJRT8BVnXnTL8CVsnP8M3G7z2i'}/>
             </AuthorContainer>
@@ -37,7 +31,7 @@ const AuthorContainer = styled.div`
     border-radius: 15px;
     align-items: center;
     justify-content: space-around;
-    width: 220px;
+    width: 180px;
 `
 const LikeBadge = styled.div`
     margin: 5px;

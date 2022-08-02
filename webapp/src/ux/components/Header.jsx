@@ -15,6 +15,7 @@ class Header extends React.Component {
     navigateHome() {
         if (this.context.account) {
             this.context.navigate('landing')
+            this.context.navigateAction('like')
         } else {
             this.context.navigate('splash')
         }
