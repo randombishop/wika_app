@@ -68,6 +68,7 @@ class ExtensionPort {
             const message = request.message ;
             switch (message) {
                 case 'ping': return self.ping(source, request, sendResponse) ;
+                case 'account': return self.account(source, request, sendResponse) ;
                 case 'accounts': return self.accounts(source, request, sendResponse) ;
                 case 'transaction': return self.transaction(source, request, sendResponse) ;
                 default: return self.debug(source, request, sendResponse) ;
@@ -90,6 +91,15 @@ class ExtensionPort {
                             name: a.name} ;
                 })
             }
+            sendResponse(ans) ;
+        }) ;
+    }
+
+    account = (source, request, sendResponse) => {
+        this.background.getData('account', (a) => {
+            var ans = {address: a.address,
+                       addressRaw: a.addressRaw,
+                       name: a.name} ;
             sendResponse(ans) ;
         }) ;
     }
