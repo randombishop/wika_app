@@ -90358,22 +90358,23 @@ class WikaBackground {
 
 
 
-;// CONCATENATED MODULE: ./src/background/extension_port.js
+;// CONCATENATED MODULE: ./src/background/internal_port.js
 
 
 
-class ExtensionPort {
+// ---------------------------------------------
+// Extension side port for communication between
+// Extension Front End and Extension Background
+// Allows to call all Background features
+// ---------------------------------------------
+
+class InternalPort {
 
     constructor(background) {
         this.background = background ;
         this.listenOnConnect() ;
         this.listenOnMessage() ;
-        this.listenOnMessageExternal() ;
     }
-
-    // ------------------------------------------
-    // Internal Communication Extension-Extension
-    // ------------------------------------------
 
     listenOnConnect = () => {
         const self = this ;
@@ -90413,13 +90414,38 @@ class ExtensionPort {
         });
     }
 
+}
+
+
+/* harmony default export */ const internal_port = (InternalPort);
+
+
+;// CONCATENATED MODULE: ./src/background/external_port.js
 
 
 
+// -----------------------------------------------
+// Extension side port for communication between
+// authorized webpages and Extension Background
+// Allows to call a subset of Background features
+// -----------------------------------------------
 
-    // ------------------------------------------
-    // External Communication Webpage-Extension
-    // ------------------------------------------
+class ExternalPort {
+
+    constructor(background) {
+        this.background = background ;
+        this.listenOnConnectExternal() ;
+        this.listenOnMessageExternal() ;
+    }
+
+    listenOnConnectExternal = () => {
+        const self = this ;
+        chrome.runtime.onConnectExternal.addListener(function(port) {
+          if (port.name === "background_interface") {
+            self.port = port ;
+          }
+        });
+    }
 
     listenOnMessageExternal = () => {
         let self = this ;
@@ -90431,6 +90457,9 @@ class ExtensionPort {
                 case 'ping': return self.ping(source, request, sendResponse) ;
                 case 'account': return self.account(source, request, sendResponse) ;
                 case 'accounts': return self.accounts(source, request, sendResponse) ;
+                case 'subscribeToUrl': return self.subscribeToUrl(source, request, sendResponse) ;
+                case 'subscribeToLike': return self.subscribeToLike(source, request, sendResponse) ;
+                case 'unsub': return self.unsub(source, request, sendResponse) ;
                 case 'transaction': return self.transaction(source, request, sendResponse) ;
                 default: return self.debug(source, request, sendResponse) ;
             }
@@ -90463,6 +90492,32 @@ class ExtensionPort {
                        name: a.name} ;
             sendResponse(ans) ;
         }) ;
+    }
+
+    subscribeToUrl = (source, request, sendResponse) => {
+        this.background.subscribe({func:'getUrl', url:request.url}, (data) => {
+            const newMessage = {
+                func: 'getUrl',
+                data: data
+            }
+            this.port.postMessage(newMessage);
+        }) ;
+        sendResponse('ack') ;
+    }
+
+    subscribeToLike = (source, request, sendResponse) => {
+        this.background.subscribe({func:'getLike', address: request.address, url:request.url}, (data) => {
+            const newMessage = {
+                func: 'getLike',
+                data: data
+            }
+            this.port.postMessage(newMessage);
+        }) ;
+        sendResponse('ack') ;
+    }
+
+    unsub = (source, request, sendResponse) => {
+        this.background.unsub(request.func, sendResponse) ;
     }
 
     transaction = (source, request, sendResponse) => {
@@ -90498,7 +90553,7 @@ class ExtensionPort {
 }
 
 
-/* harmony default export */ const extension_port = (ExtensionPort);
+/* harmony default export */ const external_port = (ExternalPort);
 
 
 ;// CONCATENATED MODULE: ./src/background/background_ext.js
@@ -90508,13 +90563,15 @@ console.log('WIKA BACKGROUND_EXT SCRIPT') ;
 
 
 
+
 console.log('imports ok') ;
 
 const defaultNetworkType = "Wika Testnet" ;
 const defaultNetworkUrl = "wss://testnode3.wika.network:443" ;
 
 const BACKGROUND = new background() ;
-const PORT = new extension_port(BACKGROUND) ;
+const INTERNAL_PORT = new internal_port(BACKGROUND) ;
+const EXTERNAL_PORT = new external_port(BACKGROUND) ;
 console.log('background instances ok') ;
 
 BACKGROUND.initialize(defaultNetworkType, defaultNetworkUrl, () => {

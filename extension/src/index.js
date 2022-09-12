@@ -9,12 +9,12 @@ import '@fontsource/roboto/700.css';
 import App from './ux/components/App';
 import './ux/css/wika.css';
 import './ux/css/awesome.css';
-import BackgroundInterface from './BackgroundInterface' ;
+import ExtensionPort from './ux/utils/extension_port' ;
 
 
 
 // Define the Wika Background Interface
-window.BACKGROUND_INTERFACE = new BackgroundInterface() ;
+window.BACKGROUND_INTERFACE = new ExtensionPort() ;
 
 
 ReactDOM.render(

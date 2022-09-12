@@ -1,64 +1,28 @@
 import {simpleHash} from './utils' ;
 
 
-class ExtensionPort {
+// -----------------------------------------------
+// Extension side port for communication between
+// authorized webpages and Extension Background
+// Allows to call a subset of Background features
+// -----------------------------------------------
+
+class ExternalPort {
 
     constructor(background) {
         this.background = background ;
-        this.listenOnConnect() ;
-        this.listenOnMessage() ;
+        this.listenOnConnectExternal() ;
         this.listenOnMessageExternal() ;
     }
 
-    // ------------------------------------------
-    // Internal Communication Extension-Extension
-    // ------------------------------------------
-
-    listenOnConnect = () => {
+    listenOnConnectExternal = () => {
         const self = this ;
-        chrome.runtime.onConnect.addListener(function(port) {
+        chrome.runtime.onConnectExternal.addListener(function(port) {
           if (port.name === "background_interface") {
             self.port = port ;
           }
         });
     }
-
-    listenOnMessage = () => {
-        const self = this ;
-        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-            const funcType = message.funcType ;
-            const func = message.func ;
-            if (funcType === 'call') {
-                self.background.call(message, sendResponse) ;
-                return true ;
-            } else if (funcType === 'subscribe') {
-                self.background.subscribe(message, (data) => {
-                    const newMessage = {
-                        func: func,
-                        data: data
-                    }
-                    self.port.postMessage(newMessage);
-                }) ;
-                sendResponse('ack') ;
-            } else if (funcType === 'transaction') {
-                self.background.transaction(message, sendResponse) ;
-                return true ;
-            } else if (funcType === 'unsub') {
-                self.background.unsub(func, sendResponse) ;
-                return true ;
-            } else {
-                sendResponse({err: 'Unrecognized funcType', originalMessage: message}) ;
-            }
-        });
-    }
-
-
-
-
-
-    // ------------------------------------------
-    // External Communication Webpage-Extension
-    // ------------------------------------------
 
     listenOnMessageExternal = () => {
         let self = this ;
@@ -70,6 +34,9 @@ class ExtensionPort {
                 case 'ping': return self.ping(source, request, sendResponse) ;
                 case 'account': return self.account(source, request, sendResponse) ;
                 case 'accounts': return self.accounts(source, request, sendResponse) ;
+                case 'subscribeToUrl': return self.subscribeToUrl(source, request, sendResponse) ;
+                case 'subscribeToLike': return self.subscribeToLike(source, request, sendResponse) ;
+                case 'unsub': return self.unsub(source, request, sendResponse) ;
                 case 'transaction': return self.transaction(source, request, sendResponse) ;
                 default: return self.debug(source, request, sendResponse) ;
             }
@@ -102,6 +69,32 @@ class ExtensionPort {
                        name: a.name} ;
             sendResponse(ans) ;
         }) ;
+    }
+
+    subscribeToUrl = (source, request, sendResponse) => {
+        this.background.subscribe({func:'getUrl', url:request.url}, (data) => {
+            const newMessage = {
+                func: 'getUrl',
+                data: data
+            }
+            this.port.postMessage(newMessage);
+        }) ;
+        sendResponse('ack') ;
+    }
+
+    subscribeToLike = (source, request, sendResponse) => {
+        this.background.subscribe({func:'getLike', address: request.address, url:request.url}, (data) => {
+            const newMessage = {
+                func: 'getLike',
+                data: data
+            }
+            this.port.postMessage(newMessage);
+        }) ;
+        sendResponse('ack') ;
+    }
+
+    unsub = (source, request, sendResponse) => {
+        this.background.unsub(request.func, sendResponse) ;
     }
 
     transaction = (source, request, sendResponse) => {
@@ -137,5 +130,5 @@ class ExtensionPort {
 }
 
 
-export default ExtensionPort ;
+export default ExternalPort ;
 
