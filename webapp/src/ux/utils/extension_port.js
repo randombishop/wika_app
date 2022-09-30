@@ -1,5 +1,5 @@
 
-class BackgroundInterface {
+class ExtensionPort {
 
     constructor() {
         this.port = window.chrome.runtime.connect({name: "background_interface"});
@@ -69,4 +69,4 @@ class BackgroundInterface {
 }
 
 
-export default BackgroundInterface ;
+export default ExtensionPort ;
